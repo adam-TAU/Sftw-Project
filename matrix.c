@@ -45,6 +45,10 @@ double matrix_get(matrix_t mat, size_t i, size_t j) {
     return mat.data[index];
 }
 
+void matrix_free(matrix_t mat) {
+    free(mat.data);
+}
+
 int matrix_add_assign(matrix_t self, matrix_t other) {
     if(!(self.rows == other.rows && self.cols == other.cols)) {
         return DIM_MISMATCH;
@@ -93,6 +97,29 @@ matrix_t matrix_mul_scalar(matrix_t mat, double scalar) {
     return output;
 }
 
-void matrix_free(matrix_t mat) {
-    free(mat.data);
+int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output) {
+    if(mat1.cols != mat2.rows) {
+        return DIM_MISMATCH;
+    }
+
+    *output = matrix_new(mat1.rows, mat2.cols);
+    if(NULL == output->data) {
+        return BAD_ALLOC;
+    }
+
+    size_t idx = 0;
+    for(size_t i = 0; i < output->rows; i++) {
+        for(size_t j = 0; j < output->cols; j++) {
+            double sum = 0;
+            for(size_t k = 0; k < mat1.cols; k++) {
+                sum += matrix_get(mat1, i, k) * matrix_get(mat2, k, j);
+            }
+
+            output->data[idx] = sum;
+
+            idx++;
+        }
+    }
+
+    return 0;
 }

@@ -46,7 +46,7 @@ double matrix_get(matrix_t mat, size_t i, size_t j);
 void matrix_free(matrix_t mat);
 
 /*
- * ARITHMETIC METHODS
+ * BASIC ARITHMETIC METHODS
  */
 
 // Adds the second matrix into the first. The return value is `0` only if
@@ -72,5 +72,18 @@ void matrix_mul_scalar_assign(matrix_t mat, double scalar);
 // In case of allocation failure, the output matrix has a `data` field of
 // `NULL`.
 matrix_t matrix_mul_scalar(matrix_t mat, double scalar);
+
+/*
+ * MATRIX MULTIPLICATION
+ */
+
+// Multiplies the given matrices to produce a new matrix, stored in `output`.
+// Precondition: `mat1.cols == mat2.rows`.
+//
+// Errors:
+//
+// In case of dimension mismatch, the return value is `DIM_MISMATCH`.
+// In case of allocation failure, the return value is `BAD_ALLOC`.
+int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output);
 
 #endif // MATRIX_H

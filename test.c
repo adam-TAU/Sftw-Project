@@ -6,7 +6,7 @@
 
 #define EPSILON 0.000001
 
-bool eq_loose(const double *data1, const double *data2, size_t count) {
+static bool eq_loose(const double *data1, const double *data2, size_t count) {
     size_t i;
     for(i = 0; i < count; i++) {
         if(fabs(data1[i] - data2[i]) >= EPSILON) {
@@ -17,7 +17,7 @@ bool eq_loose(const double *data1, const double *data2, size_t count) {
     return true;
 }
 
-bool simple_add() {
+static bool simple_add(void) {
     double data1[6] = {1, 2, 3, 4, 5, 6};
     double data2[6] = {2, 3, 4, 5, 6, 7};
     double data3[6] = {3, 5, 7, 9, 11, 13};
@@ -54,7 +54,7 @@ error:
     return false;
 }
 
-bool simple_mul() {
+static bool simple_mul(void) {
     double data1[6] = {1, 2, 3, 4, 5, 6};
     double data2[6] = {2, 3, 4, 5, 6, 7};
     double data3[4] = {28, 34, 64, 79};
@@ -92,7 +92,7 @@ error:
     return false;
 }
 
-int main() {
+int main(void) {
     size_t i, test_len = 2;
     int (*tests[])(void) = {simple_add, simple_mul};
 

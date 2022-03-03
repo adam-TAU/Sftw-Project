@@ -69,6 +69,12 @@ void matrix_free(matrix_t mat) {
     free(mat.data);
 }
 
+void matrix_free_safe(matrix_t mat) {
+    if(NULL != mat.data) {
+        matrix_free(mat);
+    }
+}
+
 int matrix_add_assign(matrix_t self, matrix_t other) {
     size_t idx;
     if(!(self.rows == other.rows && self.cols == other.cols)) {

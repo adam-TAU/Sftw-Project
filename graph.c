@@ -1,9 +1,4 @@
-#include <stdlib.h>
-#include <math.h>
 #include "graph.h"
-
-
-
 
 
 

@@ -1,2 +1,6 @@
 test
 spkmeans
+build
+dist
+*.egg*
+*.so

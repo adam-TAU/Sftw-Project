@@ -42,6 +42,11 @@ size_t matrix_calc_index(matrix_t mat, size_t i, size_t j);
    This function calls `matrix_calc_index`. */
 double matrix_get(matrix_t mat, size_t i, size_t j);
 
+/* Set the desired element from the given matrix.
+
+   This function calls `matrix_calc_index`. */
+void matrix_set(matrix_t mat, size_t i, size_t j, double val);
+
 /* Pretty-prints the given matrix. */
 void matrix_print(matrix_t mat);
 
@@ -91,5 +96,15 @@ matrix_t matrix_mul_scalar(matrix_t mat, double scalar);
    In case of dimension mismatch, the return value is `DIM_MISMATCH`.
    In case of allocation failure, the return value is `BAD_ALLOC`. */
 int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output);
+
+
+/* Multiplies the given matrices to produce a new matrix, and stores it into <mat1>.
+   Precondition: `mat1.cols == mat1.rows == mat2.rows == mat2.cols`.
+
+   Errors:
+
+   In case of dimension mismatch, the return value is `DIM_MISMATCH`.
+   In case of allocation failure, the return value is `BAD_ALLOC`. */
+int matrix_mul_assign(matrix_t mat1, matrix_t mat2);
 
 #endif /* MATRIX_H */

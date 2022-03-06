@@ -51,6 +51,13 @@ double matrix_get(matrix_t mat, size_t i, size_t j) {
     return mat.data[index];
 }
 
+
+void matrix_set(matrix_t mat, size_t i, size_t j, double val) {
+    size_t index = matrix_calc_index(mat, i, j);
+    mat.data[index] = val;
+}
+
+
 void matrix_print(matrix_t mat) {
     size_t idx, row, col;
     printf("matrix(%lu x %lu):\n", mat.rows, mat.cols);
@@ -155,4 +162,23 @@ int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output) {
     }
 
     return 0;
+}
+
+
+
+int matrix_mul_assign(matrix_t mat1, matrix_t mat2) {
+	int singal; 
+    matrix_t* output; size_t idx;
+	singal = matrix_mul(mat1, mat2, output);
+	
+	if (output.len == mat1.len) {
+		for(idx = 0; idx < output->len; idx++) {
+		    mat1.data[idx] = output->data[idx];
+		}
+	} else {
+		signal = 1;
+	}
+	
+	matrix_free_safe(*output);
+	return signal;
 }

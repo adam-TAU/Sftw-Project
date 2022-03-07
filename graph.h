@@ -6,11 +6,6 @@
 #include <math.h>
 #include "matrix.h"
 
-/* Define a structure that will hold a vector's coordinates. This will also be used int the spkmeans.c mechanism */
-typedef struct {
-    double *data;
-} dpoint_t;
-
 
 /* Find the Euclidean norm of two vectors of the same dim x 1 */
 double euclidean_norm(dpoint_t v1, dpoint_t v2, size_t dim);

@@ -28,6 +28,22 @@ matrix_t matrix_clone(matrix_t mat) {
     return cloned;
 }
 
+
+matrix_t matrix_build(dpoint_t* vectors, num_vectors, dim) {
+	size_t i, j;
+	matrix_t output;
+	
+	output = matrix_new(num_vectors, dim);
+	for (i = 0; i < output.rows; i++) {
+		for (j = 0; j < output.cols; j++) {
+			matrix_set(output, i, j, vectors[i].data[j]); 
+		}
+	}
+	
+	return output;
+}
+
+
 size_t matrix_calc_index(matrix_t mat, size_t i, size_t j) {
     if(i >= mat.rows) {
         printf("invalid index for matrix: the number of rows is %lu but the "

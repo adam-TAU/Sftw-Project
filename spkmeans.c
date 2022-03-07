@@ -79,15 +79,9 @@ void print_jacobi_output(dpoint_t vectors[]) {
 	jacobi_output output;
 	
 	assert_other(num_data == dim);
-	jacobi_input = matrix_new(num_data, dim);
-	
-	for (i = 0; i < num_data; i++) {
-		for (j = 0; j < dim; j++) {
-			matrix_set(jacobi_input, i, j, vectors[i].data[j]); 
-		}
-	}
+	jacobi_input = matrix_build(vectors, num_data, dim);
 
-	output = eigen_jacobi(jacobi_input);
+	output = eigen_jacobi(jacobi_input, 0);
 	eigen_print_jacobi(output);
 	
 	matrix_free_safe(jacobi_input);
@@ -95,7 +89,29 @@ void print_jacobi_output(dpoint_t vectors[]) {
 }
 
 void print_spectral_kmeans(dpoint_t vectors[], size_t K) {
-	printf("nothing %li %f\n", K, vectors[0].data[0]);
+	matrix_t L_norm, T_points;
+	jacobi_ouput jacobi_out;
+	size_t i, j;
+	
+	L_norm = graph_normalized_laplacian(vectors, dim);
+	jacobi_out = eigen_jacobi(L_norm, K);
+	dim = jacobi_out.K_eigen_vectors.cols;
+	num_data = jacobi_out.K_eigen_vectors.rows;
+	
+	T_points = matrix_new(jacobi_out.K_eigen_vectors.rows, jacobi_out.K_eigen_vectors.cols);
+	for (i = 0; i < T_points.rows; i++) {
+		double norm;
+		for (j = 0; j < T_points.cols; j++) {
+			norm += pow( matrix_get(T_points, i, j), 2 );
+		}
+		norm = pow( norm, 1/2 );
+		
+		for (j = 0; j < T_points.cols; j++) {
+			matrix_set(T_points, i, j, matrix_get(T_points, i, j) / norm );
+		}
+	}
+	
+	/* treat T_points as points of R^k. Cluster them into K clusters. */
 }
 
 

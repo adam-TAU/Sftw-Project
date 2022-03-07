@@ -12,6 +12,13 @@ typedef struct matrix {
     size_t len;
 } matrix_t;
 
+
+/* Define a structure that will hold a vector's coordinates. This will also be used int the spkmeans.c mechanism */
+typedef struct {
+    double *data;
+} dpoint_t;
+
+
 /*
  * BASIC METHODS
  */
@@ -28,6 +35,10 @@ matrix_t matrix_new(size_t rows, size_t cols);
    In case of allocation failure, the output matrix has a `data` field of
    `NULL`. */
 matrix_t matrix_clone(matrix_t mat);
+
+
+/* Builds a matrix out of an already existing dataset of <dpoint_t>s */
+matrix_t matrix_build(dpoint_t vectors, rows, cols);
 
 /* Calculates the index of the desired element for use with the matrix's
    inner `data` field. This is mainly used for optimization.

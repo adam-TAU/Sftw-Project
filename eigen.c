@@ -23,7 +23,7 @@ void eigen_print_jacobi(jacobi_output out) {
 
 
 
-jacobi_output eigen_jacobi(matrix_t mat) {
+jacobi_output eigen_jacobi(matrix_t mat, size_t K) {
 	matrix_t prev, next, P_rotation, P_rotation_t, P_multiplication;
 	jacobi_output jacobi_output;
 
@@ -45,7 +45,7 @@ jacobi_output eigen_jacobi(matrix_t mat) {
 	} while (eigen_distance_of_squared_off(prev, next) <= epsilon);
 	
 	/* Simply sort the the eigen vectors and eigen values */
-	jacobi_output = eigen_format_eigen_vectors(P_multiplication, next, P_multiplication.cols);
+	jacobi_output = eigen_format_eigen_vectors(P_multiplication, next, (K == 0) ? P_multiplication.cols : K);
 	
 	matrix_free_safe(prev);
 	matrix_free_safe(next);
@@ -58,10 +58,9 @@ jacobi_output eigen_jacobi(matrix_t mat) {
 
 
 jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t K) {
-	matrix_t U_eigen_vectors;
 	size_t i, j;
 	eigen* sorted_eigen_values;
-	size_t eigen_col;
+	matrix_t U_eigen_vectors;
 	jacobi_output result;
 	
 	/* find K */
@@ -73,7 +72,7 @@ jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eige
 	/* Form a matrix with the K-first eigen values */
 	U_eigen_vectors = matrix_new(mat_vectors.rows, K);
 	for (j = 0; j < K; j++) {
-		eigen_col = sorted_eigen_values[j].col;
+		size_t eigen_col = sorted_eigen_values[j].col;
 		
 		for (i = 0; i < U_eigen_vectors.rows; i++) {
 			matrix_set(U_eigen_vectors, i, j, matrix_get(mat_vectors, i, eigen_col) ); 

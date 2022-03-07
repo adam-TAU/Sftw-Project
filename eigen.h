@@ -48,7 +48,7 @@ void eigen_print_jacobi(jacobi_output out);
  * Pre-Conditions:
  * 		<mat> must be a "real" matrix
  * 		<mat> must be a "symmetric" matrix */
-jacobi_output eigen_jacobi(matrix_t mat);
+jacobi_output eigen_jacobi(matrix_t mat, size_t K);
 
 /* Given the diagonal matrix <mat>, pull out its eigen values - sort them, determine K (the amount of eigen vectors we want), and form an eigen-vectors matrix.
  * This part might use the eigen heuristic gap if it was given an invalid K as an argument */

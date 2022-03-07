@@ -10,8 +10,8 @@ setup(
         ext_modules=[
             Extension(
                 'spkmeans',
-                ['spkmeansmodule.c', 'spkmeans.c', 'matrix.c', 'graph.c', 'eigen.c'],
-                depends = ['spkmeans.h', 'matrix.h', 'graph.h', 'eigen.h'],
+                ['spkmeansmodule.c', 'spkmeans.c', 'spkmeans_goals.c', 'matrix.c', 'graph.c', 'eigen.c'],
+                depends = ['spkmeans.h', 'spkmeans_goals.h', 'matrix.h', 'graph.h', 'eigen.h'],
                 ),
             ]
 )

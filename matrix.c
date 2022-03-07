@@ -58,7 +58,7 @@ void matrix_set(matrix_t mat, size_t i, size_t j, double val) {
 }
 
 
-void matrix_print(matrix_t mat) {
+void matrix_petty_print(matrix_t mat) {
     size_t idx, row, col;
     printf("matrix(%lu x %lu):\n", mat.rows, mat.cols);
 
@@ -71,6 +71,30 @@ void matrix_print(matrix_t mat) {
         puts("");
     }
 }
+
+
+void matrix_rows_print(matrix_t mat) {
+	size_t idx, row, col;
+	
+    idx = 0;
+    for(row = 0; row < mat.rows; row++) {
+        for(col = 0; col < mat.cols; col++) {
+            printf("%.4f ", mat.data[idx]);
+            idx++;
+        }
+        puts("");
+    }
+}
+
+
+void matrix_cols_print(matrix_t mat) {
+	matrix_t transposed;
+	
+	transposed = matrix_transpose(mat);
+	matrix_rows_print(transposed);
+	matrix_free_safe(transposed);
+}
+
 
 void matrix_free(matrix_t mat) {
     free(mat.data);

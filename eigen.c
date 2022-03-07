@@ -8,55 +8,66 @@
 
 
 
-matrix_t eigen_jacobi(matrix_t mat, size_t K) {
-	matrix_t prev, next, P_rotation, P_rotation_t, P_multiplication, U_output;
-	
-	P_multiplication = matrix_identity_matrix(mat.rows);
-	next = matrix_clone(mat);
+jacobi_output eigen_jacobi(matrix_t L_norm) {
+	matrix_t L_norm_prev, L_norm_next, P_rotation, P_rotation_t, P_multiplication;
+	jacobi_output L_norm_jacobi_output;
+
+	P_multiplication = matrix_identity_matrix(L_norm.rows);
+	L_norm_next = matrix_clone(L_norm);
 	
 	do {
-		matrix_free_safe(prev);
-		prev = next;
+		matrix_free_safe(L_norm_prev);
+		L_norm_prev = L_norm_next;
 		
-		P_rotation = eigen_build_rotation_matrix(prev);
+		P_rotation = eigen_build_rotation_matrix(L_norm_prev);
 		P_rotation_t = matrix_transpose(P_rotation);
 		matrix_mul_assign(P_multiplication, P_rotation);
 
-		matrix_mul(P_rotation_t, prev, &next);
-		matrix_mul_assign(next, P_rotation);
-				
-	} while (eigen_distance_of_squared_off(prev, next) <= epsilon);
+		matrix_mul(P_rotation_t, L_norm_prev, &L_norm_next);
+		matrix_mul_assign(L_norm_next, P_rotation);
+		
+		matrix_free_safe(P_rotation);
+	} while (eigen_distance_of_squared_off(L_norm_prev, L_norm_next) <= epsilon);
 	
-	matrix_free_safe(prev);
-	U_output = eigen_calc_eigen_vectors(next, K);
-	return U_output;
+	/* Simply sort the the eigen vectors and eigen values */
+	L_norm_jacobi_output = eigen_format_eigen_vectors(P_multiplication, L_norm_next, P_multiplication.cols);
+	
+	matrix_free_safe(L_norm_prev);
+	matrix_free_safe(L_norm_next);
+	matrix_free_safe(P_rotation);
+	matrix_free_safe(P_multiplication);
+	
+	return L_norm_jacobi_output;
 }
 
 
 
-matrix_t eigen_calc_eigen_vectors(matrix_t mat, size_t K) {
-	matrix_t U_output;
+jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t K) {
+	matrix_t U_eigen_vectors;
 	size_t i, j;
 	eigen* sorted_eigen_values;
 	size_t eigen_col;
+	jacobi_output result;
 	
 	/* find K */
-	sorted_eigen_values = eigen_extract_eigen_values(mat);
-	if (K == 0) { /* this tells us that K wasn't determined through the command line interface */
-		K = eigen_heuristic_gap(sorted_eigen_values, mat.rows);
+	sorted_eigen_values = eigen_extract_eigen_values(mat_eigens);
+	if (K == 0 || K > U_eigen_vectors.cols) { /* this tells us that K wasn't determined through the command line interface. also a safety mechanism */
+		K = eigen_heuristic_gap(sorted_eigen_values, mat_eigens.rows);
 	}
 	
 	/* Form a matrix with the K-first eigen values */
-	U_output = matrix_new(mat.rows, K);
+	U_eigen_vectors = matrix_new(mat_vectors.rows, K);
 	for (j = 0; j < K; j++) {
 		eigen_col = sorted_eigen_values[j].col;
 		
-		for (i = 0; i < U_output.rows; i++) {
-			matrix_set(U_output, i, j, matrix_get(mat, i, eigen_col) ); 
+		for (i = 0; i < U_eigen_vectors.rows; i++) {
+			matrix_set(U_eigen_vectors, i, j, matrix_get(mat_vectors, i, eigen_col) ); 
 		}
 	}
 	
-	return U_output;
+	result.K_eigen_vectors = U_eigen_vectors;
+	result.eigen_values = sorted_eigen_values;
+	return result;
 }
 
 

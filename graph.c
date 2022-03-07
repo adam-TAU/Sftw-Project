@@ -72,5 +72,8 @@ matrix_t graph_normalized_laplacian(double* input[], size_t dim) {
 	L_norm = I;
 	matrix_add(L_norm, MULT, &L_norm);
 	
+	matrix_free_safe(W);
+	matrix_free_safe(D);
+	matrix_free_safe(D);
 	return L_norm;
 }

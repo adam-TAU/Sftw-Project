@@ -28,15 +28,23 @@ typedef struct eigen_value {
 	size_t col;
 } eigen;
 
+/* Define a structure that will hold the output of the Jacobi algorithm. That includes the eigen values as well as the eigen_vectors matrix
+ * If K is desired in the output, you can just check that throught the amount of cols of K_eigen_vectors.
+ * K == K_eigen_vectors.cols */
+typedef struct jacobi_output {
+	matrix_t K_eigen_vectors;
+	eigen* eigen_values;
+} jacobi_output;
 
 /* Return the output of the Jacobi algorithm when applied to the matrix <mat>
  * Pre-Conditions:
  *		<mat> must be a symmetric matrix
  * 		<mat> must be a "real" matrix */
-matrix_t eigen_jacobi(matrix_t mat, size_t K);
+jacobi_output eigen_jacobi(matrix_t mat);
 
-/* Given the diagonal matrix <mat>, pull out its eigen values - determine K, and form an eigen-vectors matrix */
-matrix_t eigen_calc_eigen_vectors(matrix_t mat, size_t K);
+/* Given the diagonal matrix <mat>, pull out its eigen values - sort them, determine K (the amount of eigen vectors we want), and form an eigen-vectors matrix.
+ * This part might use the eigen heuristic gap if it was given an invalid K as an argument */
+jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t K);
 
 /* In case K wasn't given as an input, then try to determine it using the eigen heuristic gap.
  * Pre-Conditions:

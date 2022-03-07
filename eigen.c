@@ -8,7 +8,7 @@
 
 
 
-matrix_t eigen_jacobi(matrix_t mat) {
+matrix_t eigen_jacobi(matrix_t mat, int K) {
 	matrix_t prev, next, P_rotation, P_rotation_t, P_multiplication, U_output;
 	
 	P_multiplication = matrix_identity(mat.rows);
@@ -28,13 +28,13 @@ matrix_t eigen_jacobi(matrix_t mat) {
 	} while (eigen_distance_of_squared_off(prev, next) <= epsilon);
 	
 	matrix_free_safe(prev);
-	U_output = eigen_heuristic_gap(next);
+	U_output = eigen_calc_eigen_vectors(next, K);
 	return U_output;
 }
 
 
 
-size_t eigen_heuristic_gap(matrix_t mat) {
+matrix_t eigen_calc_eigen_vectors(matrix_t mat, int K) {
 	size_t K; matrix_t U_output;
 	size_t i, j;
 	double max_gap = -1;
@@ -43,13 +43,8 @@ size_t eigen_heuristic_gap(matrix_t mat) {
 	
 	/* find K */
 	sorted_eigen_values = eigen_extract_eigen_values(mat);
-	for (i = 0; i < floor( mat.rows/2 ); i++) {
-		double tmp;
-		tmp = fabs( sorted_eigen_values[i].value - sorted_eigen_values[i+1].value )
-		
-		if (tmp > max_gap) {
-			K = i + 1;
-		}
+	if (K < 0) {
+		K = eigen_heuristic_gap(sorted_eigen_values);
 	}
 	
 	/* Form a matrix with the K-first eigen values */
@@ -64,6 +59,19 @@ size_t eigen_heuristic_gap(matrix_t mat) {
 	
 	return U_output;
 }
+
+
+size_t eigen_heuristic_gap(eigen* sorted_eigen_values) {
+	for (i = 0; i < floor( mat.rows/2 ); i++) {
+		double tmp;
+		tmp = fabs( sorted_eigen_values[i].value - sorted_eigen_values[i+1].value )
+		
+		if (tmp > max_gap) {
+			K = i + 1;
+		}
+	}
+}
+
 
 
 eigen* eigen_extract_eigen_values(matrix_t mat) {

@@ -2,20 +2,25 @@
 #define SPKMEANS_H
 
 
-#define PY_SSIZE_T_CLEAN
-#include <Python.h>
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "matrix.h"
+#include "graph.h"
+#include "eigen.h"
+
+
+
+#define MAX_ITER 300
 #define EPSILON 0.001
 #define bool int
 #define true 1
 #define false 0
 
-typedef struct {
-    double *data;
-} dpoint_t;
+
+typedef int make_iso_compilers_happy;
 
 typedef struct {
     dpoint_t current_centroid;
@@ -26,20 +31,19 @@ typedef struct {
 
 
 
-void assert_other(bool condition);
-void initialize_sets(int*);
-void assign_to_closest(dpoint_t dpoint);
-double sqdist(dpoint_t p1, dpoint_t p2);
-void add_to_set(set_t *set, dpoint_t dpoint);
-int update_centroid(set_t *set);
-void init_datapoint(dpoint_t *dpoint);
-void free_datapoint(dpoint_t);
-void free_program(void);
-void converge(int max_iter);
-void parse_args(void);
+void print_weighted_adjacency_matrix(dpoint_t vectors[]);
+void print_diagonal_degree_matrix(dpoint_t vectors[]);
+void print_normalized_laplacian(dpoint_t vectors[]);
 
 
+/* A function to print the eigen values and eigen vectors of the given input. 
+ * Pre-Conditions:
+ * 		<mat> must be a "real" matrix
+ * 		<mat> must be a "symmetric" matrix */
+void print_jacobi_output(dpoint_t vectors[]);
 
+
+void print_spectral_kmeans(dpoint_t vectors[], size_t K);
 
 
 

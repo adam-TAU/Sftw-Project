@@ -51,10 +51,10 @@ void matrix_set(matrix_t mat, size_t i, size_t j, double val);
 void matrix_petty_print(matrix_t mat);
 
 /* Prints the given matrix's rows. */
-void matrix_rows_print(matrix_t mat);
+void matrix_print_rows(matrix_t mat);
 
 /* Prints the given matrix's columns. */
-void matrix_cols_print(matrix_t mat);
+void matrix_print_cols(matrix_t mat);
 
 /* Frees a given matrix that was allocated using any matrix method. */
 void matrix_free(matrix_t mat);

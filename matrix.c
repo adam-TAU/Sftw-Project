@@ -73,13 +73,14 @@ void matrix_petty_print(matrix_t mat) {
 }
 
 
-void matrix_rows_print(matrix_t mat) {
+void matrix_print_rows(matrix_t mat) {
 	size_t idx, row, col;
 	
     idx = 0;
     for(row = 0; row < mat.rows; row++) {
         for(col = 0; col < mat.cols; col++) {
-            printf("%.4f ", mat.data[idx]);
+            printf("%.4f", mat.data[idx]);
+            if (col < mat.cols - 1) printf(", ");
             idx++;
         }
         puts("");
@@ -87,11 +88,11 @@ void matrix_rows_print(matrix_t mat) {
 }
 
 
-void matrix_cols_print(matrix_t mat) {
+void matrix_print_cols(matrix_t mat) {
 	matrix_t transposed;
 	
 	transposed = matrix_transpose(mat);
-	matrix_rows_print(transposed);
+	matrix_print_rows(transposed);
 	matrix_free_safe(transposed);
 }
 

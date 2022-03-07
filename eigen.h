@@ -2,6 +2,7 @@
 #define EIGEN_H
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #include "matrix.h"
 
@@ -40,10 +41,13 @@ typedef struct jacobi_output {
 /* Free a jacobi output - safely! */
 void eigen_free_jacobi_safe(jacobi_output out);
 
+/* Print the output of the jacobi algorithm */
+void eigen_print_jacobi(jacobi_output out);
+
 /* Return the output of the Jacobi algorithm when applied to the matrix <mat>
  * Pre-Conditions:
- *		<mat> must be a symmetric matrix
- * 		<mat> must be a "real" matrix */
+ * 		<mat> must be a "real" matrix
+ * 		<mat> must be a "symmetric" matrix */
 jacobi_output eigen_jacobi(matrix_t mat);
 
 /* Given the diagonal matrix <mat>, pull out its eigen values - sort them, determine K (the amount of eigen vectors we want), and form an eigen-vectors matrix.

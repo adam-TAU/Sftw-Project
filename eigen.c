@@ -9,38 +9,50 @@ void eigen_free_jacobi_safe(jacobi_output out) {
 }
 
 
+void eigen_print_jacobi(jacobi_output out) {
+	size_t i;
+	
+	for (i = 0; i < out.K_eigen_vectors.cols; i++) {
+		printf("%.4f", out.eigen_values[i].value);
+		if (i < out.K_eigen_vectors.cols - 1) printf(", ");
+	}
+	
+	puts("");
+	matrix_print_cols(out.K_eigen_vectors);
+}
 
 
-jacobi_output eigen_jacobi(matrix_t L_norm) {
-	matrix_t L_norm_prev, L_norm_next, P_rotation, P_rotation_t, P_multiplication;
-	jacobi_output L_norm_jacobi_output;
 
-	P_multiplication = matrix_identity_matrix(L_norm.rows);
-	L_norm_next = matrix_clone(L_norm);
+jacobi_output eigen_jacobi(matrix_t mat) {
+	matrix_t prev, next, P_rotation, P_rotation_t, P_multiplication;
+	jacobi_output jacobi_output;
+
+	P_multiplication = matrix_identity_matrix(mat.rows);
+	next = matrix_clone(mat);
 	
 	do {
-		matrix_free_safe(L_norm_prev);
-		L_norm_prev = L_norm_next;
+		matrix_free_safe(prev);
+		prev = next;
 		
-		P_rotation = eigen_build_rotation_matrix(L_norm_prev);
+		P_rotation = eigen_build_rotation_matrix(prev);
 		P_rotation_t = matrix_transpose(P_rotation);
 		matrix_mul_assign(P_multiplication, P_rotation);
 
-		matrix_mul(P_rotation_t, L_norm_prev, &L_norm_next);
-		matrix_mul_assign(L_norm_next, P_rotation);
+		matrix_mul(P_rotation_t, prev, &next);
+		matrix_mul_assign(next, P_rotation);
 		
 		matrix_free_safe(P_rotation);
-	} while (eigen_distance_of_squared_off(L_norm_prev, L_norm_next) <= epsilon);
+	} while (eigen_distance_of_squared_off(prev, next) <= epsilon);
 	
 	/* Simply sort the the eigen vectors and eigen values */
-	L_norm_jacobi_output = eigen_format_eigen_vectors(P_multiplication, L_norm_next, P_multiplication.cols);
+	jacobi_output = eigen_format_eigen_vectors(P_multiplication, next, P_multiplication.cols);
 	
-	matrix_free_safe(L_norm_prev);
-	matrix_free_safe(L_norm_next);
+	matrix_free_safe(prev);
+	matrix_free_safe(next);
 	matrix_free_safe(P_rotation);
 	matrix_free_safe(P_multiplication);
 	
-	return L_norm_jacobi_output;
+	return jacobi_output;
 }
 
 
@@ -75,7 +87,7 @@ jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eige
 
 
 size_t eigen_heuristic_gap(eigen* sorted_eigen_values, size_t rows) {
-	size_t i, K;
+	size_t i, K = rows;
 	double tmp;
 	double max_gap = -1;
 	
@@ -157,7 +169,7 @@ double eigen_distance_of_squared_off(matrix_t mat1, matrix_t mat2) {
 
 
 double eigen_sum_squared_off(matrix_t mat) {
-	double sum;
+	double sum = 0.0;
 	size_t i, j;
 	
 	for (i = 0; i < mat.rows; i++) {

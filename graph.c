@@ -2,12 +2,12 @@
 
 
 
-double euclidean_norm(double v1[], double v2[], size_t dim) {
+double euclidean_norm(dpoint_t v1, dpoint_t v2, size_t dim) {
 	size_t i;
 	double sum = 0.0;
 	
 	for (i = 0; i < dim; i++) {
-		dim += pow((v1[i] - v2[i]), 2);
+		dim += pow((v1.data[i] - v2.data[i]), 2);
 	}	
 	
 	return pow(sum, 0.5);
@@ -15,7 +15,7 @@ double euclidean_norm(double v1[], double v2[], size_t dim) {
 
 
 
-matrix_t graph_adjacent_matrix(double* input[], size_t dim) {
+matrix_t graph_adjacent_matrix(dpoint_t input[], size_t dim) {
 	size_t i, j;
 	matrix_t output;
 	
@@ -41,7 +41,7 @@ matrix_t graph_diagonal_degree_matrix(matrix_t mat) {
 	dim = mat.rows;
 	output = matrix_new(mat.rows, mat.cols);
 	for (i = 0; i < dim; i++) {
-		double sum, result;
+		double sum = 0.0, result;
 		
 		for (j = 0; j < dim; j++) {
 			sum += matrix_get(mat, i, j);
@@ -58,7 +58,7 @@ matrix_t graph_diagonal_degree_matrix(matrix_t mat) {
 
 
 
-matrix_t graph_normalized_laplacian(double* input[], size_t dim) {
+matrix_t graph_normalized_laplacian(dpoint_t input[], size_t dim) {
 	matrix_t D, W, I, L_norm, MULT;
 	
 	I = matrix_identity_matrix(dim);
@@ -75,5 +75,6 @@ matrix_t graph_normalized_laplacian(double* input[], size_t dim) {
 	matrix_free_safe(W);
 	matrix_free_safe(D);
 	matrix_free_safe(D);
+	
 	return L_norm;
 }

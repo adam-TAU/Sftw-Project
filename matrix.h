@@ -38,7 +38,7 @@ matrix_t matrix_clone(matrix_t mat);
 
 
 /* Builds a matrix out of an already existing dataset of <dpoint_t>s */
-matrix_t matrix_build(dpoint_t vectors, rows, cols);
+matrix_t matrix_build(dpoint_t* vectors, size_t num_vectors, size_t dim);
 
 /* Calculates the index of the desired element for use with the matrix's
    inner `data` field. This is mainly used for optimization.

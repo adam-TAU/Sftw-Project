@@ -74,7 +74,6 @@ void print_normalized_laplacian(dpoint_t vectors[]) {
 }
 
 void print_jacobi_output(dpoint_t vectors[]) {
-	size_t i, j;
 	matrix_t jacobi_input;
 	jacobi_output output;
 	
@@ -90,7 +89,7 @@ void print_jacobi_output(dpoint_t vectors[]) {
 
 void print_spectral_kmeans(dpoint_t vectors[], size_t K) {
 	matrix_t L_norm, T_points;
-	jacobi_ouput jacobi_out;
+	jacobi_output jacobi_out;
 	size_t i, j;
 	
 	L_norm = graph_normalized_laplacian(vectors, dim);

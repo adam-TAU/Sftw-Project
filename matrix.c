@@ -29,7 +29,7 @@ matrix_t matrix_clone(matrix_t mat) {
 }
 
 
-matrix_t matrix_build(dpoint_t* vectors, num_vectors, dim) {
+matrix_t matrix_build(dpoint_t* vectors, size_t num_vectors, size_t dim) {
 	size_t i, j;
 	matrix_t output;
 	

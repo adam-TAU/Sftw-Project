@@ -15,19 +15,6 @@ double graph_euclidena_norm(double v1[], double v2[], int dim) {
 
 
 
-
-matrix_t graph_identity_matrix(size_t dim) {
-	int i;
-	matrix_t output;
-	output = matrix_new(rows, cols);
- 
- 	for (i = 0; i < dim; i++) {
-		matrix_set(output, i, i, 1);
- 	}
-}
-
-
-
 matrix_t graph_adjacent_matrix(double input[][], int dim) {
 	int i, j;
 	matrix_t output;
@@ -70,7 +57,7 @@ matrix_t graph_diagonal_degree_matrix(matrix_t mat) {
 matrix_t graph_normalized_laplacian(double input[][], int dim) {
 	matrix_t D, W, I, L_norm, MULT;
 	
-	I = graph_identity_matrix(dim);
+	I = matrix_identity_matrix(dim);
 	W = graph_adjacent_matrix(double input[][], dim);
 	D = graph_diagonal_degree_matrix(W);
 	

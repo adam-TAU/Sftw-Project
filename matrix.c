@@ -172,9 +172,8 @@ int matrix_mul_assign(matrix_t mat1, matrix_t mat2) {
 	singal = matrix_mul(mat1, mat2, output);
 	
 	if (output.len == mat1.len) {
-		for(idx = 0; idx < output->len; idx++) {
-		    mat1.data[idx] = output->data[idx];
-		}
+		matrix_free(mat1);
+		mat1.data = output.data;
 	} else {
 		signal = 1;
 	}
@@ -182,3 +181,40 @@ int matrix_mul_assign(matrix_t mat1, matrix_t mat2) {
 	matrix_free_safe(*output);
 	return signal;
 }
+
+
+matrix_t matrix_identity_matrix(size_t dim) {
+	int i;
+	matrix_t output;
+	output = matrix_new(rows, cols);
+ 
+ 	for (i = 0; i < dim; i++) {
+		matrix_set(output, i, i, 1);
+ 	}
+}
+
+
+
+matrix_t matrix_trasnpose(matrix_t mat) {
+	size_t i, j;
+	matrix_t output;
+	
+	output = matrix_new(mat.cols, mat.rows);
+	for (i = 0; i < output.rows; i++) {
+		for (j = 0; j < output.cols; j++) {
+			matrix_set(output, i, j, matrix_get(mat, j, i));
+		}
+	}
+	
+	return output;
+}
+
+
+
+
+
+
+
+
+
+

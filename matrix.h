@@ -107,4 +107,11 @@ int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output);
    In case of allocation failure, the return value is `BAD_ALLOC`. */
 int matrix_mul_assign(matrix_t mat1, matrix_t mat2);
 
+
+/* Create an Identity Matrix, with the dimensions of dim x dim */
+matrix_t matrix_identity_matrix(size_t dim);
+
+/* Given a matrix named <mat>, return <mat ^ t>: meaning its transposed matrix */
+matrix_t matrix_trasnpose(matrix_t mat);
+
 #endif /* MATRIX_H */

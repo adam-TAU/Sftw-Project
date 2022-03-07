@@ -11,10 +11,6 @@
 double graph_euclidena_norm(double v1[], double v2[], int dim);
 
 
-/* Create an Identity Matrix, with the dimensions of dim x dim */
-matrix_t graph_identity_matrix(size_t dim);
-
-
 /* Calculate and return the adjacent matrix of the given matrix <mat> */
 matrix_t graph_adjacent_matrix(double input[][], int dim);
 

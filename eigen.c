@@ -3,7 +3,10 @@
 
 
 
-
+void eigen_free_jacobi_safe(jacobi_output out) {
+	if (out.eigen_values != NULL) free(out.eigen_values);
+	matrix_free_safe(out.K_eigen_vectors);
+}
 
 
 

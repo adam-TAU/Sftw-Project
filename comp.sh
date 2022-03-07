@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# assembling and linking
 gcc -ansi -Wall -Wextra -Werror -pedantic-errors -c graph.c -lm -o graph.o
 gcc -ansi -Wall -Wextra -Werror -pedantic-errors -c matrix.c -lm -o matrix.o
 gcc -ansi -Wall -Wextra -Werror -pedantic-errors -c eigen.c -lm -o eigen.o

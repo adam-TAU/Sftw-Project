@@ -36,6 +36,10 @@ typedef struct jacobi_output {
 	eigen* eigen_values;
 } jacobi_output;
 
+
+/* Free a jacobi output - safely! */
+void eigen_free_jacobi_safe(jacobi_output out);
+
 /* Return the output of the Jacobi algorithm when applied to the matrix <mat>
  * Pre-Conditions:
  *		<mat> must be a symmetric matrix

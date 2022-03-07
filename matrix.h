@@ -112,6 +112,6 @@ int matrix_mul_assign(matrix_t mat1, matrix_t mat2);
 matrix_t matrix_identity_matrix(size_t dim);
 
 /* Given a matrix named <mat>, return <mat ^ t>: meaning its transposed matrix */
-matrix_t matrix_trasnpose(matrix_t mat);
+matrix_t matrix_transpose(matrix_t mat);
 
 #endif /* MATRIX_H */

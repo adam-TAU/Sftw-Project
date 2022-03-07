@@ -2,8 +2,8 @@
 
 
 
-double graph_euclidena_norm(double v1[], double v2[], int dim) {
-	int i;
+double euclidean_norm(double v1[], double v2[], size_t dim) {
+	size_t i;
 	double sum = 0.0;
 	
 	for (i = 0; i < dim; i++) {
@@ -15,24 +15,26 @@ double graph_euclidena_norm(double v1[], double v2[], int dim) {
 
 
 
-matrix_t graph_adjacent_matrix(double input[][], int dim) {
-	int i, j;
+matrix_t graph_adjacent_matrix(double* input[], size_t dim) {
+	size_t i, j;
 	matrix_t output;
 	
 	output = matrix_new(dim, dim);
 	for (i = 0; i < dim; i++) {
 		for (j = 0; j < dim; j++) {
 			double tmp;
-			tmp = exp( graph_euclidean_norm( input[i], input[j] ) / (-2));
-			matrix_set(output, tmp);
+			tmp = exp( euclidean_norm( input[i], input[j], dim ) / (-2));
+			matrix_set(output, i, j, tmp);
 		}
 	}
+	
+	return output;
 }
 
 
 
 matrix_t graph_diagonal_degree_matrix(matrix_t mat) {
-	int i, j;
+	size_t i, j;
 	size_t dim;
 	matrix_t output;
 	
@@ -48,17 +50,19 @@ matrix_t graph_diagonal_degree_matrix(matrix_t mat) {
 		result = (1 / sqrt(sum));
 		matrix_set(output, i, i, result);
 	}
+	
+	return output;
 }
 
 
 
 
 
-matrix_t graph_normalized_laplacian(double input[][], int dim) {
+matrix_t graph_normalized_laplacian(double* input[], size_t dim) {
 	matrix_t D, W, I, L_norm, MULT;
 	
 	I = matrix_identity_matrix(dim);
-	W = graph_adjacent_matrix(double input[][], dim);
+	W = graph_adjacent_matrix(input, dim);
 	D = graph_diagonal_degree_matrix(W);
 	
 	matrix_mul(D, W, &MULT);

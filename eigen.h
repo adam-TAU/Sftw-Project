@@ -33,15 +33,18 @@ typedef struct eigen_value {
  * Pre-Conditions:
  *		<mat> must be a symmetric matrix
  * 		<mat> must be a "real" matrix */
-matrix_t eigen_jacobi(matrix_t mat, int K);
+matrix_t eigen_jacobi(matrix_t mat, size_t K);
 
 /* Given the diagonal matrix <mat>, pull out its eigen values - determine K, and form an eigen-vectors matrix */
-matrix_t eigen_calc_eigen_vectors(matrix_t mat);
+matrix_t eigen_calc_eigen_vectors(matrix_t mat, size_t K);
 
 /* In case K wasn't given as an input, then try to determine it using the eigen heuristic gap.
  * Pre-Conditions:
  *		the given array of eigen values must be sorted by vaule (remember eigen is a struct) */
-size_t eigen_heuristic_gap(eigen* sorted_eigen_values);
+size_t eigen_heuristic_gap(eigen* sorted_eigen_values, size_t rows);
+
+/* Define a "compare" functino between two "eigen"-s. */
+int compare(const void* eigen1, const void* eigen2);
 
 /* Given an already diagonal matrix, extrat its eigen values and sort them by order. */
 eigen* eigen_extract_eigen_values(matrix_t mat);
@@ -66,9 +69,6 @@ void eigen_calc_c_s(double* c, double *s, matrix_t mat, matrix_ind loc);
  * (val >= 0) <-> ret == 1 */
 int sign(double val);
 
-
-/* Define a "compare" functino between two "eigen"-s. */
-int compare(const void* eigen1, const void* eigen2);
 
 
 #endif

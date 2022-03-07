@@ -8,10 +8,10 @@
 
 
 
-matrix_t eigen_jacobi(matrix_t mat, int K) {
+matrix_t eigen_jacobi(matrix_t mat, size_t K) {
 	matrix_t prev, next, P_rotation, P_rotation_t, P_multiplication, U_output;
 	
-	P_multiplication = matrix_identity(mat.rows);
+	P_multiplication = matrix_identity_matrix(mat.rows);
 	next = matrix_clone(mat);
 	
 	do {
@@ -34,17 +34,16 @@ matrix_t eigen_jacobi(matrix_t mat, int K) {
 
 
 
-matrix_t eigen_calc_eigen_vectors(matrix_t mat, int K) {
-	size_t K; matrix_t U_output;
+matrix_t eigen_calc_eigen_vectors(matrix_t mat, size_t K) {
+	matrix_t U_output;
 	size_t i, j;
-	double max_gap = -1;
 	eigen* sorted_eigen_values;
-	size_t eigen_col
+	size_t eigen_col;
 	
 	/* find K */
 	sorted_eigen_values = eigen_extract_eigen_values(mat);
-	if (K < 0) {
-		K = eigen_heuristic_gap(sorted_eigen_values);
+	if (K == 0) { /* this tells us that K wasn't determined through the command line interface */
+		K = eigen_heuristic_gap(sorted_eigen_values, mat.rows);
 	}
 	
 	/* Form a matrix with the K-first eigen values */
@@ -61,30 +60,44 @@ matrix_t eigen_calc_eigen_vectors(matrix_t mat, int K) {
 }
 
 
-size_t eigen_heuristic_gap(eigen* sorted_eigen_values) {
-	for (i = 0; i < floor( mat.rows/2 ); i++) {
-		double tmp;
-		tmp = fabs( sorted_eigen_values[i].value - sorted_eigen_values[i+1].value )
+size_t eigen_heuristic_gap(eigen* sorted_eigen_values, size_t rows) {
+	size_t i, K;
+	double tmp;
+	double max_gap = -1;
+	
+	for (i = 0; i < floor( rows/2 ); i++) {
+		tmp = fabs( sorted_eigen_values[i].value - sorted_eigen_values[i+1].value );
 		
 		if (tmp > max_gap) {
 			K = i + 1;
 		}
 	}
+	
+	return K;
+}
+
+
+
+int eigen_compare(const void* eigen1, const void* eigen2) {
+	if ( ((eigen*)eigen1)->value < ((eigen*)eigen2)->value ) return -1;
+	else if ( ((eigen*)eigen1)->value > ((eigen*)eigen2)->value ) return 1;
+	
+	return 0;
 }
 
 
 
 eigen* eigen_extract_eigen_values(matrix_t mat) {
-	int i;
+	size_t i;
 	eigen* eigen_values;
 	
 	eigen_values = malloc(mat.rows * sizeof(eigen));
 	for (i = 0; i < mat.cols; i++) {
-		eigen_values[i].data = matrix_get(mat, i, i);
+		eigen_values[i].value = matrix_get(mat, i, i);
 		eigen_values[i].col = i;
 	}
 	
-	qsort(eigen_values, mat.rows, sizeof(eigen), compare);
+	qsort(eigen_values, mat.rows, sizeof(eigen), eigen_compare);
 	return eigen_values;
 }
 
@@ -94,6 +107,10 @@ matrix_t eigen_build_rotation_matrix(matrix_t mat) {
 	matrix_ind loc;
 	double *c, *s;
 	matrix_t P_rotation;
+	
+	
+	c = malloc(sizeof(double));
+	s = malloc(sizeof(double));
 	
 	loc = eigen_ind_of_largest_offdiagonal(mat);
 	P_rotation = matrix_identity_matrix(mat.rows);
@@ -179,12 +196,7 @@ int sign(double val) {
 
 
 
-int eigen_compare(const void* eigen1, const void* eigen2) {
-	if ( ((eigen*)eigen1)->value < ((eigen*)eigen2)->value ) return -1;
-	else if ( ((eigen*)eigen1)->value > ((eigen*)eigen2)->value ) return 1;
-	
-	return 0;
-}
+
 
 
 

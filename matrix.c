@@ -167,35 +167,39 @@ int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output) {
 
 
 int matrix_mul_assign(matrix_t mat1, matrix_t mat2) {
-	int singal; 
-    matrix_t* output; size_t idx;
-	singal = matrix_mul(mat1, mat2, output);
+	int signal; 
+    matrix_t* output;
+    output = malloc(sizeof(matrix_t));
+	signal = matrix_mul(mat1, mat2, output);
 	
-	if (output.len == mat1.len) {
+	if (output->len == mat1.len) {
 		matrix_free(mat1);
-		mat1.data = output.data;
+		mat1.data = output->data;
 	} else {
 		signal = 1;
 	}
 	
 	matrix_free_safe(*output);
+	free(output);
 	return signal;
 }
 
 
 matrix_t matrix_identity_matrix(size_t dim) {
-	int i;
+	size_t i;
 	matrix_t output;
-	output = matrix_new(rows, cols);
+	output = matrix_new(dim, dim);
  
  	for (i = 0; i < dim; i++) {
 		matrix_set(output, i, i, 1);
  	}
+ 	
+ 	return output;
 }
 
 
 
-matrix_t matrix_trasnpose(matrix_t mat) {
+matrix_t matrix_transpose(matrix_t mat) {
 	size_t i, j;
 	matrix_t output;
 	

@@ -47,12 +47,14 @@ void eigen_print_jacobi(jacobi_output out);
 /* Return the output of the Jacobi algorithm when applied to the matrix <mat>
  * Pre-Conditions:
  * 		<mat> must be a "real" matrix
- * 		<mat> must be a "symmetric" matrix */
-jacobi_output eigen_jacobi(matrix_t mat, size_t K);
+ * 		<mat> must be a "symmetric" matrix.
+ * If sort equals <true>, then the first K eigen vectors and values will be returned. Else, they would be random (unless K is equal to the number of eigen values) */
+jacobi_output eigen_jacobi(matrix_t mat, size_t K, bool sort);
 
 /* Given the diagonal matrix <mat>, pull out its eigen values - sort them, determine K (the amount of eigen vectors we want), and form an eigen-vectors matrix.
- * This part might use the eigen heuristic gap if it was given an invalid K as an argument */
-jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t K);
+ * This part might use the eigen heuristic gap if it was given an invalid K as an argument.
+ * If sort equals <true>, then the first K eigen vectors and values will be returned. Else, they would be random (unless K is equal to the number of eigen values) */
+jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t K, bool sort);
 
 /* In case K wasn't given as an input, then try to determine it using the eigen heuristic gap.
  * Pre-Conditions:
@@ -62,8 +64,12 @@ size_t eigen_heuristic_gap(eigen* sorted_eigen_values, size_t rows);
 /* Define a "compare" functino between two "eigen"-s. */
 int compare(const void* eigen1, const void* eigen2);
 
-/* Given an already diagonal matrix, extrat its eigen values and sort them by order. */
-eigen* eigen_extract_eigen_values(matrix_t mat);
+/* Given an already diagonal matrix, extrat its eigen values.
+ * If sort equals <true>, sort the eigen values.. */
+eigen* eigen_extract_eigen_values(matrix_t mat, bool sort);
+
+/* In the jacobi algorithm, this is the function that transforms A_tag (the next matrix in the recurssive algorithm), through the current A matrix */
+void eigen_update_jacobi_A_tag(matrix_t A_tag, matrix_t A);
 
 /* Given a symmetric matrix called <mat>, find the competent rotation matrix for it */
 matrix_t eigen_build_rotation_matrix(matrix_t mat);

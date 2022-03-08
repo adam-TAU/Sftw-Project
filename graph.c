@@ -66,12 +66,13 @@ matrix_t graph_normalized_laplacian(dpoint_t input[], size_t dim) {
 	D = graph_diagonal_degree_matrix(W);
 	
 	matrix_mul(D, W, &MULT);
-	matrix_mul_assign(MULT, D);
+	matrix_mul_assign(&MULT, D);
 	matrix_mul_scalar_assign(MULT, -1);
 	
 	L_norm = I;
 	matrix_add(L_norm, MULT, &L_norm);
 	
+	matrix_free_safe(MULT);
 	matrix_free_safe(W);
 	matrix_free_safe(D);
 	matrix_free_safe(D);

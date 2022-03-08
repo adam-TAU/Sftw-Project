@@ -121,7 +121,7 @@ static void print_kmeans(size_t* initial_centroids_indices) {
 	
 	for (i = 0; i < K; i++) {
 		printf("%li", initial_centroids_indices[i]);
-		if (i < K - 1) printf(", ");
+		if (i < K - 1) printf(",");
 	}
 	
 	puts("");
@@ -129,7 +129,7 @@ static void print_kmeans(size_t* initial_centroids_indices) {
 	for (i = 0; i < K; i++) {
 		for (j = 0; j < dim; j++) {
 			printf("%.4f", sets[i].current_centroid.data[j]);
-			if (j < dim - 1) printf(", ");
+			if (j < dim - 1) printf(",");
 		}
 		if (i < K - 1) puts("");
 	}
@@ -140,7 +140,7 @@ static void print_kmeans(size_t* initial_centroids_indices) {
 
 int main(int argc, char **argv) {
     char *infile;
-
+	
     parse_args(argc, argv, &infile);
     collect_data(infile);
     handle_goal(NULL);
@@ -243,6 +243,7 @@ static void collect_data(const char *filename) {
     size_t i;
 
     input = fopen(filename, "r");
+  
     assert_input(NULL != input);
     get_num_and_dim(input);
 
@@ -297,7 +298,7 @@ static void get_num_and_dim(FILE *file) {
  * output_file. */
 static void parse_args(int argc, char **argv, char **infile) {
 
-    assert_input(argc == 2);
+    assert_input(argc == 3);
 
     goal = argv[1];
     assert_input(! ( strcmp(goal, "wam") && strcmp(goal, "ddg") && strcmp(goal, "lnorm") && strcmp(goal, "jacobi") ) );

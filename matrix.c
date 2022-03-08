@@ -96,7 +96,7 @@ void matrix_print_rows(matrix_t mat) {
     for(row = 0; row < mat.rows; row++) {
         for(col = 0; col < mat.cols; col++) {
             printf("%.4f", mat.data[idx]);
-            if (col < mat.cols - 1) printf(", ");
+            if (col < mat.cols - 1) printf(",");
             idx++;
         }
         puts("");
@@ -207,21 +207,19 @@ int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output) {
 
 
 
-int matrix_mul_assign(matrix_t mat1, matrix_t mat2) {
+int matrix_mul_assign(matrix_t *mat1, matrix_t mat2) {
 	int signal; 
-    matrix_t* output;
-    output = malloc(sizeof(matrix_t));
-	signal = matrix_mul(mat1, mat2, output);
+    matrix_t output;
+
+	signal = matrix_mul(*mat1, mat2, &output);
 	
-	if (output->len == mat1.len) {
-		matrix_free(mat1);
-		mat1.data = output->data;
+	if (output.len == mat1->len) {
+		matrix_free_safe(*mat1);
+		mat1->data = output.data;
 	} else {
 		signal = 1;
 	}
 	
-	matrix_free_safe(*output);
-	free(output);
 	return signal;
 }
 

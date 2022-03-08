@@ -9,10 +9,6 @@
 
 #define MAX_ITER 300
 #define EPSILON 0.001
-#define bool int
-#define true 1
-#define false 0
-
 
 typedef int make_iso_compilers_happy;
 

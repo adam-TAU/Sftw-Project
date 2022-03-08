@@ -21,7 +21,7 @@ def main(K: int, goal: str, infile: str) -> None:
 		initial_centroids_indices = initialize_centroids(len(T_points[0]), T_points)
 		
 		# Perform the kmeans clustering algorith on the 
-		spkmeans.kmeans(T_points, len(T_points), len(T_points[0]), initial_centroids_indices, len(initial_centroids_indices)) 
+		spkmeans.kmeans_fit(T_points, len(T_points), len(T_points[0]), initial_centroids_indices, len(initial_centroids_indices)) 
    	
    	# In any other case that isn't a normalized spectral clustering - just perform the desired operation corresponding to the "goal" parameter
 	else:

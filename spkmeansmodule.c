@@ -15,7 +15,15 @@ static PyObject* kmeans(PyObject *self, PyObject *args);
 
 
 static PyObject* goal(PyObject *self, PyObject *args) {
-	matrix_t output; 
+	char* infile;
+	matrix_t output;
+	
+	/* Fetch the string of the infile */
+    if(!PyArg_ParseTuple(args, "s", &infile)) {
+		return 1;
+    }
+	 
+	 /* Perform the wanted goal's operation and return the result (if there's any) */
 	spkmeans_pass_goal_info_and_run(infile, &output);
 	
 	if (output.data == NULL) {
@@ -23,7 +31,6 @@ static PyObject* goal(PyObject *self, PyObject *args) {
 	} else {
 		/* Convert the output matrix into a list of lists */
 	}
-	
 }
 
 

@@ -8,12 +8,6 @@ import spkmeans
 
 
 def main(K: int, goal: str, infile: str) -> None:
-	# Preparing the datapoints from the input file
-	try:
-		df = pd.read_csv(infile, header=None)
-	except FileNotFoundError:
-		assert_valid_input(False)	
-	datapoints = df.values.tolist()
    	
    	# In case that we desire a normalized spectral clustering: 
    	if goal == "spk":
@@ -21,7 +15,7 @@ def main(K: int, goal: str, infile: str) -> None:
 		assert_valid_input(K < len(datapoints))
 		
 		# Fetch the matrix of points produced from the eigen vectors of the normalized graph laplacian matrix of the given vectors
-		T_points = spkmeans.goal(datapoints, len(datapoints), len(datapoints[0]), K)
+		T_points = spkmeans.goal(infile)
 		
 		# Initialize centroids picked by the Kmeans++ algorithm
 		initial_centroids_indices = initialize_centroids(len(T_points[0]), T_points)

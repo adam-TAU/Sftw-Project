@@ -61,18 +61,13 @@ set_t *sets = NULL;
 
 
 /********************** USED BY THE CPython INTERFACE ******************************/
-void spkmeans_pass_vectors_info_and_power(dpoint_t *datapoints_from_py, size_t dim_from_py, size_t num_data_from_py, size_t K_from_py, char* goal_from_py, matrix_t* output) {
-	datapoints = datapoints_from_py;
-	dim = dim_from_py;
-	num_data = num_data_from_py;
-	goal = goal_from_py;
-	K = K_from_py;
-	
+void spkmeans_pass_goal_info_and_run(char *infile, matrix_t *output) {
+	collect_data(infile);
 	handle_goal(output);
 }
 
 
-void spkmeans_pass_kmeans_info_and_power(dpoint_t *datapoints_from_py, size_t *initial_centroids_indices, size_t K_from_py, size_t dim_from_py, size_t num_data_from_py) {
+void spkmeans_pass_kmeans_info_and_run(dpoint_t *datapoints_from_py, size_t *initial_centroids_indices, size_t K_from_py, size_t dim_from_py, size_t num_data_from_py) {
 	datapoints = datapoints_from_py;
 	K = K_from_py;
 	dim = dim_from_py;
@@ -84,6 +79,7 @@ void spkmeans_pass_kmeans_info_and_power(dpoint_t *datapoints_from_py, size_t *i
 /*****************************************************************************/
 
 static void handle_goal(matrix_t *output) {
+
 	if ( !strcmp(goal, "wam") ) print_weighted_adjacency_matrix();
 	if ( !strcmp(goal, "ddg") ) print_diagonal_degree_matrix();
 	if ( !strcmp(goal, "lnorm") ) print_normalized_laplacian();

@@ -60,7 +60,7 @@ set_t *sets = NULL;
 
 
 /********************** USED BY THE CPython INTERFACE ******************************/
-void spkmeans_pass_vectors_info(dpoint_t *vectors_from_py, size_t vectors_dim_from_py, size_t vectors_amount_from_py, size_t K_from_py, char* goal_from_py, matrix_t* output) {
+void spkmeans_pass_vectors_info_and_power(dpoint_t *vectors_from_py, size_t vectors_dim_from_py, size_t vectors_amount_from_py, size_t K_from_py, char* goal_from_py, matrix_t* output) {
 	vectors = vectors_from_py;
 	vectors_dim = vectors_dim_from_py;
 	vectors_amount = vectors_amount_from_py;
@@ -71,7 +71,7 @@ void spkmeans_pass_vectors_info(dpoint_t *vectors_from_py, size_t vectors_dim_fr
 }
 
 
-void spkmeans_pass_kmeans_info(dpoint_t *datapoints_from_py, size_t K_from_py, size_t dim_from_py, size_t num_data_from_py) {
+void spkmeans_pass_kmeans_info_and_power(dpoint_t *datapoints_from_py, size_t K_from_py, size_t dim_from_py, size_t num_data_from_py) {
 	datapoints = datapoints_from_py;
 	K = K_from_py;
 	dim_of_data_to_cluster = dim_from_py;

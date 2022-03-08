@@ -2,9 +2,9 @@
 
 
 /* Global variables crucial for preforming the goals. They're defined by the spkmeans.c file, no matter the situation, hence the 'extern' type */
-extern size_t vectors_dim;
-extern size_t vectors_amount;
-extern dpoint_t *vectors;
+extern size_t dim;
+extern size_t num_data;
+extern dpoint_t *datapoints;
 
 extern void assert_other(int condition);
 
@@ -12,7 +12,7 @@ extern void assert_other(int condition);
 
 void print_weighted_adjacency_matrix() {
 	matrix_t output;
-	output = graph_adjacent_matrix(vectors, vectors_dim);
+	output = graph_adjacent_matrix(datapoints, dim);
 	
 	/* Printing and free-ing */
 	matrix_print_rows(output);
@@ -21,7 +21,7 @@ void print_weighted_adjacency_matrix() {
 
 void print_diagonal_degree_matrix() {
 	matrix_t WAM, output;
-	WAM = graph_adjacent_matrix(vectors, vectors_dim);
+	WAM = graph_adjacent_matrix(datapoints, dim);
 	output = graph_diagonal_degree_matrix(WAM);
 	
 	/* Printing and free-ing */
@@ -32,7 +32,7 @@ void print_diagonal_degree_matrix() {
 
 void print_normalized_laplacian() {
 	matrix_t output;
-	output = graph_normalized_laplacian(vectors, vectors_dim);
+	output = graph_normalized_laplacian(datapoints, dim);
 	
 	/* Printing and free-ing */
 	matrix_print_rows(output);
@@ -44,8 +44,8 @@ void print_jacobi_output() {
 	jacobi_output output;
 	
 	/* making sure that the given vectors' dataset represents a symmetric matrix (else jacobi isn't feasible) */
-	assert_other(vectors_amount == vectors_dim);
-	jacobi_input = matrix_build(vectors, vectors_amount, vectors_dim);
+	assert_other(num_data == dim);
+	jacobi_input = matrix_build(datapoints, num_data, dim);
 
 	output = eigen_jacobi(jacobi_input, 0);
 	
@@ -60,7 +60,7 @@ matrix_t get_T_of_spectral_kmeans(size_t K) {
 	jacobi_output jacobi_out;
 	size_t i, j;
 	
-	L_norm = graph_normalized_laplacian(vectors, vectors_dim);
+	L_norm = graph_normalized_laplacian(datapoints, dim);
 	jacobi_out = eigen_jacobi(L_norm, K);
 
 	

@@ -39,6 +39,6 @@ void spkmeans_pass_vectors_info_and_power(dpoint_t *vectors_from_py, size_t vect
  * 		2. K (amount of clusters)
  *		3. dim (dimension of each datapoint)
  * 		4. num_data (the amount of datapoints we have to cluster) */
-void spkmeans_pass_kmeans_info_and_power(dpoint_t *datapoints_from_py, size_t K_from_py, size_t dim_from_py, size_t num_data_from_py);
+void spkmeans_pass_kmeans_info_and_power(dpoint_t *datapoints_from_py, size_t *initial_centroids_indices, size_t K_from_py, size_t dim_from_py, size_t num_data_from_py);
 
 #endif

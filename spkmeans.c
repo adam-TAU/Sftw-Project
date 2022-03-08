@@ -8,11 +8,14 @@
 /******************************************************************************/
 
 static void handle_goal(matrix_t* output);
+static void handle_kmeans(size_t *initial_centroids_indices);
+static void print_kmeans(size_t* initial_centroids_indices);
+
 
 static void assert_input(bool condition);
 void assert_other(bool condition);
 static void collect_data(const char *filename);
-static void initialize_sets(void);
+static void initialize_sets(size_t *initial_centroids_indices);
 static void get_num_and_dim(FILE *file);
 static void parse_datapoint(FILE *file, dpoint_t *dpoint);
 static void assign_to_closest(dpoint_t dpoint);
@@ -23,6 +26,7 @@ static void parse_args(int argc, char **argv, char **infile);
 static void init_datapoint(dpoint_t *dpoint);
 static void free_datapoint(dpoint_t);
 static void free_program(void);
+
 
 /*****************************************************************************/
 
@@ -46,24 +50,21 @@ void assert_other(bool condition) {
 
 /*****************************************************************************/
 
-size_t vectors_dim;
-size_t vectors_amount;
-dpoint_t *vectors = NULL;
 char* goal;
-
-
 size_t K = 0;
-size_t dim_of_data_to_cluster = 0;
-size_t num_of_data_to_cluster = 0;
+
+size_t dim = 0;
+size_t num_data = 0;
 dpoint_t *datapoints = NULL;
+
 set_t *sets = NULL;
 
 
 /********************** USED BY THE CPython INTERFACE ******************************/
-void spkmeans_pass_vectors_info_and_power(dpoint_t *vectors_from_py, size_t vectors_dim_from_py, size_t vectors_amount_from_py, size_t K_from_py, char* goal_from_py, matrix_t* output) {
-	vectors = vectors_from_py;
-	vectors_dim = vectors_dim_from_py;
-	vectors_amount = vectors_amount_from_py;
+void spkmeans_pass_vectors_info_and_power(dpoint_t *datapoints_from_py, size_t dim_from_py, size_t num_data_from_py, size_t K_from_py, char* goal_from_py, matrix_t* output) {
+	datapoints = datapoints_from_py;
+	dim = dim_from_py;
+	num_data = num_data_from_py;
 	goal = goal_from_py;
 	K = K_from_py;
 	
@@ -71,11 +72,13 @@ void spkmeans_pass_vectors_info_and_power(dpoint_t *vectors_from_py, size_t vect
 }
 
 
-void spkmeans_pass_kmeans_info_and_power(dpoint_t *datapoints_from_py, size_t K_from_py, size_t dim_from_py, size_t num_data_from_py) {
+void spkmeans_pass_kmeans_info_and_power(dpoint_t *datapoints_from_py, size_t *initial_centroids_indices, size_t K_from_py, size_t dim_from_py, size_t num_data_from_py) {
 	datapoints = datapoints_from_py;
 	K = K_from_py;
-	dim_of_data_to_cluster = dim_from_py;
-	num_of_data_to_cluster = num_data_from_py;
+	dim = dim_from_py;
+	num_data = num_data_from_py;
+	
+	handle_kmeans(initial_centroids_indices);
 }
 
 /*****************************************************************************/
@@ -91,21 +94,13 @@ static void handle_goal(matrix_t *output) {
 }
 
 
-/*****************************************************************************/
+static void handle_kmeans(size_t *initial_centroids_indices) {
+	size_t i, iter, updated_centroids;
 
-int main(int argc, char **argv) {
-    char *infile;
-    size_t i, iter, updated_centroids;
-
-    parse_args(argc, argv, &infile);
-
-    collect_data(infile);
-    printf("dim_of_data_to_cluster = %li, N = %li\n", dim_of_data_to_cluster, num_of_data_to_cluster);
-
-    initialize_sets();
+	initialize_sets(initial_centroids_indices);
 
     for(iter = 0; iter < MAX_ITER; iter++) {
-        for(i = 0; i < num_of_data_to_cluster; i++) {
+        for(i = 0; i < num_data; i++) {
             assign_to_closest(datapoints[i]);
         }
 
@@ -119,7 +114,42 @@ int main(int argc, char **argv) {
         }
     }
 
+	/* Printing and free-ing */
+	print_kmeans(initial_centroids_indices);
     free_program();
+}
+
+
+static void print_kmeans(size_t* initial_centroids_indices) {
+	size_t i, j;
+	
+	for (i = 0; i < K; i++) {
+		printf("%li", initial_centroids_indices[i]);
+		if (i < K - 1) printf(", ");
+	}
+	
+	puts("");
+	
+	for (i = 0; i < K; i++) {
+		for (j = 0; j < dim; j++) {
+			printf("%.4f", sets[i].current_centroid.data[j]);
+			if (j < dim - 1) printf(", ");
+		}
+		if (i < K - 1) puts("");
+	}
+}
+
+
+/*****************************************************************************/
+
+int main(int argc, char **argv) {
+    char *infile;
+
+    parse_args(argc, argv, &infile);
+    collect_data(infile);
+    handle_goal(NULL);
+    
+     /* printf("dim = %li, N = %li\n", dim, num_data); */
     return 0;
 }
 
@@ -147,13 +177,13 @@ static int update_centroid(set_t *set) {
     double dist;
     size_t i;
 
-    for(i = 0; i < dim_of_data_to_cluster; i++) {
+    for(i = 0; i < dim; i++) {
         set->sum.data[i] /= (double)set->count;
     }
 
     dist = sqrt(sqdist(set->sum, set->current_centroid));
 
-    for(i = 0; i < dim_of_data_to_cluster; i++) {
+    for(i = 0; i < dim; i++) {
         set->current_centroid.data[i] = set->sum.data[i];
         set->sum.data[i] = 0.0;
     }
@@ -169,7 +199,7 @@ static double sqdist(dpoint_t p1, dpoint_t p2) {
     double dot = 0;
     size_t i;
 
-    for(i = 0; i < dim_of_data_to_cluster; i++) {
+    for(i = 0; i < dim; i++) {
         double temp = p1.data[i] - p2.data[i];
         dot += temp * temp;
     }
@@ -183,7 +213,7 @@ static void add_to_set(set_t *set, dpoint_t dpoint) {
     size_t i;
 
     set->count += 1;
-    for(i = 0; i < dim_of_data_to_cluster; i++) {
+    for(i = 0; i < dim; i++) {
         set->sum.data[i] += dpoint.data[i];
     }
 }
@@ -191,7 +221,7 @@ static void add_to_set(set_t *set, dpoint_t dpoint) {
 /* Initializes all of the sets, both allocating memory for the `sum` and
  * `current_centroid` properties and copying the data from the relevant
  * datapoint. */
-static void initialize_sets() {
+static void initialize_sets(size_t *initial_centroids_indices) {
     size_t i, j;
 
     sets = calloc(K, sizeof(*sets));
@@ -204,14 +234,14 @@ static void initialize_sets() {
         init_datapoint(&sets[i].current_centroid);
 
         /* Copy initial current_centroid from i-th datapoint */
-        for(j = 0; j < dim_of_data_to_cluster; j++) {
-            sets[i].current_centroid.data[j] = datapoints[i].data[j];
+        for(j = 0; j < dim; j++) {
+            sets[i].current_centroid.data[j] = datapoints[initial_centroids_indices[i]].data[j];
         }
     }
 }
 
 /* Given an input filename, gathers all of the datapoints stored in that file,
- * while also figuring out what `dim_of_data_to_cluster` and `num_of_data_to_cluster` are supposed to be. */
+ * while also figuring out what `dim` and `num_data` are supposed to be. */
 static void collect_data(const char *filename) {
     FILE *input;
     size_t i;
@@ -220,10 +250,10 @@ static void collect_data(const char *filename) {
     assert_input(NULL != input);
     get_num_and_dim(input);
 
-    datapoints = calloc(num_of_data_to_cluster, sizeof(*datapoints));
+    datapoints = calloc(num_data, sizeof(*datapoints));
     assert_other(NULL != datapoints);
 
-    for(i = 0; i < num_of_data_to_cluster; i++) {
+    for(i = 0; i < num_data; i++) {
         parse_datapoint(input, &datapoints[i]);
     }
 
@@ -237,7 +267,7 @@ static void parse_datapoint(FILE *file, dpoint_t *dpoint) {
 
     init_datapoint(dpoint);
 
-    for(i = 0; i < dim_of_data_to_cluster; i++) {
+    for(i = 0; i < dim; i++) {
         /* The following ',' is okay, because even if it isn't found parsing
            will be successful. */
         fscanf(file, "%lf,", &dpoint->data[i]);
@@ -247,21 +277,21 @@ static void parse_datapoint(FILE *file, dpoint_t *dpoint) {
     fscanf(file, "\n");
 }
 
-/* Determines `num_of_data_to_cluster` and `dim_of_data_to_cluster` from the current file by inspecting line
+/* Determines `num_data` and `dim` from the current file by inspecting line
  * structure and amount. */
 static void get_num_and_dim(FILE *file) {
     int c;
 
-    dim_of_data_to_cluster = 1; /* Starting with 1 because the amount of numbers is always 1 more
+    dim = 1; /* Starting with 1 because the amount of numbers is always 1 more
                 than the amount of commas. */
-    num_of_data_to_cluster = 0;
+    num_data = 0;
 
     rewind(file);
     while(EOF != (c = fgetc(file))) {
         if(c == '\n') {
-            num_of_data_to_cluster++;
-        } else if(c == ',' && num_of_data_to_cluster == 0) {
-            dim_of_data_to_cluster++;
+            num_data++;
+        } else if(c == ',' && num_data == 0) {
+            dim++;
         }
     }
     rewind(file);
@@ -282,9 +312,9 @@ static void parse_args(int argc, char **argv, char **infile) {
 /* Initializes a single datapoint - allocates enough space for it and sets all
  * the values to zero. */
 static void init_datapoint(dpoint_t *dpoint) {
-    assert_other(dim_of_data_to_cluster > 0);
+    assert_other(dim > 0);
 
-    dpoint->data = calloc(dim_of_data_to_cluster, sizeof(*dpoint->data));
+    dpoint->data = calloc(dim, sizeof(*dpoint->data));
     assert_other(NULL != dpoint->data);
 }
 
@@ -302,7 +332,7 @@ static void free_program() {
     size_t i;
 
     if(NULL != datapoints) {
-        for(i = 0; i < num_of_data_to_cluster; i++) {
+        for(i = 0; i < num_data; i++) {
             free_datapoint(datapoints[i]);
         }
         free(datapoints);

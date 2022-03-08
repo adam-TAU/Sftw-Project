@@ -25,7 +25,7 @@ def main(K: int, goal: str, infile: str) -> None:
    	
    	# In any other case that isn't a normalized spectral clustering - just perform the desired operation corresponding to the "goal" parameter
 	else:
-		spkmeans.goal(datapoints, len(datapoints), len(datapoints[0]), K)
+		spkmeans.goal(infile)
 
 
 

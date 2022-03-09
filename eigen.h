@@ -39,7 +39,7 @@ typedef struct jacobi_output {
 
 
 /* Free a jacobi output - safely! */
-void eigen_free_jacobi_safe(jacobi_output out);
+void eigen_free_jacobi_safe(jacobi_output *out);
 
 /* Print the output of the jacobi algorithm */
 void eigen_print_jacobi(jacobi_output out);

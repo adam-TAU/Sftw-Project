@@ -16,7 +16,7 @@ void print_weighted_adjacency_matrix() {
 	
 	/* Printing and free-ing */
 	matrix_print_rows(output);
-	matrix_free_safe(output);
+	matrix_free_safe(&output);
 }
 
 void print_diagonal_degree_matrix() {
@@ -26,8 +26,8 @@ void print_diagonal_degree_matrix() {
 	
 	/* Printing and free-ing */
 	matrix_print_rows(output);
-	matrix_free_safe(output);
-	matrix_free_safe(WAM);
+	matrix_free_safe(&output);
+	matrix_free_safe(&WAM);
 }
 
 void print_normalized_laplacian() {
@@ -36,7 +36,7 @@ void print_normalized_laplacian() {
 	
 	/* Printing and free-ing */
 	matrix_print_rows(output);
-	matrix_free_safe(output);
+	matrix_free_safe(&output);
 }
 
 void print_jacobi_output() {
@@ -51,8 +51,8 @@ void print_jacobi_output() {
 	
 	/* Printing and free-ing */
 	eigen_print_jacobi(output);
-	matrix_free_safe(jacobi_input);
-	eigen_free_jacobi_safe(output);
+	matrix_free_safe(&jacobi_input);
+	eigen_free_jacobi_safe(&output);
 }
 
 matrix_t get_T_of_spectral_kmeans(size_t K) {
@@ -78,8 +78,8 @@ matrix_t get_T_of_spectral_kmeans(size_t K) {
 	}
 	
 	/* Free-ing and Returning */
-	eigen_free_jacobi_safe(jacobi_out);
-	matrix_free_safe(L_norm);
+	eigen_free_jacobi_safe(&jacobi_out);
+	matrix_free_safe(&L_norm);
 	return T_points;
 }
 

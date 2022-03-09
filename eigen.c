@@ -3,9 +3,9 @@
 
 
 
-void eigen_free_jacobi_safe(jacobi_output out) {
-	if (out.eigen_values != NULL) free(out.eigen_values);
-	matrix_free_safe(out.K_eigen_vectors);
+void eigen_free_jacobi_safe(jacobi_output *out) {
+	if (out->eigen_values != NULL) free(out->eigen_values);
+	matrix_free_safe(&(out->K_eigen_vectors));
 }
 
 
@@ -35,14 +35,14 @@ jacobi_output eigen_jacobi(matrix_t mat, size_t K) {
 	do {
 		iterations++;
 	
-		/* matrix_free_safe(prev); UNDELETE */
+		matrix_free_safe(&A);
 		A = matrix_clone(A_tag);
 
 		P_rotation = eigen_build_rotation_matrix(A);
 		matrix_mul_assign(&P_multiplication, P_rotation);	
 				
 		eigen_update_jacobi_A_tag(A_tag, A);
-		matrix_free_safe(P_rotation);
+		matrix_free_safe(&P_rotation);
 		
 	} while (( eigen_distance_of_squared_off(A, A_tag) > epsilon ) && ( iterations <= 100 ));
 	
@@ -50,11 +50,11 @@ jacobi_output eigen_jacobi(matrix_t mat, size_t K) {
 	jacobi_output = eigen_format_eigen_vectors(P_multiplication, A_tag, K);
 	
 	if (K <= P_multiplication.cols) { /* In this case we had to create another matrix to hold the wanted eigen vectors */
-		matrix_free_safe(P_multiplication);
+		matrix_free_safe(&P_multiplication);
 	} 
 	
-	/* matrix_free_safe(A); UNDELETE
-	matrix_free_safe(A_tag); */
+	matrix_free_safe(&A);
+	matrix_free_safe(&A_tag);
 	return jacobi_output;
 }
 

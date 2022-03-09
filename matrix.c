@@ -109,7 +109,7 @@ void matrix_print_cols(matrix_t mat) {
 	
 	transposed = matrix_transpose(mat);
 	matrix_print_rows(transposed);
-	matrix_free_safe(transposed);
+	matrix_free_safe(&transposed);
 }
 
 
@@ -117,9 +117,9 @@ void matrix_free(matrix_t mat) {
     free(mat.data);
 }
 
-void matrix_free_safe(matrix_t mat) {
-    if(NULL != mat.data) {
-        matrix_free(mat);
+void matrix_free_safe(matrix_t *mat) {
+    if(NULL != mat->data) {
+        matrix_free(*mat);
     }
 }
 
@@ -214,7 +214,7 @@ int matrix_mul_assign(matrix_t *mat1, matrix_t mat2) {
 	signal = matrix_mul(*mat1, mat2, &output);
 	
 	if (output.len == mat1->len) {
-		matrix_free_safe(*mat1);
+		matrix_free_safe(mat1);
 		mat1->data = output.data;
 	} else {
 		signal = 1;

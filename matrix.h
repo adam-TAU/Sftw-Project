@@ -75,7 +75,7 @@ void matrix_print_cols(matrix_t mat);
 void matrix_free(matrix_t mat);
 
 /* Calls matrix_free on `mat`, but only if `mat.data` isn't `NULL`. */
-void matrix_free_safe(matrix_t mat);
+void matrix_free_safe(matrix_t *mat);
 
 /*
  * BASIC ARITHMETIC METHODS

@@ -44,12 +44,13 @@ jacobi_output eigen_jacobi(matrix_t mat, size_t K) {
 		eigen_update_jacobi_A_tag(A_tag, A);
 		matrix_free_safe(&P_rotation);
 		
-	} while (( eigen_distance_of_squared_off(A, A_tag) > epsilon ) && ( iterations <= 100 ));
+	} while (( eigen_distance_of_squared_offdiagonals(A, A_tag) > epsilon ) && ( iterations <= 100 ));
 	
 	/* Extract the eigen values and eigen vectors and insert them into an output format */
 	jacobi_output = eigen_format_eigen_vectors(P_multiplication, A_tag, K);
 	
-	if (K <= P_multiplication.cols) { /* In this case we had to create another matrix to hold the wanted eigen vectors */
+	/* In this case we had to create another matrix to hold the wanted eigen vectors */
+	if (K <= P_multiplication.cols) { 
 		matrix_free_safe(&P_multiplication);
 	} 
 	
@@ -221,7 +222,7 @@ matrix_t eigen_build_rotation_matrix(matrix_t mat) {
 
 
 
-double eigen_distance_of_squared_off(matrix_t mat1, matrix_t mat2) {
+double eigen_distance_of_squared_offdiagonals(matrix_t mat1, matrix_t mat2) {
 	return eigen_sum_squared_off(mat1) - eigen_sum_squared_off(mat2);
 }
 
@@ -250,13 +251,11 @@ matrix_ind eigen_ind_of_largest_offdiagonal(matrix_t mat) {
 	
 	for (i = 0; i < mat.rows; i++) {
 		for (j = i + 1; j < mat.cols; j++) { /* The jacobi algorithm is due to get a symmetric matrix, therefore we check only half of the off_diagonals */
-			if (i != j) {
-				double tmp = fabs(matrix_get(mat, i, j));
-				if (tmp > current_max) {
-					output.i = i;
-					output.j = j;
-					current_max = tmp;
-				}
+			double tmp = fabs(matrix_get(mat, i, j));
+			if (tmp > current_max) {
+				output.i = i;
+				output.j = j;
+				current_max = tmp;
 			}
 		}
 	}

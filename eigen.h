@@ -79,7 +79,7 @@ void eigen_update_jacobi_A_tag(matrix_t A_tag, matrix_t A);
 matrix_t eigen_build_rotation_matrix(matrix_t mat);
 
 /* Given two matrices, determine the distance between their sum of squared off-diagonals */
-double eigen_distance_of_squared_off(matrix_t mat1, matrix_t mat2);
+double eigen_distance_of_squared_offdiagonals(matrix_t mat1, matrix_t mat2);
 
 /* Given a matrix, return the sum of squared off-diagonals. */
 double eigen_sum_squared_off(matrix_t mat);

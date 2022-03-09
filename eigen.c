@@ -23,56 +23,60 @@ void eigen_print_jacobi(jacobi_output out) {
 
 
 
-jacobi_output eigen_jacobi(matrix_t mat, size_t K, bool sort) {
+jacobi_output eigen_jacobi(matrix_t mat, size_t K) {
 	size_t iterations = 0;
-	matrix_t prev, next, P_rotation, P_multiplication;
+	matrix_t A, A_tag, P_rotation, P_multiplication;
 	jacobi_output jacobi_output;
 
 	P_multiplication = matrix_identity_matrix(mat.rows);
-	next = matrix_clone(mat);
-	prev = matrix_clone(mat);
+	A_tag = matrix_clone(mat);
+	A = matrix_clone(mat);
 	
 	do {
+		iterations++;
+	
 		/* matrix_free_safe(prev); UNDELETE */
-		prev = matrix_clone(next);
+		A = matrix_clone(A_tag);
 
-		P_rotation = eigen_build_rotation_matrix(prev);
+		P_rotation = eigen_build_rotation_matrix(A);
 		matrix_mul_assign(&P_multiplication, P_rotation);	
 				
-		eigen_update_jacobi_A_tag(next, prev);
+		eigen_update_jacobi_A_tag(A_tag, A);
 		matrix_free_safe(P_rotation);
-		iterations++;
-	} while (( eigen_distance_of_squared_off(prev, next) > epsilon ) && ( iterations <= 100 ));
+		
+	} while (( eigen_distance_of_squared_off(A, A_tag) > epsilon ) && ( iterations <= 100 ));
 	
 	/* Extract the eigen values and eigen vectors and insert them into an output format */
-	jacobi_output = eigen_format_eigen_vectors(P_multiplication, next, (K > P_multiplication.cols) ? P_multiplication.cols : K, sort);
+	jacobi_output = eigen_format_eigen_vectors(P_multiplication, A_tag, K);
 	
-	if (sort || K < P_multiplication.cols) { /* In this case we had to create another matrix to hold the wanted eigen vectors */
+	if (K <= P_multiplication.cols) { /* In this case we had to create another matrix to hold the wanted eigen vectors */
 		matrix_free_safe(P_multiplication);
 	} 
 	
-	printf("here1\n");
-	/* matrix_free_safe(prev); UNDELETE
-	matrix_free_safe(next); */
-	printf("here2\n");
+	/* matrix_free_safe(A); UNDELETE
+	matrix_free_safe(A_tag); */
 	return jacobi_output;
 }
 
 
 
-jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t K, bool sort) {
+jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t K) {
 	size_t i, j;
 	eigen* sorted_eigen_values;
 	matrix_t U_eigen_vectors;
 	jacobi_output result;
 	
-	/* find K */
-	sorted_eigen_values = eigen_extract_eigen_values(mat_eigens, true);
-	if (K == 0 || K > U_eigen_vectors.cols) { /* this tells us that K wasn't determined through the command line interface. also a safety mechanism */
-		K = eigen_heuristic_gap(sorted_eigen_values, mat_eigens.rows);
-	}
 	
-	if (sort || K < mat_vectors.cols) {	/* Form a matrix with the K-first eigen values */
+	if (K <= mat_vectors.cols) {	
+		/* find K */
+		sorted_eigen_values = eigen_extract_eigen_values(mat_eigens, true);
+		
+		/* If K == 0, it means the CMD asked us to use the heuristic gap to determine K */
+		if (K == 0) { 
+			K = eigen_heuristic_gap(sorted_eigen_values, mat_eigens.rows);
+		}
+		
+		/* Form a matrix with the K-first eigen values */
 		U_eigen_vectors = matrix_new(mat_vectors.rows, K);
 		for (j = 0; j < K; j++) {
 			size_t eigen_col = sorted_eigen_values[j].col;
@@ -82,13 +86,19 @@ jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eige
 			}
 		}
 		
+		/* Format the output */
 		result.K_eigen_vectors = U_eigen_vectors;
-	} else { /* K, by the CMD interface's handling, is required to be less or equal to the amount of vectors N, as well as being greater or equal to 0, hence why in this case K == mat_vectors.cols */
+		result.eigen_values = sorted_eigen_values;
+		
+	} else {
+		/* If K > mat_vectors.cols, it means that the jacobi algorithm was powered alone.
+		 * That i, since K > mat_vectors.cols is prohibited by the python CMD interface.
+		 * Moreover, it's since we use this case as an indicator to when jacobi was powered without any future spectral clustering use. 
+		 * In such case, a jacobi algorithm alone isn't due to any specification of K, and we will return all of the eigen values/vectors (unsorted) */
 		result.K_eigen_vectors = mat_vectors;
+		result.eigen_values = eigen_extract_eigen_values(mat_eigens, false);
 	}
 	
-	
-	result.eigen_values = sorted_eigen_values;
 	return result;
 }
 
@@ -223,7 +233,7 @@ double eigen_sum_squared_off(matrix_t mat) {
 	
 	for (i = 0; i < mat.rows; i++) {
 		for (j = 0; j < mat.cols; j++) {
-			sum += (i != j) ? matrix_get(mat, i, j) : 0;
+			sum += (i != j) ? pow( matrix_get(mat, i, j), 2 ) : 0;
 		}
 	}
 	

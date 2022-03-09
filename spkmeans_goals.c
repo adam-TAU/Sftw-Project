@@ -47,7 +47,7 @@ void print_jacobi_output() {
 	assert_other(num_data == dim);
 	jacobi_input = matrix_build(datapoints, num_data, dim);
 
-	output = eigen_jacobi(jacobi_input, num_data + 1, false);
+	output = eigen_jacobi(jacobi_input, num_data + 1);
 	
 	/* Printing and free-ing */
 	eigen_print_jacobi(output);
@@ -61,7 +61,7 @@ matrix_t get_T_of_spectral_kmeans(size_t K) {
 	size_t i, j;
 	
 	L_norm = graph_normalized_laplacian(datapoints, num_data, dim);
-	jacobi_out = eigen_jacobi(L_norm, K, true);
+	jacobi_out = eigen_jacobi(L_norm, K);
 
 	
 	T_points = matrix_new(jacobi_out.K_eigen_vectors.rows, jacobi_out.K_eigen_vectors.cols);

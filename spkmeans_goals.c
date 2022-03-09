@@ -12,7 +12,7 @@ extern void assert_other(int condition);
 
 void print_weighted_adjacency_matrix() {
 	matrix_t output;
-	output = graph_adjacent_matrix(datapoints, dim);
+	output = graph_adjacent_matrix(datapoints, num_data, dim);
 	
 	/* Printing and free-ing */
 	matrix_print_rows(output);
@@ -21,7 +21,7 @@ void print_weighted_adjacency_matrix() {
 
 void print_diagonal_degree_matrix() {
 	matrix_t WAM, output;
-	WAM = graph_adjacent_matrix(datapoints, dim);
+	WAM = graph_adjacent_matrix(datapoints, num_data, dim);
 	output = graph_diagonal_degree_matrix(WAM);
 	
 	/* Printing and free-ing */
@@ -32,7 +32,7 @@ void print_diagonal_degree_matrix() {
 
 void print_normalized_laplacian() {
 	matrix_t output;
-	output = graph_normalized_laplacian(datapoints, dim);
+	output = graph_normalized_laplacian(datapoints, num_data, dim);
 	
 	/* Printing and free-ing */
 	matrix_print_rows(output);
@@ -47,7 +47,7 @@ void print_jacobi_output() {
 	assert_other(num_data == dim);
 	jacobi_input = matrix_build(datapoints, num_data, dim);
 
-	output = eigen_jacobi(jacobi_input, 0, false);
+	output = eigen_jacobi(jacobi_input, num_data + 1, false);
 	
 	/* Printing and free-ing */
 	eigen_print_jacobi(output);
@@ -60,7 +60,7 @@ matrix_t get_T_of_spectral_kmeans(size_t K) {
 	jacobi_output jacobi_out;
 	size_t i, j;
 	
-	L_norm = graph_normalized_laplacian(datapoints, dim);
+	L_norm = graph_normalized_laplacian(datapoints, num_data, dim);
 	jacobi_out = eigen_jacobi(L_norm, K, true);
 
 	

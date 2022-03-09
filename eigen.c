@@ -45,7 +45,7 @@ jacobi_output eigen_jacobi(matrix_t mat, size_t K, bool sort) {
 	} while (( eigen_distance_of_squared_off(prev, next) > epsilon ) && ( iterations <= 100 ));
 	
 	/* Extract the eigen values and eigen vectors and insert them into an output format */
-	jacobi_output = eigen_format_eigen_vectors(P_multiplication, next, K, sort);
+	jacobi_output = eigen_format_eigen_vectors(P_multiplication, next, (K > P_multiplication.cols) ? P_multiplication.cols : K, sort);
 	
 	if (sort || K < P_multiplication.cols) { /* In this case we had to create another matrix to hold the wanted eigen vectors */
 		matrix_free_safe(P_multiplication);
@@ -83,7 +83,7 @@ jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eige
 		}
 		
 		result.K_eigen_vectors = U_eigen_vectors;
-	} else {
+	} else { /* K, by the CMD interface's handling, is required to be less or equal to the amount of vectors N, as well as being greater or equal to 0, hence why in this case K == mat_vectors.cols */
 		result.K_eigen_vectors = mat_vectors;
 	}
 	

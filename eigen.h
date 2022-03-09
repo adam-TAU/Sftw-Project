@@ -53,7 +53,14 @@ jacobi_output eigen_jacobi(matrix_t mat, size_t K, bool sort);
 
 /* Given the diagonal matrix <mat>, pull out its eigen values - sort them, determine K (the amount of eigen vectors we want), and form an eigen-vectors matrix.
  * This part might use the eigen heuristic gap if it was given an invalid K as an argument.
- * If sort equals <true>, then the first K eigen vectors and values will be returned. Else, they would be random (unless K is equal to the number of eigen values) */
+ * If sort equals <true>, then the first K eigen vectors and values will be returned. Else, they would be random (unless K is equal to the number of eigen values).
+ * If K == 0: pick K by the heuristic gap.
+ * If 0 < K <= mat_vectors.cols: pick the first K eigen values/vectors.
+		If sort: return them sorted.
+		else: return them unsorted (unpractical, doesn't make sense, and isn't reached by this program. But for the completency of this module, we kept this part)
+ * If K > mat_vectors.cols: return all of the eigen values/vectors:
+ 		If sort: return them sorted.
+ 		else: return them unsorted. */
 jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t K, bool sort);
 
 /* In case K wasn't given as an input, then try to determine it using the eigen heuristic gap.

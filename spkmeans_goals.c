@@ -22,7 +22,7 @@ void print_weighted_adjacency_matrix() {
 void print_diagonal_degree_matrix() {
 	matrix_t WAM, output;
 	WAM = graph_adjacent_matrix(datapoints, num_data, dim);
-	output = graph_diagonal_degree_matrix(WAM);
+	output = graph_diagonal_degree_matrix(WAM, false);
 	
 	/* Printing and free-ing */
 	matrix_print_rows(output);

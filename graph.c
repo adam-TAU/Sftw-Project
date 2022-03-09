@@ -33,7 +33,7 @@ matrix_t graph_adjacent_matrix(dpoint_t input[], size_t num_data, size_t dim) {
 
 
 
-matrix_t graph_diagonal_degree_matrix(matrix_t mat) {
+matrix_t graph_diagonal_degree_matrix(matrix_t mat, bool is_sqrt) {
 	size_t i, j;
 	size_t dimension;
 	matrix_t output;
@@ -47,7 +47,7 @@ matrix_t graph_diagonal_degree_matrix(matrix_t mat) {
 			sum += matrix_get(mat, i, j);
 		}
 		
-		result = (1 / sqrt(sum));
+		result = is_sqrt ? (1 / sqrt(sum)) : sum;
 		matrix_set(output, i, i, result);
 	}
 	
@@ -63,7 +63,7 @@ matrix_t graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t di
 	
 	I = matrix_identity_matrix(num_data);
 	W = graph_adjacent_matrix(input, num_data, dim);
-	D = graph_diagonal_degree_matrix(W);
+	D = graph_diagonal_degree_matrix(W, true);
 	
 	matrix_mul(D, W, &MULT);
 	matrix_mul_assign(&MULT, D);

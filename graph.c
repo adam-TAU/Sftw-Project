@@ -75,7 +75,6 @@ matrix_t graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t di
 	matrix_free_safe(MULT);
 	matrix_free_safe(W);
 	matrix_free_safe(D);
-	matrix_free_safe(D);
 	
 	return L_norm;
 }

@@ -66,7 +66,7 @@ matrix_t graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t di
 	D = graph_diagonal_degree_matrix(W, true);
 	
 	matrix_mul(D, W, &MULT);
-	matrix_mul_assign(&MULT, D);
+	matrix_mul_assign_to_first(&MULT, D);
 	matrix_mul_scalar_assign(MULT, -1);
 	
 	L_norm = I;

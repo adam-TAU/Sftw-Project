@@ -126,7 +126,18 @@ int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output);
 
    In case of dimension mismatch, the return value is `DIM_MISMATCH`.
    In case of allocation failure, the return value is `BAD_ALLOC`. */
-int matrix_mul_assign(matrix_t *mat1, matrix_t mat2);
+int matrix_mul_assign_to_first(matrix_t *mat1, matrix_t mat2);
+
+
+/* Multiplies the given matrices to produce a new matrix, and stores it into <mat2>.
+   Precondition: `mat1.cols == mat1.rows == mat2.rows == mat2.cols`.
+
+   Errors:
+
+   In case of dimension mismatch, the return value is `DIM_MISMATCH`.
+   In case of allocation failure, the return value is `BAD_ALLOC`. */
+int matrix_mul_assign_to_second(matrix_t mat1, matrix_t *mat2);
+
 
 
 /* Create an Identity Matrix, with the dimensions of dim x dim */

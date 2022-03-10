@@ -207,7 +207,7 @@ int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output) {
 
 
 
-int matrix_mul_assign(matrix_t *mat1, matrix_t mat2) {
+int matrix_mul_assign_to_first(matrix_t *mat1, matrix_t mat2) {
 	int signal; 
     matrix_t output;
 
@@ -222,6 +222,25 @@ int matrix_mul_assign(matrix_t *mat1, matrix_t mat2) {
 	
 	return signal;
 }
+
+
+
+int matrix_mul_assign_to_second(matrix_t mat1, matrix_t *mat2) {
+	int signal; 
+    matrix_t output;
+
+	signal = matrix_mul(mat1, *mat2, &output);
+	
+	if (output.len == mat2->len) {
+		matrix_free_safe(mat2);
+		mat2->data = output.data;
+	} else {
+		signal = 1;
+	}
+	
+	return signal;
+}
+
 
 
 matrix_t matrix_identity_matrix(size_t dim) {

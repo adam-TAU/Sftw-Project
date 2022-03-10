@@ -39,7 +39,7 @@ jacobi_output eigen_jacobi(matrix_t mat, size_t K) {
 		A = matrix_clone(A_tag);
 
 		P_rotation = eigen_build_rotation_matrix(A);
-		matrix_mul_assign(&P_multiplication, P_rotation);	
+		matrix_mul_assign_to_second(P_rotation, &P_multiplication);	
 				
 		eigen_update_jacobi_A_tag(A_tag, A);
 		matrix_free_safe(&P_rotation);

@@ -7,7 +7,7 @@
 /**************************************************************************/
 
 static PyObject* goal(PyObject *self, PyObject *args);
-static PyObject* kmeans(PyObject *self, PyObject *args);
+static PyObject* kmeans_fit(PyObject *self, PyObject *args);
 
 
 /**************************************************************************/
@@ -20,7 +20,7 @@ static PyObject* goal(PyObject *self, PyObject *args) {
 	
 	/* Fetch the string of the infile */
     if(!PyArg_ParseTuple(args, "s", &infile)) {
-		return 1;
+		return NULL;
     }
 	 
 	 /* Perform the wanted goal's operation and return the result (if there's any) */
@@ -30,6 +30,7 @@ static PyObject* goal(PyObject *self, PyObject *args) {
 		Py_RETURN_NONE;
 	} else {
 		/* Convert the output matrix into a list of lists */
+		return NULL;
 	}
 }
 

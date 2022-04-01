@@ -1,5 +1,6 @@
 #include "matrix.h"
 #include <stdio.h>
+#include <string.h>
 
 matrix_t matrix_new(size_t rows, size_t cols) {
     matrix_t output;
@@ -16,24 +17,27 @@ matrix_t matrix_new(size_t rows, size_t cols) {
 
 matrix_t matrix_clone(matrix_t mat) {
     matrix_t cloned = matrix_new(mat.rows, mat.cols);
-    size_t idx;
     if(NULL == cloned.data) {
         return cloned; /* return early to avoid accessing `data` */
     }
 
-    for(idx = 0; idx < mat.len; idx++) {
-        cloned.data[idx] = mat.data[idx];
-    }
+    memcpy(cloned.data, mat.data, sizeof(double) * cloned.len);
 
     return cloned;
+}
+
+void matrix_swap(matrix_t *mat1, matrix_t *mat2) {
+    matrix_t temp = *mat1;
+    *mat1 = *mat2;
+    *mat2 = temp;
 }
 
 
 matrix_t matrix_build(dpoint_t* vectors, size_t num_vectors, size_t dim) {
 	size_t i, j;
-	matrix_t output;
-	
-	output = matrix_new(num_vectors, dim);
+	matrix_t output = matrix_new(num_vectors, dim);
+    if(NULL == output.data) return output;
+
 	for (i = 0; i < output.rows; i++) {
 		for (j = 0; j < output.cols; j++) {
 			matrix_set(output, i, j, vectors[i].data[j]); 
@@ -109,7 +113,7 @@ void matrix_print_cols(matrix_t mat) {
 	
 	transposed = matrix_transpose(mat);
 	matrix_print_rows(transposed);
-	matrix_free_safe(&transposed);
+	matrix_free_safe(transposed);
 }
 
 
@@ -117,9 +121,9 @@ void matrix_free(matrix_t mat) {
     free(mat.data);
 }
 
-void matrix_free_safe(matrix_t *mat) {
-    if(NULL != mat->data) {
-        matrix_free(*mat);
+void matrix_free_safe(matrix_t mat) {
+    if(NULL != mat.data) {
+        matrix_free(mat);
     }
 }
 
@@ -207,46 +211,52 @@ int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output) {
 
 
 
-int matrix_mul_assign_to_first(matrix_t *mat1, matrix_t mat2) {
-	int signal; 
-    matrix_t output;
+static int matrix_mul_assign_prelude(matrix_t mat1, matrix_t mat2, matrix_t *output) {
+    size_t n = mat1.cols;
 
-	signal = matrix_mul(*mat1, mat2, &output);
+    if(!(mat1.rows == n && mat2.rows == n && mat2.cols == n)) {
+        return DIM_MISMATCH;
+    }
+
+    return matrix_mul(mat1, mat2, output);
+    /* if output were correctly allocated, we wouldn't have a nonzero signal, so it's fine
+       to not free it */
+}
+
+
+
+int matrix_mul_assign_to_first(matrix_t *mat1, matrix_t mat2) {
+    matrix_t output;
+    int signal = matrix_mul_assign_prelude(*mat1, mat2, &output);
+
+	if(signal) return signal;
 	
-	if (output.len == mat1->len) {
-		matrix_free_safe(mat1);
-		mat1->data = output.data;
-	} else {
-		signal = 1;
-	}
+	matrix_free(*mat1);
+	mat1->data = output.data;
 	
-	return signal;
+	return 0;
 }
 
 
 
 int matrix_mul_assign_to_second(matrix_t mat1, matrix_t *mat2) {
-	int signal; 
-    matrix_t output;
+	matrix_t output;
+    int signal = matrix_mul_assign_prelude(mat1, *mat2, &output);
 
-	signal = matrix_mul(mat1, *mat2, &output);
+	if(signal) return signal;
 	
-	if (output.len == mat2->len) {
-		matrix_free_safe(mat2);
-		mat2->data = output.data;
-	} else {
-		signal = 1;
-	}
+	matrix_free(*mat2);
+	mat2->data = output.data;
 	
-	return signal;
+	return 0;
 }
 
 
 
-matrix_t matrix_identity_matrix(size_t dim) {
+matrix_t matrix_identity(size_t dim) {
 	size_t i;
-	matrix_t output;
-	output = matrix_new(dim, dim);
+	matrix_t output = matrix_new(dim, dim);
+    if(NULL == output.data) return output;
  
  	for (i = 0; i < dim; i++) {
 		matrix_set(output, i, i, 1);
@@ -259,9 +269,9 @@ matrix_t matrix_identity_matrix(size_t dim) {
 
 matrix_t matrix_transpose(matrix_t mat) {
 	size_t i, j;
-	matrix_t output;
-	
-	output = matrix_new(mat.cols, mat.rows);
+	matrix_t output = matrix_new(mat.cols, mat.rows);
+    if(NULL == output.data) return output;
+
 	for (i = 0; i < output.rows; i++) {
 		for (j = 0; j < output.cols; j++) {
 			matrix_set(output, i, j, matrix_get(mat, j, i));
@@ -270,13 +280,3 @@ matrix_t matrix_transpose(matrix_t mat) {
 	
 	return output;
 }
-
-
-
-
-
-
-
-
-
-

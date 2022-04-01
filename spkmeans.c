@@ -13,7 +13,7 @@ static void print_kmeans(size_t* initial_centroids_indices);
 
 
 static void assert_input(bool condition);
-void assert_other(bool condition);
+static void assert_other(bool condition);
 static void collect_data(const char *filename);
 static void initialize_sets(size_t *initial_centroids_indices);
 static void get_num_and_dim(FILE *file);
@@ -38,7 +38,7 @@ static void assert_input(bool condition) {
     }
 }
 
-void assert_other(bool condition) {
+static void assert_other(bool condition) {
     if(!condition) {
         puts("An Error Has Occurred");
         free_program();

@@ -8,7 +8,7 @@
 
 /* Configuring convergence conditions to the Jacobi algorithm */
 #define max_jacobi_iterations 100
-#define epsilon pow(10, -15) 
+#define epsilon 1e-5
 
 /* Defining exception types */
 #define ASYMMETRIC 3
@@ -35,6 +35,7 @@ typedef struct eigen_value {
 typedef struct jacobi_output {
 	matrix_t K_eigen_vectors;
 	eigen* eigen_values;
+    int signal;
 } jacobi_output;
 
 
@@ -65,18 +66,21 @@ jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eige
  *		the given array of eigen values must be sorted by vaule (remember eigen is a struct) */
 size_t eigen_heuristic_gap(eigen* sorted_eigen_values, size_t rows);
 
-/* Define a "compare" functino between two "eigen"-s. */
+/* Define a "compare" function between two "eigen"-s. */
 int compare(const void* eigen1, const void* eigen2);
 
-/* Given an already diagonal matrix, extrat its eigen values.
- * If sort equals <true>, sort the eigen values.. */
+/* Given an already diagonal matrix, extract its eigen values.
+   If sort equals <true>, sort the eigen values..
+   
+   Returns `NULL` on allocation failure. */
 eigen* eigen_extract_eigen_values(matrix_t mat, bool sort);
 
-/* In the jacobi algorithm, this is the function that transforms A_tag (the next matrix in the recurssive algorithm), through the current A matrix */
-void eigen_update_jacobi_A_tag(matrix_t A_tag, matrix_t A);
+/* In the jacobi algorithm, this is the function that transforms A_tag (the next matrix in the recursive algorithm), through the current A matrix */
+void eigen_update_jacobi_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, double c, double s);
 
-/* Given a symmetric matrix called <mat>, find the competent rotation matrix for it */
-matrix_t eigen_build_rotation_matrix(matrix_t mat);
+/* Given a symmetric matrix called <mat>, find the corresponding rotation matrix for it.
+   The return value has a data field of `NULL` in case of allocation failure. */
+matrix_t eigen_build_rotation_matrix(matrix_t mat, matrix_ind loc, double c, double s);
 
 /* Given two matrices, determine the distance between their sum of squared off-diagonals */
 double eigen_distance_of_squared_offdiagonals(matrix_t mat1, matrix_t mat2);

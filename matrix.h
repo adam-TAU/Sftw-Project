@@ -13,7 +13,7 @@ typedef struct matrix {
 } matrix_t;
 
 
-/* Define a structure that will hold a vector's coordinates. This will also be used int the spkmeans.c mechanism */
+/* Define a structure that will hold a vector's coordinates. This will also be used in the spkmeans.c mechanism */
 typedef struct {
     double *data;
 } dpoint_t;
@@ -40,8 +40,14 @@ matrix_t matrix_new(size_t rows, size_t cols);
    `NULL`. */
 matrix_t matrix_clone(matrix_t mat);
 
+/* Swaps the data contained in both matrix instances.
+   This doesn't allocate, and is useful for loops. */
+void matrix_swap(matrix_t *mat1, matrix_t *mat2);
 
-/* Builds a matrix out of an already existing dataset of <dpoint_t>s */
+/* Builds a matrix out of an already existing dataset of <dpoint_t>s.
+   
+   In case of allocation failure, the output matrix has a `data` field of
+   `NULL`. */
 matrix_t matrix_build(dpoint_t* vectors, size_t num_vectors, size_t dim);
 
 /* Calculates the index of the desired element for use with the matrix's
@@ -75,7 +81,7 @@ void matrix_print_cols(matrix_t mat);
 void matrix_free(matrix_t mat);
 
 /* Calls matrix_free on `mat`, but only if `mat.data` isn't `NULL`. */
-void matrix_free_safe(matrix_t *mat);
+void matrix_free_safe(matrix_t mat);
 
 /*
  * BASIC ARITHMETIC METHODS
@@ -89,6 +95,7 @@ int matrix_add_assign(matrix_t self, matrix_t other);
 
 /* Adds the given matrices and stores the newly allocated matrix in `output`.
    The return value is `0` if and only if the operation was successful.
+   The output matrix must be unrelated to the input matrices.
 
    Errors:
 
@@ -111,6 +118,7 @@ matrix_t matrix_mul_scalar(matrix_t mat, double scalar);
 
 /* Multiplies the given matrices to produce a new matrix, stored in `output`.
    Precondition: `mat1.cols == mat2.rows`.
+   The output matrix must be unrelated to the input matrices.
 
    Errors:
 
@@ -140,10 +148,16 @@ int matrix_mul_assign_to_second(matrix_t mat1, matrix_t *mat2);
 
 
 
-/* Create an Identity Matrix, with the dimensions of dim x dim */
-matrix_t matrix_identity_matrix(size_t dim);
+/* Create an Identity Matrix, with the dimensions of dim x dim.
 
-/* Given a matrix named <mat>, return <mat ^ t>: meaning its transposed matrix */
+   In case of allocation failure, the output matrix has a `data` field of
+   `NULL`. */
+matrix_t matrix_identity(size_t dim);
+
+/* Given a matrix named <mat>, return <mat ^ t>: meaning its transposed matrix.
+
+   In case of allocation failure, the output matrix has a `data` field of
+   `NULL`. */
 matrix_t matrix_transpose(matrix_t mat);
 
 #endif /* MATRIX_H */

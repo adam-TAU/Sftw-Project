@@ -98,7 +98,7 @@ if __name__ == "__main__":
 
 	# We want K to be both numeric and positive.
 	K, valid=check_positive_numstr(sys.argv[1])
-	assert_valid_input(K == 0 || valid)
+	assert_valid_input(K == 0 or valid)
 	
 	goal = sys.argv[2]
 	assert_valid_input(goal in ['wam', 'ddg', 'lnorm', 'jacobi', 'spk'])

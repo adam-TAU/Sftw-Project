@@ -9,6 +9,8 @@
 #include "eigen.h"
 
 
+extern void assert_other(bool condition);
+
 /* A function to print the weighted adjacency matrix out of the given vectors */
 int print_weighted_adjacency_matrix(void);
 

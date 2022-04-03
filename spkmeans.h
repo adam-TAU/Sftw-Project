@@ -20,6 +20,7 @@ typedef struct {
 
 
 /***************************** EXTERNAL VARIABLES *************************/
+extern char* goal;
 extern size_t K;
 
 extern size_t dim;
@@ -47,5 +48,6 @@ void spkmeans_pass_goal_info_and_run(char *infile, matrix_t *output);
  *		3. dim (dimension of each datapoint)
  * 		4. num_data (the amount of datapoints we have to cluster) */
 void spkmeans_pass_kmeans_info_and_run(dpoint_t *datapoints_from_py, size_t *initial_centroids_indices, size_t K_from_py, size_t dim_from_py, size_t num_data_from_py);
+
 
 #endif

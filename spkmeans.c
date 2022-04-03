@@ -12,7 +12,7 @@ static void kmeans(size_t *initial_centroids_indices);
 static void print_kmeans(size_t* initial_centroids_indices);
 
 static void assert_input(bool condition);
-static void assert_other(bool condition);
+void assert_other(bool condition);
 static void collect_data(const char *filename);
 static void initialize_sets(size_t *initial_centroids_indices);
 static void get_num_and_dim(FILE *file);
@@ -37,7 +37,7 @@ static void assert_input(bool condition) {
     }
 }
 
-static void assert_other(bool condition) {
+void assert_other(bool condition) {
     if(!condition) {
         puts("An Error Has Occurred");
         free_program();
@@ -47,9 +47,8 @@ static void assert_other(bool condition) {
 
 
 
-/*****************************************************************************/
-
-char* goal;
+/*************************** VARIABLES *****************************************/
+char* goal = "no goal yet";
 size_t K = 0;
 
 size_t dim = 0;
@@ -75,27 +74,38 @@ void spkmeans_pass_kmeans_info_and_run(dpoint_t *datapoints_from_py, size_t *ini
 	kmeans(initial_centroids_indices);
 }
 
-/*****************************************************************************/
+/*************************** 2 DIFFERENT MAIN MECHANISMS ************************************/
 
 static int handle_goal(matrix_t *output) {
 
 	if ( strcmp(goal, "wam") == 0 ) {
-		if (0 != print_weighted_adjacency_matrix()) return BAD_ALLOC;
+		if (0 != print_weighted_adjacency_matrix()) goto error;
 		
 	} else if ( strcmp(goal, "ddg") == 0 ) {
-	 	if (0 != print_diagonal_degree_matrix()) return BAD_ALLOC;
+	 	if (0 != print_diagonal_degree_matrix()) goto error;
 	 	
 	} else if ( strcmp(goal, "lnorm") == 0 ) {
-		if (0 != print_normalized_laplacian()) return BAD_ALLOC;
+		if (0 != print_normalized_laplacian()) goto error;
 		
 	} else if ( strcmp(goal, "jacobi") == 0 ) {
-		if (0 != print_jacobi_output()) return BAD_ALLOC;
+		if (0 != print_jacobi_output()) goto error;
 		
 	} else if ( strcmp(goal, "spk") == 0 ) {
-		if (0 != get_T_of_spectral_kmeans(K, output)) return BAD_ALLOC;
+		if (0 != get_T_of_spectral_kmeans(K, output)) goto error;
 	}
 	
 	return 0;
+	
+error:
+	/* This mechanism uses only the datapoints, hence we can free the resources more responsively */
+    if(NULL != datapoints) {
+    	size_t i;
+        for(i = 0; i < num_data; i++) {
+            free_datapoint(datapoints[i]);
+        }
+        free(datapoints);
+    }
+    return BAD_ALLOC;
 }
 
 
@@ -122,26 +132,6 @@ static void kmeans(size_t *initial_centroids_indices) {
 	/* Printing and free-ing */
 	print_kmeans(initial_centroids_indices);
     free_program();
-}
-
-
-static void print_kmeans(size_t* initial_centroids_indices) {
-	size_t i, j;
-	
-	for (i = 0; i < K; i++) {
-		printf("%li", initial_centroids_indices[i]);
-		if (i < K - 1) printf(",");
-	}
-	
-	puts("");
-	
-	for (i = 0; i < K; i++) {
-		for (j = 0; j < dim; j++) {
-			printf("%.4f", sets[i].current_centroid.data[j]);
-			if (j < dim - 1) printf(",");
-		}
-		if (i < K - 1) puts("");
-	}
 }
 
 
@@ -331,6 +321,27 @@ static void free_datapoint(dpoint_t dpoint) {
         free(dpoint.data);
     }
 }
+
+
+static void print_kmeans(size_t* initial_centroids_indices) {
+	size_t i, j;
+	
+	for (i = 0; i < K; i++) {
+		printf("%li", initial_centroids_indices[i]);
+		if (i < K - 1) printf(",");
+	}
+	
+	puts("");
+	
+	for (i = 0; i < K; i++) {
+		for (j = 0; j < dim; j++) {
+			printf("%.4f", sets[i].current_centroid.data[j]);
+			if (j < dim - 1) printf(",");
+		}
+		if (i < K - 1) puts("");
+	}
+}
+
 
 /* Frees all of the memory allocated by the program. If a certain variable
  * hasn't been allocated yet, this function does not attempt to free it. */

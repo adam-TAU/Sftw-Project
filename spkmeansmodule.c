@@ -3,7 +3,6 @@
 #include "spkmeans.h"
 
 
-
 /**************************************************************************/
 static PyObject* goal(PyObject *self, PyObject *args);
 static PyObject* kmeans_fit(PyObject *self, PyObject *args);
@@ -22,13 +21,10 @@ static PyObject* goal(PyObject *self, PyObject *args) {
     }
 	 
 	 /* Perform the wanted goal's operation and return the result (if there's any) */
-	spkmeans_pass_goal_info_and_run(infile, &output);
-	
-	if (output.data == NULL) {
+	if (0 != spkmeans_pass_goal_info_and_run(infile, &output)) { /* run failed */
 		Py_RETURN_NONE;
-	} else {
-		/* Convert the output matrix into a list of lists */
-		return NULL;
+	} else if (strcmp(goal, "spk") == 0) { /* run succeeded. goal was "spk", therefore we have to return to python the output of the goal's mechanism */
+		/* Convert a matrix into a list of lists */
 	}
 }
 
@@ -45,15 +41,17 @@ static PyObject* kmeans_fit(PyObject *self, PyObject *args) {
 	if (1 == py_parse_args(args)) return NULL;
 
     /* building the returned centroids' list */
-    centroids_c = fit_c();
+    spkmeans_pass_kmeans_info_and_run(
+    
+    centroids_c
     centroids_py = PyList_New(K);
     for(i = 0; i < K; ++i) {
     		PyObject *tmpList = arrayToList_D(centroids_c[i], dim);
-    		if(NULL == tmpList) goto failed;
+    		if(NULL == tmpList) goto error;
     		
     		/* Heads up! PyList_SetItem steals a reference, so Py_DECREF(centroids_py) 
     		 * would Py_DECREF(tmpList) to 0 */
-            if(0 != PyList_SetItem(centroids_py, i, tmpList)) goto failed;
+            if(0 != PyList_SetItem(centroids_py, i, tmpList)) goto error;
     }
     result = Py_BuildValue("O", centroids_py);
 	Py_DECREF(result);
@@ -63,7 +61,7 @@ static PyObject* kmeans_fit(PyObject *self, PyObject *args) {
     return result;
     
     
-    failed:
+error:
     /* if parsing args went corretly tho we got an error */
     Py_DECREF(centroids_py);
     free_program();
@@ -92,19 +90,19 @@ static int py_parse_args(PyObject *args) {
     for (i = 0; i < num_data; i++) {
     		/* PyList_GetItem returns a borrowed reference - no need to Py_DECREF */
     		PyObject *tmpItem = PyList_GetItem(datapoints_py, i);
-    		if (NULL == tmpItem) goto failed;
+    		if (NULL == tmpItem) goto error;
     		
     		double *tmpArray = listToArray_D(tmpItem, dim);
-    		if (NULL == (datapoints_arg[i] = tmpArray)) goto failed;
+    		if (NULL == (datapoints_arg[i] = tmpArray)) goto error;
     }
     
     int *tmpArray = listToArray_I(initial_centroids_py, K);
-    if (NULL == (initial_centroids_indices = tmpArray)) goto failed;
+    if (NULL == (initial_centroids_indices = tmpArray)) goto error;
     Py_DECREF(datapoints_py);
    	return 0;
    	
    	
-   	failed:
+error:
    	/* if any of the CPython functions fail:
    	 * An error of py_parse_args doesn't trigger the free_program, 
    	 * since the program hasn't advanced enough, therefore we free datapoints_arg here */
@@ -165,14 +163,14 @@ static double* listToArray_D(PyObject *list, int length) {
                 pypoint = PyList_GetItem(list, (Py_ssize_t)i);
                 if (!PyFloat_Check(pypoint)) {
                         PyErr_SetString(PyExc_TypeError, "Must pass an list of floats");
-                        goto failed;
+                        goto error;
                 }
                 result[i] = (double) PyFloat_AsDouble(pypoint);
         }
         return result;
         
         
-        failed:
+error:
         /* If any of the CPython functions fail */
         if (result != NULL) free(result);
         return NULL;
@@ -203,13 +201,13 @@ static int* listToArray_I(PyObject *list, int length) {
                 pypoint = PyList_GetItem(list, (Py_ssize_t)i);
                 if (!PyLong_Check(pypoint)) {
                         PyErr_SetString(PyExc_TypeError, "Must pass an list of floats!");
-                        goto failed;
+                        goto error;
                 }
                 result[i] = (int) PyLong_AsLong(pypoint);
         }
         return result;
         
-        failed:
+error:
         /* If any of the CPython functions fail */
         if (result != NULL) free(result);
         return NULL;

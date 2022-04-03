@@ -29,6 +29,19 @@ extern dpoint_t *datapoints;
 /*************************************************************************/
 
 
+
+
+
+
+
+/*********************** EXTERNAL FUNCTIONS ******************************/
+void init_datapoint(dpoint_t *dpoint);
+void free_program(void);
+/*************************************************************************/
+
+
+
+/**************************** API ************************************/
 /* A function to pass data about the vectors into the main mechanism of this file, produced by the spkmeansmodule.c interface.
  * That includes:
  * 		1. vectors (the vectors we want to process - corresponding to the wanted goal)
@@ -36,11 +49,12 @@ extern dpoint_t *datapoints;
  * 		3. vectors_amount (the amount of vectors given)
  *		4. goal (what we wish to do with the matrix formed from the given vectors)
  * 		5. (Optional) output (a pointer to a variable of type matrix_t that the caller wishes to store the T matrix at (relevant to goal == "spk" only) */
-void spkmeans_pass_goal_info_and_run(char *infile, matrix_t *output);
+int spkmeans_pass_goal_info_and_run(char *infile, matrix_t *output);
 
 
 /* A function that passes the initial centroids indices into the Kmeans mechanism */
 void spkmeans_pass_kmeans_info_and_run(size_t *initial_centroids_indices);
+/*************************************************************************/
 
 
 #endif

@@ -22,9 +22,9 @@ static double sqdist(dpoint_t p1, dpoint_t p2);
 static void add_to_set(set_t *set, dpoint_t dpoint);
 static int update_centroid(set_t *set);
 static void parse_args(int argc, char **argv, char **infile);
-static void init_datapoint(dpoint_t *dpoint);
+void init_datapoint(dpoint_t *dpoint);
 static void free_datapoint(dpoint_t);
-static void free_program(void);
+void free_program(void);
 
 
 /*****************************************************************************/
@@ -59,9 +59,9 @@ set_t *sets = NULL;
 
 
 /********************** USED BY THE CPython INTERFACE ******************************/
-void spkmeans_pass_goal_info_and_run(char *infile, matrix_t *output) {
+int spkmeans_pass_goal_info_and_run(char *infile, matrix_t *output) {
 	collect_data(infile);
-	handle_goal(output);
+	return handle_goal(output);
 }
 
 
@@ -77,16 +77,20 @@ static int handle_goal(matrix_t *output) {
 	if ( strcmp(goal, "wam") == 0 ) {
 		if (0 != print_weighted_adjacency_matrix()) goto error;
 		
-	} else if ( strcmp(goal, "ddg") == 0 ) {
+	}
+	if ( strcmp(goal, "ddg") == 0 ) {
 	 	if (0 != print_diagonal_degree_matrix()) goto error;
 	 	
-	} else if ( strcmp(goal, "lnorm") == 0 ) {
+	}
+	 if ( strcmp(goal, "lnorm") == 0 ) {
 		if (0 != print_normalized_laplacian()) goto error;
 		
-	} else if ( strcmp(goal, "jacobi") == 0 ) {
+	}
+	if ( strcmp(goal, "jacobi") == 0 ) {
 		if (0 != print_jacobi_output()) goto error;
 		
-	} else if ( strcmp(goal, "spk") == 0 ) {
+	}
+	if ( strcmp(goal, "spk") == 0 ) {
 		if (0 != get_T_of_spectral_kmeans(K, output)) goto error;
 	}
 	
@@ -303,7 +307,7 @@ static void parse_args(int argc, char **argv, char **infile) {
 
 /* Initializes a single datapoint - allocates enough space for it and sets all
  * the values to zero. */
-static void init_datapoint(dpoint_t *dpoint) {
+void init_datapoint(dpoint_t *dpoint) {
     assert_other(dim > 0);
 
     dpoint->data = calloc(dim, sizeof(*dpoint->data));
@@ -341,7 +345,7 @@ static void print_kmeans(size_t* initial_centroids_indices) {
 
 /* Frees all of the memory allocated by the program. If a certain variable
  * hasn't been allocated yet, this function does not attempt to free it. */
-static void free_program() {
+void free_program() {
     size_t i;
 
     if(NULL != datapoints) {

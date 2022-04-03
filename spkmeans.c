@@ -65,12 +65,8 @@ void spkmeans_pass_goal_info_and_run(char *infile, matrix_t *output) {
 }
 
 
-void spkmeans_pass_kmeans_info_and_run(dpoint_t *datapoints_from_py, size_t *initial_centroids_indices, size_t K_from_py, size_t dim_from_py, size_t num_data_from_py) {
-	datapoints = datapoints_from_py;
-	K = K_from_py;
-	dim = dim_from_py;
-	num_data = num_data_from_py;
-	
+void spkmeans_pass_kmeans_info_and_run(size_t *initial_centroids_indices) {
+
 	kmeans(initial_centroids_indices);
 }
 

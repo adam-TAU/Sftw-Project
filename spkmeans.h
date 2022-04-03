@@ -26,8 +26,6 @@ extern size_t K;
 extern size_t dim;
 extern size_t num_data;
 extern dpoint_t *datapoints;
-
-extern set_t *sets;
 /*************************************************************************/
 
 
@@ -41,13 +39,8 @@ extern set_t *sets;
 void spkmeans_pass_goal_info_and_run(char *infile, matrix_t *output);
 
 
-/* A function to pass data about the datapoints and the crucial fectors when clustering datasets using the K-means algorithm.
- * That includes:
- *		1. datapoints
- * 		2. K (amount of clusters)
- *		3. dim (dimension of each datapoint)
- * 		4. num_data (the amount of datapoints we have to cluster) */
-void spkmeans_pass_kmeans_info_and_run(dpoint_t *datapoints_from_py, size_t *initial_centroids_indices, size_t K_from_py, size_t dim_from_py, size_t num_data_from_py);
+/* A function that passes the initial centroids indices into the Kmeans mechanism */
+void spkmeans_pass_kmeans_info_and_run(size_t *initial_centroids_indices);
 
 
 #endif

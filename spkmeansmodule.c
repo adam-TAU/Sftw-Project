@@ -3,14 +3,21 @@
 #include "spkmeans.h"
 
 
+
 /**************************************************************************/
 static PyObject* goal(PyObject *self, PyObject *args);
 static PyObject* kmeans_fit(PyObject *self, PyObject *args);
+/**************************************************************************/
 
+
+/**************************************************************************/
+double** datapoints_arg = NULL;
+int* initial_centroids_indices = NULL;
 /**************************************************************************/
 
 
 
+/**************************************************************************/
 static PyObject* goal(PyObject *self, PyObject *args) {
 	char* infile;
 	matrix_t output;
@@ -27,10 +34,13 @@ static PyObject* goal(PyObject *self, PyObject *args) {
 		/* Convert a matrix into a list of lists */
 	}
 }
+/**************************************************************************/
+
+
+
 
 
 /************************* configuring the C API ****************************************************/
-
 static PyObject* kmeans_fit(PyObject *self, PyObject *args) {
     int i;
 	PyObject *centroids_py;
@@ -41,7 +51,7 @@ static PyObject* kmeans_fit(PyObject *self, PyObject *args) {
 	if (1 == py_parse_args(args)) return NULL;
 
     /* building the returned centroids' list */
-    spkmeans_pass_kmeans_info_and_run(
+    spkmeans_pass_kmeans_info_and_run(initial_centroids_indices);
     
     centroids_c
     centroids_py = PyList_New(K);
@@ -212,14 +222,12 @@ error:
         if (result != NULL) free(result);
         return NULL;
 }
+/**************************************************************************/
+
 
 
 
 /**************************************************************************/
-
-/**************************************************************************/
-
-
 static PyMethodDef capiMethods[] = {
         {"goal",
                 (PyCFunction) goal,
@@ -256,3 +264,4 @@ PyInit_mykmeanssp(void) {
         }
         return m;
 }
+/**************************************************************************/

@@ -6,9 +6,8 @@
 #include <string.h>
 
 
-
-#define MAX_ITER 300
-#define EPSILON 0.001
+#define MAX_ITER 100
+#define EPSILON 0.00001
 
 typedef int make_iso_compilers_happy;
 
@@ -17,6 +16,18 @@ typedef struct {
     dpoint_t sum;
     int count;
 } set_t;
+
+
+
+/***************************** EXTERNAL VARIABLES *************************/
+extern size_t K;
+
+extern size_t dim;
+extern size_t num_data;
+extern dpoint_t *datapoints;
+
+extern set_t *sets;
+/*************************************************************************/
 
 
 /* A function to pass data about the vectors into the main mechanism of this file, produced by the spkmeansmodule.c interface.

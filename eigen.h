@@ -54,12 +54,12 @@ void eigen_print_jacobi(jacobi_output out);
  * If K == 0: using the heuristic gap, determine a new positive K, and return the first (while sorted) K eigen values along with their eigen vectors
  * If 0 < K <= mat.rows: return the first (while sorted) K eigen values along with thier eigen vectors
  * If K > mat.rows: return all of the K eigen values along with their eigen vectors. This part doesn't necessarily return the eigen values sorted */
-jacobi_output eigen_jacobi(matrix_t mat, size_t K);
+int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output);
 
 /* Given the diagonal matrix <mat>, pull out its eigen values - sort them, determine K (the amount of eigen vectors we want), and form an eigen-vectors matrix.
  * This part might use the eigen heuristic gap if it was given an invalid K as an argument.
  * Most of this function's work is to simply format the output of the jacobi algorithm - And when needed, apply the heuristic gap. */
-jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t K);
+int eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t K, jacobi_output* output);
 
 /* In case K wasn't given as an input, then try to determine it using the eigen heuristic gap.
  * Pre-Conditions:
@@ -73,14 +73,14 @@ int compare(const void* eigen1, const void* eigen2);
    If sort equals <true>, sort the eigen values..
    
    Returns `NULL` on allocation failure. */
-eigen* eigen_extract_eigen_values(matrix_t mat, bool sort);
+int eigen_extract_eigen_values(matrix_t mat, bool sort, eigen** output);
 
 /* In the jacobi algorithm, this is the function that transforms A_tag (the next matrix in the recursive algorithm), through the current A matrix */
 void eigen_update_jacobi_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, double c, double s);
 
 /* Given a symmetric matrix called <mat>, find the corresponding rotation matrix for it.
    The return value has a data field of `NULL` in case of allocation failure. */
-matrix_t eigen_build_rotation_matrix(matrix_t mat, matrix_ind loc, double c, double s);
+int eigen_build_rotation_matrix(matrix_t mat, matrix_ind loc, double c, double s, matrix_t* output);
 
 /* Given two matrices, determine the distance between their sum of squared off-diagonals */
 double eigen_distance_of_squared_offdiagonals(matrix_t mat1, matrix_t mat2);

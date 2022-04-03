@@ -7,10 +7,9 @@
 
 /******************************************************************************/
 
-static void handle_goal(matrix_t* output);
-static void handle_kmeans(size_t *initial_centroids_indices);
+static int handle_goal(matrix_t* output);
+static void kmeans(size_t *initial_centroids_indices);
 static void print_kmeans(size_t* initial_centroids_indices);
-
 
 static void assert_input(bool condition);
 static void assert_other(bool condition);
@@ -73,24 +72,34 @@ void spkmeans_pass_kmeans_info_and_run(dpoint_t *datapoints_from_py, size_t *ini
 	dim = dim_from_py;
 	num_data = num_data_from_py;
 	
-	handle_kmeans(initial_centroids_indices);
+	kmeans(initial_centroids_indices);
 }
 
 /*****************************************************************************/
 
-static void handle_goal(matrix_t *output) {
+static int handle_goal(matrix_t *output) {
 
-	if ( !strcmp(goal, "wam") ) print_weighted_adjacency_matrix();
-	if ( !strcmp(goal, "ddg") ) print_diagonal_degree_matrix();
-	if ( !strcmp(goal, "lnorm") ) print_normalized_laplacian();
-	if ( !strcmp(goal, "jacobi") ) print_jacobi_output();
-	if ( !strcmp(goal, "spk") ) {
-		*output = get_T_of_spectral_kmeans(K);
+	if ( strcmp(goal, "wam") == 0 ) {
+		if (0 != print_weighted_adjacency_matrix()) return BAD_ALLOC;
+		
+	} else if ( strcmp(goal, "ddg") == 0 ) {
+	 	if (0 != print_diagonal_degree_matrix()) return BAD_ALLOC;
+	 	
+	} else if ( strcmp(goal, "lnorm") == 0 ) {
+		if (0 != print_normalized_laplacian()) return BAD_ALLOC;
+		
+	} else if ( strcmp(goal, "jacobi") == 0 ) {
+		if (0 != print_jacobi_output()) return BAD_ALLOC;
+		
+	} else if ( strcmp(goal, "spk") == 0 ) {
+		if (0 != get_T_of_spectral_kmeans(K, output)) return BAD_ALLOC;
 	}
+	
+	return 0;
 }
 
 
-static void handle_kmeans(size_t *initial_centroids_indices) {
+static void kmeans(size_t *initial_centroids_indices) {
 	size_t i, iter, updated_centroids;
 
 	initialize_sets(initial_centroids_indices);

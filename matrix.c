@@ -2,28 +2,26 @@
 #include <stdio.h>
 #include <string.h>
 
-matrix_t matrix_new(size_t rows, size_t cols) {
-    matrix_t output;
+int matrix_new(size_t rows, size_t cols, matrix_t *output) {
     size_t len = rows * cols;
     double *data = calloc(len, sizeof(double));
+	if (NULL == data) return BAD_ALLOC;
 
-    output.data = data;
-    output.rows = rows;
-    output.cols = cols;
-    output.len = len;
+    output->data = data;
+    output->rows = rows;
+    output->cols = cols;
+    output->len = len;
 
-    return output;
+    return 0;
 }
 
-matrix_t matrix_clone(matrix_t mat) {
-    matrix_t cloned = matrix_new(mat.rows, mat.cols);
-    if(NULL == cloned.data) {
-        return cloned; /* return early to avoid accessing `data` */
-    }
+int matrix_clone(matrix_t mat, matrix_t *output) {
 
-    memcpy(cloned.data, mat.data, sizeof(double) * cloned.len);
+    if (0 != matrix_new(mat.rows, mat.cols, output)) return BAD_ALLOC;
 
-    return cloned;
+    memcpy(output->data, mat.data, sizeof(double) * output->len);
+
+    return 0;
 }
 
 void matrix_swap(matrix_t *mat1, matrix_t *mat2) {
@@ -33,18 +31,17 @@ void matrix_swap(matrix_t *mat1, matrix_t *mat2) {
 }
 
 
-matrix_t matrix_build(dpoint_t* vectors, size_t num_vectors, size_t dim) {
+int matrix_build_from_dpoints(dpoint_t* vectors, size_t num_vectors, size_t dim, matrix_t *output) {
 	size_t i, j;
-	matrix_t output = matrix_new(num_vectors, dim);
-    if(NULL == output.data) return output;
+	if (0 != matrix_new(num_vectors, dim, output)) return BAD_ALLOC;
 
-	for (i = 0; i < output.rows; i++) {
-		for (j = 0; j < output.cols; j++) {
-			matrix_set(output, i, j, vectors[i].data[j]); 
+	for (i = 0; i < output->rows; i++) {
+		for (j = 0; j < output->cols; j++) {
+			matrix_set(*output, i, j, vectors[i].data[j]); 
 		}
 	}
 	
-	return output;
+	return 0;
 }
 
 
@@ -109,11 +106,17 @@ void matrix_print_rows(matrix_t mat) {
 
 
 void matrix_print_cols(matrix_t mat) {
-	matrix_t transposed;
+	size_t idx, row, col;
 	
-	transposed = matrix_transpose(mat);
-	matrix_print_rows(transposed);
-	matrix_free_safe(transposed);
+    idx = 0;
+    for(col = 0; col < mat.cols; col++) {
+        for(row = 0; row < mat.rows; row++) {
+            printf("%.4f", mat.data[idx]);
+            if (col < mat.cols - 1) printf(",");
+            idx++;
+        }
+        puts("");
+    }
 }
 
 
@@ -146,10 +149,7 @@ int matrix_add(matrix_t mat1, matrix_t mat2, matrix_t *output) {
         return DIM_MISMATCH;
     }
 
-    *output = matrix_new(mat1.rows, mat1.cols);
-    if(NULL == output->data) {
-        return BAD_ALLOC;
-    }
+    if (0 != matrix_new(mat1.rows, mat1.cols, output)) return BAD_ALLOC;
 
     for(idx = 0; idx < mat1.len; idx++) {
         output->data[idx] = mat1.data[idx] + mat2.data[idx];
@@ -165,18 +165,15 @@ void matrix_mul_scalar_assign(matrix_t mat, double scalar) {
     }
 }
 
-matrix_t matrix_mul_scalar(matrix_t mat, double scalar) {
+int matrix_mul_scalar(matrix_t mat, double scalar, matrix_t* output) {
     size_t idx;
-    matrix_t output = matrix_new(mat.rows, mat.cols);
-    if(NULL == output.data) {
-        return output;
-    }
+	if (0 != matrix_new(mat.rows, mat.cols, output)) return BAD_ALLOC;
 
     for(idx = 0; idx < mat.len; idx++) {
-        output.data[idx] = mat.data[idx] * scalar;
+        output->data[idx] = mat.data[idx] * scalar;
     }
 
-    return output;
+    return 0;
 }
 
 int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output) {
@@ -185,11 +182,7 @@ int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output) {
         return DIM_MISMATCH;
     }
 
-    *output = matrix_new(mat1.rows, mat2.cols);
-    if(NULL == output->data) {
-        return BAD_ALLOC;
-    }
-
+    if (0 != matrix_new(mat1.rows, mat2.cols, output)) return BAD_ALLOC;
     idx = 0;
     for(i = 0; i < output->rows; i++) {
         size_t j;
@@ -253,30 +246,28 @@ int matrix_mul_assign_to_second(matrix_t mat1, matrix_t *mat2) {
 
 
 
-matrix_t matrix_identity(size_t dim) {
+int matrix_identity(size_t dim, matrix_t* output) {
 	size_t i;
-	matrix_t output = matrix_new(dim, dim);
-    if(NULL == output.data) return output;
+	if (0 != matrix_new(dim, dim, output)) return BAD_ALLOC;
  
  	for (i = 0; i < dim; i++) {
-		matrix_set(output, i, i, 1);
+		matrix_set(*output, i, i, 1);
  	}
  	
- 	return output;
+ 	return 0;
 }
 
 
 
-matrix_t matrix_transpose(matrix_t mat) {
+int matrix_transpose(matrix_t mat, matrix_t* output) {
 	size_t i, j;
-	matrix_t output = matrix_new(mat.cols, mat.rows);
-    if(NULL == output.data) return output;
+	if (0 != matrix_new(mat.cols, mat.rows, output)) return BAD_ALLOC;
 
-	for (i = 0; i < output.rows; i++) {
-		for (j = 0; j < output.cols; j++) {
-			matrix_set(output, i, j, matrix_get(mat, j, i));
+	for (i = 0; i < output->rows; i++) {
+		for (j = 0; j < output->cols; j++) {
+			matrix_set(*output, i, j, matrix_get(mat, j, i));
 		}
 	}
 	
-	return output;
+	return 0;
 }

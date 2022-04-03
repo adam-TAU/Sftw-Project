@@ -19,19 +19,16 @@ void eigen_print_jacobi(jacobi_output out) {
 
 
 
-jacobi_output eigen_jacobi(matrix_t mat, size_t K) {
+int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 	size_t iterations = 0;
 	matrix_t A, A_tag, P, V;
-	jacobi_output jacobi_output;
     matrix_ind loc;
     double s, c;
 
-	V = matrix_identity(mat.rows);
-	A_tag = matrix_clone(mat);
-	A = matrix_clone(mat);
+	if (0 != matrix_identity(mat.rows, &V)) goto error;
+	if (0 != matrix_clone(mat, &A_tag)) goto error;
+	if (0 != matrix_clone(mat, &A)) goto error;
     P.data = NULL;
-
-    if(NULL == V.data || NULL == A_tag.data || NULL == A.data) goto error;
 	
 	do {
 		iterations++;
@@ -40,11 +37,9 @@ jacobi_output eigen_jacobi(matrix_t mat, size_t K) {
         loc = eigen_ind_of_largest_offdiagonal(A);
         eigen_calc_c_s(&c, &s, A, loc);
 
-		P = eigen_build_rotation_matrix(A, loc, c, s);
-        if(NULL == P.data) goto error;
+		if (0 != eigen_build_rotation_matrix(A, loc, c, s, &P)) goto error;
 
-		matrix_mul_assign_to_first(&V, P);
-        if(NULL == V.data) goto error;
+		if (0 != matrix_mul_assign_to_first(&V, P)) goto error;
 				
 		eigen_update_jacobi_A_tag(A_tag, A, loc, c, s);
 		matrix_free(P);
@@ -52,8 +47,7 @@ jacobi_output eigen_jacobi(matrix_t mat, size_t K) {
 	} while (( eigen_distance_of_squared_offdiagonals(A, A_tag) > epsilon ) && ( iterations <= 100 ));
 	
 	/* Extract the eigen values and eigen vectors and insert them into an output format */
-	jacobi_output = eigen_format_eigen_vectors(V, A_tag, K);
-    if(jacobi_output.signal != 0) goto error;
+	if (0 != eigen_format_eigen_vectors(V, A_tag, K, output)) goto error;
 	
 	/* In this case we had to create another matrix to hold the wanted eigen vectors */
 	if (K <= V.cols) { 
@@ -62,30 +56,28 @@ jacobi_output eigen_jacobi(matrix_t mat, size_t K) {
 	
 	matrix_free(A);
 	matrix_free(A_tag);
-	return jacobi_output;
+	return 0;
 
 error:
     matrix_free_safe(A);
     matrix_free_safe(A_tag);
     matrix_free_safe(P);
     matrix_free_safe(V);
-    jacobi_output.signal = BAD_ALLOC;
-    return jacobi_output;
+
+    return BAD_ALLOC;
 }
 
 
 
-jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t K) {
+int eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t K, jacobi_output* output) {
 	size_t i, j;
 	eigen* sorted_eigen_values = NULL;
 	matrix_t U_eigen_vectors;
-	jacobi_output result;
 	
 	
 	if (K <= mat_vectors.cols) {	
 		/* find K */
-		sorted_eigen_values = eigen_extract_eigen_values(mat_eigens, true);
-        if(NULL == sorted_eigen_values) goto error;
+		if (0 != eigen_extract_eigen_values(mat_eigens, true, &sorted_eigen_values)) goto error;
 		
 		/* If K == 0, it means the CMD asked us to use the heuristic gap to determine K */
 		if (K == 0) { 
@@ -93,8 +85,7 @@ jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eige
 		}
 		
 		/* Form a matrix with the K-first eigen values */
-		U_eigen_vectors = matrix_new(mat_vectors.rows, K);
-        if(NULL == U_eigen_vectors.data) goto error;
+		if (0 != matrix_new(mat_vectors.rows, K, &U_eigen_vectors)) goto error;
 
 		for (j = 0; j < K; j++) {
 			size_t eigen_col = sorted_eigen_values[j].col;
@@ -105,27 +96,25 @@ jacobi_output eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eige
 		}
 		
 		/* Format the output */
-		result.K_eigen_vectors = U_eigen_vectors;
-		result.eigen_values = sorted_eigen_values;
+		output->K_eigen_vectors = U_eigen_vectors;
+		output->eigen_values = sorted_eigen_values;
 		
 	} else {
 		/* If K > mat_vectors.cols, it means that the jacobi algorithm was powered alone.
-		 * That i, since K > mat_vectors.cols is prohibited by the python CMD interface.
+		 * That is, since K > mat_vectors.cols is prohibited by the python CMD interface.
 		 * Moreover, it's since we use this case as an indicator to when jacobi was powered without any future spectral clustering use. 
 		 * In such case, a jacobi algorithm alone isn't due to any specification of K, and we will return all of the eigen values/vectors (unsorted) */
-		result.K_eigen_vectors = mat_vectors;
-		result.eigen_values = eigen_extract_eigen_values(mat_eigens, false);
-        if(NULL == result.eigen_values) goto error;
+		output->K_eigen_vectors = mat_vectors;
+		if (0 != eigen_extract_eigen_values(mat_eigens, false, &output->eigen_values)) goto error;
 	}
 	
-	return result;
+	return 0;
 
 error:
     if(sorted_eigen_values) {
         free(sorted_eigen_values);
     }
-    result.signal = BAD_ALLOC;
-    return result;
+    return BAD_ALLOC;
 }
 
 
@@ -153,23 +142,22 @@ int eigen_compare(const void* eigen1, const void* eigen2) {
 
 
 
-eigen* eigen_extract_eigen_values(matrix_t mat, bool sort) {
+int eigen_extract_eigen_values(matrix_t mat, bool sort, eigen** output) {
 	size_t i;
-	eigen* eigen_values;
 	
-	eigen_values = malloc(mat.rows * sizeof(eigen));
-    if(NULL == eigen_values) return NULL;
+	*output = malloc(mat.rows * sizeof(eigen));
+    if(NULL == *output) return BAD_ALLOC;
 
 	for (i = 0; i < mat.cols; i++) {
-		eigen_values[i].value = matrix_get(mat, i, i);
-		eigen_values[i].col = i;
+		(*output)[i].value = matrix_get(mat, i, i);
+		(*output)[i].col = i;
 	}
 	
 	if (sort) {
-		qsort(eigen_values, mat.rows, sizeof(eigen), eigen_compare);
+		qsort(*output, mat.rows, sizeof(eigen), eigen_compare);
 	}
 	
-	return eigen_values;
+	return 0;	
 }
 
 
@@ -208,25 +196,22 @@ void eigen_update_jacobi_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, doubl
 
 
 
-matrix_t eigen_build_rotation_matrix(matrix_t mat, matrix_ind loc, double c, double s) {
-    matrix_t P_rotation;
+int eigen_build_rotation_matrix(matrix_t mat, matrix_ind loc, double c, double s, matrix_t* output) {
 	size_t i, j;
 	
 	i = loc.i;
 	j = loc.j;
 	
-	P_rotation = matrix_identity(mat.rows);
-    if(NULL == P_rotation.data) return P_rotation;
-	
-	matrix_set(P_rotation, i, i, c); 
-	matrix_set(P_rotation, j, j, c);
+	if (0 != matrix_identity(mat.rows, output)) return BAD_ALLOC;
+ 
+	matrix_set(*output, i, i, c); 
+	matrix_set(*output, j, j, c);
 
     s *= (i < j) ? 1 : -1;
-	matrix_set(P_rotation, i, j, s);  
-	matrix_set(P_rotation, j, i, -s);
+	matrix_set(*output, i, j, s);  
+	matrix_set(*output, j, i, -s);
 
-	
-	return P_rotation;
+	return 0;
 }
 
 

@@ -32,13 +32,13 @@ typedef struct {
 
    In case of allocation failure, the output matrix has a `data` field of
    `NULL`. */
-matrix_t matrix_new(size_t rows, size_t cols);
+int matrix_new(size_t rows, size_t cols, matrix_t* output);
 
 /* Clones the given matrix into a newly allocated matrix.
 
    In case of allocation failure, the output matrix has a `data` field of
    `NULL`. */
-matrix_t matrix_clone(matrix_t mat);
+int matrix_clone(matrix_t mat, matrix_t* output);
 
 /* Swaps the data contained in both matrix instances.
    This doesn't allocate, and is useful for loops. */
@@ -48,7 +48,7 @@ void matrix_swap(matrix_t *mat1, matrix_t *mat2);
    
    In case of allocation failure, the output matrix has a `data` field of
    `NULL`. */
-matrix_t matrix_build(dpoint_t* vectors, size_t num_vectors, size_t dim);
+int matrix_build_from_dpoints(dpoint_t* vectors, size_t num_vectors, size_t dim, matrix_t* output);
 
 /* Calculates the index of the desired element for use with the matrix's
    inner `data` field. This is mainly used for optimization.
@@ -110,7 +110,7 @@ void matrix_mul_scalar_assign(matrix_t mat, double scalar);
 
    In case of allocation failure, the output matrix has a `data` field of
    `NULL`. */
-matrix_t matrix_mul_scalar(matrix_t mat, double scalar);
+int matrix_mul_scalar(matrix_t mat, double scalar, matrix_t* output);
 
 /*
  * MATRIX MULTIPLICATION
@@ -152,12 +152,12 @@ int matrix_mul_assign_to_second(matrix_t mat1, matrix_t *mat2);
 
    In case of allocation failure, the output matrix has a `data` field of
    `NULL`. */
-matrix_t matrix_identity(size_t dim);
+int matrix_identity(size_t dim, matrix_t* output);
 
 /* Given a matrix named <mat>, return <mat ^ t>: meaning its transposed matrix.
 
    In case of allocation failure, the output matrix has a `data` field of
    `NULL`. */
-matrix_t matrix_transpose(matrix_t mat);
+int matrix_transpose(matrix_t mat, matrix_t* output);
 
 #endif /* MATRIX_H */

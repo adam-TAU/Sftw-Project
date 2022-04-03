@@ -16,33 +16,34 @@ double euclidean_norm(dpoint_t v1, dpoint_t v2, size_t dim) {
 
 
 
-matrix_t graph_adjacent_matrix(dpoint_t input[], size_t num_data, size_t dim) {
+int graph_adjacent_matrix(dpoint_t input[], size_t num_data, size_t dim, matrix_t* output) {
 	size_t i, j;
-	matrix_t output = matrix_new(num_data, num_data);
+	if (matrix_new(num_data, num_data, output) != 0) {
+		return BAD_ALLOC;
+	}
 
-    if(NULL == output.data) return output;
 
 	for (i = 0; i < num_data; i++) {
         /* starting with j = i + 1 ensures none of the diagonal values are nonzero */
 		for (j = i + 1; j < num_data; j++) {
 			double tmp = exp( euclidean_norm( input[i], input[j], dim ) * (-0.5) );
-			matrix_set(output, i, j, tmp);
-			matrix_set(output, j, i, tmp);
+			matrix_set(*output, i, j, tmp);
+			matrix_set(*output, j, i, tmp);
 		}
 	}
-	
-	return output;
+	return 0;
 }
 
 
 
-matrix_t graph_diagonal_degree_matrix(matrix_t mat, bool is_sqrt) {
+int graph_diagonal_degree_matrix(matrix_t mat, bool is_sqrt, matrix_t* output) {
 	size_t i, j;
 	size_t dimension = mat.rows;
-	matrix_t output = matrix_new(mat.rows, mat.cols);
 	
-	if(NULL == output.data) return output;
-    
+	if(matrix_new(mat.rows, mat.cols, output) != 0) {
+		return BAD_ALLOC;
+	}
+	    
 	for (i = 0; i < dimension; i++) {
 		double sum = 0.0, result;
 		
@@ -51,10 +52,10 @@ matrix_t graph_diagonal_degree_matrix(matrix_t mat, bool is_sqrt) {
 		}
 		
 		result = is_sqrt ? (1 / sqrt(sum)) : sum;
-		matrix_set(output, i, i, result);
+		matrix_set(*output, i, i, result);
 	}
 	
-	return output;
+	return 0;
 }
 
 
@@ -70,14 +71,11 @@ int graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, ma
     I.data = NULL;
     MULT.data = NULL;
 	
-	I = matrix_identity(num_data);
-    if(NULL == I.data) goto error;
+	if (0 != matrix_identity(num_data, &I)) goto error;
 
-	W = graph_adjacent_matrix(input, num_data, dim);
-    if(NULL == W.data) goto error;
+	if (0 != graph_adjacent_matrix(input, num_data, dim, &W)) goto error;
 
-	D = graph_diagonal_degree_matrix(W, true);
-    if(NULL == D.data) goto error;
+	if (0 != graph_diagonal_degree_matrix(W, true, &D)) goto error;
 	
 	if(0 != matrix_mul(D, W, &MULT)) goto error;
 	if(0 != matrix_mul_assign_to_first(&MULT, D)) goto error;

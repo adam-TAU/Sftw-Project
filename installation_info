@@ -1,0 +1,36 @@
+running install
+running bdist_egg
+running egg_info
+creating spkmeans.egg-info
+writing spkmeans.egg-info/PKG-INFO
+writing dependency_links to spkmeans.egg-info/dependency_links.txt
+writing top-level names to spkmeans.egg-info/top_level.txt
+writing manifest file 'spkmeans.egg-info/SOURCES.txt'
+reading manifest file 'spkmeans.egg-info/SOURCES.txt'
+writing manifest file 'spkmeans.egg-info/SOURCES.txt'
+installing library code to build/bdist.linux-x86_64/egg
+running install_lib
+running build_ext
+creating build/bdist.linux-x86_64
+creating build/bdist.linux-x86_64/egg
+copying build/lib.linux-x86_64-3.9/spkmeans.cpython-39-x86_64-linux-gnu.so -> build/bdist.linux-x86_64/egg
+creating stub loader for spkmeans.cpython-39-x86_64-linux-gnu.so
+byte-compiling build/bdist.linux-x86_64/egg/spkmeans.py to spkmeans.cpython-39.pyc
+creating build/bdist.linux-x86_64/egg/EGG-INFO
+copying spkmeans.egg-info/PKG-INFO -> build/bdist.linux-x86_64/egg/EGG-INFO
+copying spkmeans.egg-info/SOURCES.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
+copying spkmeans.egg-info/dependency_links.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
+copying spkmeans.egg-info/top_level.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
+writing build/bdist.linux-x86_64/egg/EGG-INFO/native_libs.txt
+creating dist
+creating 'dist/spkmeans-0.0.1-py3.9-linux-x86_64.egg' and adding 'build/bdist.linux-x86_64/egg' to it
+removing 'build/bdist.linux-x86_64/egg' (and everything under it)
+Processing spkmeans-0.0.1-py3.9-linux-x86_64.egg
+removing '/usr/local/lib/python3.9/dist-packages/spkmeans-0.0.1-py3.9-linux-x86_64.egg' (and everything under it)
+creating /usr/local/lib/python3.9/dist-packages/spkmeans-0.0.1-py3.9-linux-x86_64.egg
+Extracting spkmeans-0.0.1-py3.9-linux-x86_64.egg to /usr/local/lib/python3.9/dist-packages
+spkmeans 0.0.1 is already the active version in easy-install.pth
+
+Installed /usr/local/lib/python3.9/dist-packages/spkmeans-0.0.1-py3.9-linux-x86_64.egg
+Processing dependencies for spkmeans==0.0.1
+Finished processing dependencies for spkmeans==0.0.1

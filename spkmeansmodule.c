@@ -39,7 +39,7 @@ static PyObject* run_goal(PyObject *self, PyObject *args) {
 	int signal;
 
 	/* Fetch the string of the infile */
-	if(!PyArg_ParseTuple(args, "s", &infile)) {
+	if(!PyArg_ParseTuple(args, "lss", &K, &goal, &infile)) {
 		return NULL;
 	}
 
@@ -48,7 +48,7 @@ static PyObject* run_goal(PyObject *self, PyObject *args) {
 		goto error_goal;
 
 	} else if (strcmp(goal, "spk") == 0) { /* run succeeded. goal was "spk", therefore we have to return to python the output of the goal's mechanism */
-
+		
 		/* Initializing T_points as a list */
 		if ( NULL == (T_points = PyList_New(K)) ) {
 			PyErr_SetString(PyExc_RuntimeError, "Error: trying to create a new python list!");
@@ -57,17 +57,20 @@ static PyObject* run_goal(PyObject *self, PyObject *args) {
 
 		/* Buildin the T_points matrix into a python list of lists */
 		if (0 != matrixToList(output, &T_points)) goto error_generic;
-
+		matrix_free_safe(output);
+		
 		return T_points;
 	}
 
 	Py_RETURN_NONE;
 
 error_generic:
+	matrix_free_safe(output);
 	Py_XDECREF(T_points);
 	return NULL;
 
 error_goal:
+	matrix_free_safe(output);
 	if (signal == BAD_ALLOC) error_str = "Error: Bad Allocation!";
 	if (signal == DIM_MISMATCH) error_str = "Error: Dimension Mismatch!";
 	PyErr_SetString(PyExc_RuntimeError, error_str);
@@ -80,7 +83,6 @@ static PyObject* kmeans_fit(PyObject *self, PyObject *args) {
 	/* parsing the given lists as arrays (If an error has been captured
 	 * a PyExc has been set, and we return NULL */
 	if (0 != py_parse_args(args)) {
-		PyErr_SetString(PyExc_RuntimeError, "Error: Argument parsing failed!");
 		return NULL;
 	}
 
@@ -106,7 +108,7 @@ static int py_parse_args(PyObject *args) {
 	PyObject *initial_centroids_indices_py = NULL;
 
 	/* Fetching Arguments from Python */
-	if(!PyArg_ParseTuple(args, "iiidiOO", &K, &dim, &num_data, &datapoints_py, &initial_centroids_indices_py)) {
+	if(!PyArg_ParseTuple(args, "OllOl", &datapoints_py, &num_data, &dim, &initial_centroids_indices_py, &K)) {
 		return 1;
 	}
 
@@ -305,7 +307,7 @@ static struct PyModuleDef moduledef = {
 
 
 PyMODINIT_FUNC
-PyInit_mykmeanssp(void) {
+PyInit_spkmeans(void) {
 	PyObject *m;
 	m = PyModule_Create(&moduledef);
 	if (!m) {

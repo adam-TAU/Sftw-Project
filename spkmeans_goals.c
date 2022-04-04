@@ -26,8 +26,9 @@ int print_weighted_adjacency_matrix() {
 
 int print_diagonal_degree_matrix() {
 	matrix_t WAM, output;
+	
 	if (0 != graph_adjacent_matrix(datapoints, num_data, dim, &WAM)) goto error;
-
+	
 	if (0 != graph_diagonal_degree_matrix(WAM, false, &output)) goto error;
 
 	/* Printing and free-ing */
@@ -83,7 +84,7 @@ int get_T_of_spectral_kmeans(size_t K, matrix_t* output) {
 
 
 	if (0 != graph_normalized_laplacian(datapoints, num_data, dim, &L_norm)) goto error;
-
+	
 	if (0 != eigen_jacobi(L_norm, K, &jacobi_res)) goto error;
 
 	if (0 != matrix_new(jacobi_res.K_eigen_vectors.rows, jacobi_res.K_eigen_vectors.cols, output)) goto error;
@@ -91,12 +92,12 @@ int get_T_of_spectral_kmeans(size_t K, matrix_t* output) {
 	for (i = 0; i < output->rows; i++) {
 		double norm_of_row = 0;
 		for (j = 0; j < output->cols; j++) {
-			norm_of_row += pow( matrix_get(*output, i, j), 2 );
+			norm_of_row += pow( matrix_get(jacobi_res.K_eigen_vectors, i, j), 2 );
 		}
 		norm_of_row = pow( norm_of_row, 0.5 );
 
 		for (j = 0; j < output->cols; j++) {
-			matrix_set(*output, i, j, matrix_get(*output, i, j) / norm_of_row );
+			matrix_set(*output, i, j, matrix_get(jacobi_res.K_eigen_vectors, i, j) / norm_of_row );
 		}
 	}
 

@@ -73,7 +73,6 @@ void spkmeans_pass_kmeans_info_and_run(size_t *initial_centroids_indices) {
 /*************************** 2 DIFFERENT MAIN MECHANISMS ************************************/
 
 static int handle_goal(matrix_t *output) {
-
 	if ( strcmp(goal, "wam") == 0 ) {
 		if (0 != print_weighted_adjacency_matrix()) goto error;
 

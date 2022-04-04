@@ -59,9 +59,11 @@ int print_jacobi_output() {
 
 	/* making sure that the given vectors' dataset represents a symmetric matrix (else jacobi isn't feasible) */
 	assert_other(num_data == dim);
+	
+	/* Converting the input into a matrix and sending it into the jacobi algorithm */
 	if (0 != matrix_build_from_dpoints(datapoints, num_data, dim, &jacobi_input)) goto error;
-
-	if( 0 != eigen_jacobi(jacobi_input, num_data + 1, &output)) goto error;
+	
+	if (0 != eigen_jacobi(jacobi_input, num_data + 1, &output)) goto error;
 
 	/* Printing and free-ing */
 	eigen_print_jacobi(output);

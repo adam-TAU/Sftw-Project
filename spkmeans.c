@@ -359,7 +359,7 @@ static void print_kmeans(size_t* initial_centroids_indices) {
 			if (j < dim - 1) printf(",");
 		}
 		
-		if (i < K - 1) puts("");
+		puts("");
 	}
 }
 

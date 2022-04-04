@@ -100,7 +100,7 @@ void matrix_print_rows(matrix_t mat) {
 			if (col < mat.cols - 1) printf(",");
 			idx++;
 		}
-		if (row < mat.rows - 1) puts("");
+		puts("");
 	}
 }
 
@@ -115,7 +115,7 @@ void matrix_print_cols(matrix_t mat) {
 			if (row < mat.rows - 1) printf(",");
 			idx++;
 		}
-		if (col < mat.cols - 1) puts("");
+		puts("");
 	}
 }
 

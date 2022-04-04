@@ -27,8 +27,7 @@ static void free_datapoint(dpoint_t);
 void free_program(void);
 
 
-/*****************************************************************************/
-
+/**************************** AUXILIARY FUNCTIONS *********************************/
 static void assert_input(bool condition) {
 	if(!condition) {
 		puts("Invalid Input!");
@@ -44,6 +43,10 @@ void assert_other(bool condition) {
 		exit(1);
 	}
 }
+/*****************************************************************************/
+
+
+
 
 
 
@@ -55,7 +58,11 @@ size_t dim = 0;
 size_t num_data = 0;
 dpoint_t *datapoints = NULL;
 
-set_t *sets = NULL;
+static set_t *sets = NULL;
+/*****************************************************************************/
+
+
+
 
 
 /********************** USED BY THE CPython INTERFACE ******************************/
@@ -66,11 +73,21 @@ int spkmeans_pass_goal_info_and_run(char *infile, matrix_t *output) {
 
 
 void spkmeans_pass_kmeans_info_and_run(size_t *initial_centroids_indices) {
-
 	kmeans(initial_centroids_indices);
+	
+	if (initial_centroids_indices != NULL) {
+		free(initial_centroids_indices);
+	}
 }
+/*****************************************************************************/
 
-/*************************** 2 DIFFERENT MAIN MECHANISMS ************************************/
+
+
+
+
+
+
+/*************************** 2 SEPARATE MAIN MECHANISMS ************************************/
 
 static int handle_goal(matrix_t *output) {
 	if ( strcmp(goal, "wam") == 0 ) {
@@ -132,10 +149,12 @@ static void kmeans(size_t *initial_centroids_indices) {
 	print_kmeans(initial_centroids_indices);
 	free_program();
 }
-
-
 /*****************************************************************************/
 
+
+
+
+/****************************** MAIN FUNCTION ************************************/
 int main(int argc, char **argv) {
 	char *infile;
 
@@ -146,7 +165,12 @@ int main(int argc, char **argv) {
 	/* printf("dim = %li, N = %li\n", dim, num_data); */
 	return 0;
 }
+/*****************************************************************************/
 
+
+
+
+/***************************** KMEANS++ MECHANISM **************************/
 /* Assigns the given datapoint to the closest set that it can find, using the
  * sqdist function. */
 static void assign_to_closest(dpoint_t dpoint) {
@@ -353,7 +377,7 @@ void free_program() {
 		}
 		free(datapoints);
 	}
-
+	
 	if(NULL != sets) {
 		for(i = 0; i < K; i++) {
 			free_datapoint(sets[i].current_centroid);
@@ -362,4 +386,4 @@ void free_program() {
 		free(sets);
 	}
 }
-
+/*****************************************************************************/

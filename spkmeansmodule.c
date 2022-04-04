@@ -24,8 +24,8 @@ static int py_parse_args(PyObject*);
 
 
 /**************************************************************************/
-double** datapoints_arg = NULL;
-size_t* initial_centroids_indices = NULL;
+static double** datapoints_arg = NULL;
+static size_t* initial_centroids_indices = NULL;
 /**************************************************************************/
 
 
@@ -214,7 +214,7 @@ static int listToArray_D(PyObject *list, size_t length, double* output) {
 	PyObject *pypoint = NULL;
 
 	/* first check if the given PyObject is indeed a list */
-	if (!PyList_Check(output)) {
+	if (!PyList_Check(list)) {
 		PyErr_SetString(PyExc_TypeError, "The passed argument isn't a list");
 		goto error;
 	}
@@ -230,8 +230,9 @@ static int listToArray_D(PyObject *list, size_t length, double* output) {
 		}
 		output[i] = (double) PyFloat_AsDouble(pypoint);
 	}
+	
+	Py_XDECREF(pypoint);
 	return 0;
-
 
 error:
 	/* If any of the CPython functions fail */
@@ -249,7 +250,7 @@ static int listToArray_L(PyObject *list, size_t length, size_t* output) {
 	PyObject *pypoint = NULL;
 
 	/* first check if the given PyObject is indeed a list */
-	if (!PyList_Check(output)) {
+	if (!PyList_Check(list)) {
 		PyErr_SetString(PyExc_TypeError, "The passed argument isn't a list");
 		goto error;
 	}
@@ -265,6 +266,8 @@ static int listToArray_L(PyObject *list, size_t length, size_t* output) {
 		}
 		output[i] = (size_t) PyLong_AsLong(pypoint);
 	}
+	
+	Py_XDECREF(pypoint);
 	return 0;
 
 

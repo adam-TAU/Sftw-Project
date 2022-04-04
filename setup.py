@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages, Extension
-
+import sysconfig
 
 setup(
         name='spkmeans',
@@ -12,6 +12,7 @@ setup(
                 'spkmeans',
                 ['spkmeansmodule.c', 'spkmeans.c', 'spkmeans_goals.c', 'matrix.c', 'graph.c', 'eigen.c'],
                 depends = ['spkmeans.h', 'spkmeans_goals.h', 'matrix.h', 'graph.h', 'eigen.h'],
-                ),
+		extra_compile_flags=sysconfig.get_config_var('CFLAGS').split() + ['-g3'],
+		),
             ]
         )

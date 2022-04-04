@@ -361,7 +361,8 @@ static void print_kmeans(size_t* initial_centroids_indices) {
 			printf("%.4f", sets[i].current_centroid.data[j]);
 			if (j < dim - 1) printf(",");
 		}
-		if (i < K - 1) puts("");
+		
+		if (i != K) puts("");
 	}
 }
 
@@ -371,12 +372,12 @@ static void print_kmeans(size_t* initial_centroids_indices) {
 void free_program() {
 	size_t i;
 
-	if(NULL != datapoints) {
+	/* if(NULL != datapoints) {
 		for(i = 0; i < num_data; i++) {
 			free_datapoint(datapoints[i]);
 		}
 		free(datapoints);
-	}
+	} */
 	
 	if(NULL != sets) {
 		for(i = 0; i < K; i++) {

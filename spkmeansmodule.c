@@ -18,7 +18,7 @@ static PyObject* kmeans_fit(PyObject *self, PyObject *args);
 static int matrixToList(const matrix_t mat, PyObject **output);
 static int listToArray_D(PyObject *list, size_t length, double* output);
 static int listToArray_L(PyObject *list, size_t length, size_t* output);
-static int py_parse_args(PyObject*);
+static int py_kmeans_parse_args(PyObject*);
 
 /**************************************************************************/
 
@@ -82,7 +82,7 @@ error_goal:
 static PyObject* kmeans_fit(PyObject *self, PyObject *args) {
 	/* parsing the given lists as arrays (If an error has been captured
 	 * a PyExc has been set, and we return NULL */
-	if (0 != py_parse_args(args)) {
+	if (0 != py_kmeans_parse_args(args)) {
 		return NULL;
 	}
 
@@ -102,7 +102,7 @@ static PyObject* kmeans_fit(PyObject *self, PyObject *args) {
 
 /* This parses the given Python arguments into C-represented Objects + manage Reference counts of Py args 
  * Returns 0 on success, and 1 on failure */
-static int py_parse_args(PyObject *args) {
+static int py_kmeans_parse_args(PyObject *args) {
 	size_t i;
 	PyObject *datapoints_py = NULL;
 	PyObject *initial_centroids_indices_py = NULL;

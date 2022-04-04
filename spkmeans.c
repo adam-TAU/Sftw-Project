@@ -352,17 +352,15 @@ static void print_kmeans(size_t* initial_centroids_indices) {
 	for (i = 0; i < K; i++) {
 		printf("%li", initial_centroids_indices[i]);
 		if (i < K - 1) printf(",");
+		else printf("\n");
 	}
 
-	puts("");
-
-	for (i = 0; i < K; i++) {
+	for (i = 0; i < K; i++) {	
 		for (j = 0; j < dim; j++) {
 			printf("%.4f", sets[i].current_centroid.data[j]);
 			if (j < dim - 1) printf(",");
+			else printf("\n");
 		}
-		
-		if (i != K) puts("");
 	}
 }
 

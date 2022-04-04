@@ -29,7 +29,7 @@ int print_diagonal_degree_matrix() {
 	
 	if (0 != graph_adjacent_matrix(datapoints, num_data, dim, &WAM)) goto error;
 	
-	if (0 != graph_diagonal_degree_matrix(WAM, false, &output)) goto error;
+	if (0 != graph_diagonal_degree_matrix(WAM, true, &output)) goto error;
 
 	/* Printing and free-ing */
 	matrix_print_rows(output);

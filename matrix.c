@@ -100,7 +100,7 @@ void matrix_print_rows(matrix_t mat) {
 			if (col < mat.cols - 1) printf(",");
 			idx++;
 		}
-		puts("");
+		if (row < mat.rows - 1) puts("");
 	}
 }
 
@@ -112,10 +112,10 @@ void matrix_print_cols(matrix_t mat) {
 	for(col = 0; col < mat.cols; col++) {
 		for(row = 0; row < mat.rows; row++) {
 			printf("%.4f", mat.data[idx]);
-			if (col < mat.cols - 1) printf(",");
+			if (row < mat.rows - 1) printf(",");
 			idx++;
 		}
-		puts("");
+		if (col < mat.cols - 1) puts("");
 	}
 }
 

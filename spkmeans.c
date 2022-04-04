@@ -352,15 +352,17 @@ static void print_kmeans(size_t* initial_centroids_indices) {
 	for (i = 0; i < K; i++) {
 		printf("%li", initial_centroids_indices[i]);
 		if (i < K - 1) printf(",");
-		else printf("\n");
 	}
+	
+	puts("");
 
 	for (i = 0; i < K; i++) {	
 		for (j = 0; j < dim; j++) {
 			printf("%.4f", sets[i].current_centroid.data[j]);
 			if (j < dim - 1) printf(",");
-			else printf("\n");
 		}
+		
+		if (i < K - 1) puts("");
 	}
 }
 
@@ -368,8 +370,9 @@ static void print_kmeans(size_t* initial_centroids_indices) {
 /* Frees all of the memory allocated by the program. If a certain variable
  * hasn't been allocated yet, this function does not attempt to free it. */
 void free_program() {
-	size_t i;
+	size_t i = 0;
 
+	/* Causing munmap_chunk(): invlaid pointer, free(): invalid pointer issues (both free-ing blocks) */
 	/* if(NULL != datapoints) {
 		for(i = 0; i < num_data; i++) {
 			free_datapoint(datapoints[i]);
@@ -377,12 +380,12 @@ void free_program() {
 		free(datapoints);
 	} */
 	
-	if(NULL != sets) {
+	/* if(NULL != sets) {
 		for(i = 0; i < K; i++) {
 			free_datapoint(sets[i].current_centroid);
 			free_datapoint(sets[i].sum);
 		}
 		free(sets);
-	}
+	} */
 }
 /*****************************************************************************/

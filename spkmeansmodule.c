@@ -16,8 +16,8 @@ static PyObject* run_goal(PyObject *self, PyObject *args);
 static PyObject* kmeans_fit(PyObject *self, PyObject *args);
 
 static int matrixToList(const matrix_t mat, PyObject **output);
-static int listToArray_D(PyObject *list, size_t length, double* output);
-static int listToArray_L(PyObject *list, size_t length, size_t* output);
+static int listToArray_D(PyObject *list, size_t length, double** output);
+static int listToArray_L(PyObject *list, size_t length, size_t** output);
 static int py_kmeans_parse_args(PyObject*);
 
 /**************************************************************************/
@@ -125,14 +125,11 @@ static int py_kmeans_parse_args(PyObject *args) {
 			goto error;
 		}
 
-		/* Appending the comprehensive array */
-		init_datapoint(&datapoints[i]);
-		if (0 != listToArray_D(tmpItem, dim, datapoints[i].data)) goto error;
+		/* Appending a new datapoint to the datapoints array */
+		if (0 != listToArray_D(tmpItem, dim, &datapoints[i].data)) goto error;
 	}
 
-	initial_centroids_indices = calloc(K, sizeof(size_t));
-	assert_other(NULL != initial_centroids_indices);
-	if (0 != listToArray_L(initial_centroids_indices_py, K, initial_centroids_indices)) goto error;
+	if (0 != listToArray_L(initial_centroids_indices_py, K, &initial_centroids_indices)) goto error;
 
 	Py_XDECREF(datapoints_py);
 	return 0;
@@ -209,7 +206,7 @@ error:
 
 /* This parses a python Floats' List into a C Double's array
  * No need to worry about reference counts, it's managed by py_parse_args() */
-static int listToArray_D(PyObject *list, size_t length, double* output) {
+static int listToArray_D(PyObject *list, size_t length, double** output) {
 	size_t i;
 	PyObject *pypoint = NULL;
 
@@ -218,6 +215,10 @@ static int listToArray_D(PyObject *list, size_t length, double* output) {
 		PyErr_SetString(PyExc_TypeError, "The passed argument isn't a list");
 		goto error;
 	}
+	
+	/* Initialize the array */
+	(*output) = calloc(length, sizeof(**output));
+	assert_other(NULL != (*output));
 
 
 	/* Insert the data into the array */
@@ -228,7 +229,7 @@ static int listToArray_D(PyObject *list, size_t length, double* output) {
 			PyErr_SetString(PyExc_TypeError, "Must pass an list of floats");
 			goto error;
 		}
-		output[i] = (double) PyFloat_AsDouble(pypoint);
+		(*output)[i] = (double) PyFloat_AsDouble(pypoint);
 	}
 	
 	Py_XDECREF(pypoint);
@@ -245,7 +246,7 @@ error:
 
 /* This parses a python Integers' List into a C Long's array
  * No need to worry about reference counts, it's managed by py_parse_args() */
-static int listToArray_L(PyObject *list, size_t length, size_t* output) {
+static int listToArray_L(PyObject *list, size_t length, size_t** output) {
 	size_t i;
 	PyObject *pypoint = NULL;
 
@@ -255,6 +256,9 @@ static int listToArray_L(PyObject *list, size_t length, size_t* output) {
 		goto error;
 	}
 
+	/* Initialize the array */
+	(*output) = calloc(length, sizeof(**output));
+	assert_other(NULL != (*output));
 
 	/* Insert the data into the array */
 	for(i = 0; i < length; ++i) {
@@ -264,7 +268,7 @@ static int listToArray_L(PyObject *list, size_t length, size_t* output) {
 			PyErr_SetString(PyExc_TypeError, "Must pass an list of floats");
 			goto error;
 		}
-		output[i] = (size_t) PyLong_AsLong(pypoint);
+		(*output)[i] = (size_t) PyLong_AsLong(pypoint);
 	}
 	
 	Py_XDECREF(pypoint);

@@ -170,13 +170,13 @@ void eigen_update_jacobi_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, doubl
 	i = loc.i;
 	j = loc.j;
 
-	for (r = 0; r < A.rows; r++) {
-		double a_ri, a_rj;
-
-		a_ri = matrix_get(A, r, i);
-		a_rj = matrix_get(A, r, j);
-
+	for (r = 0; r < A.rows; r++) {	
 		if (r != i && r != j) {
+			double a_ri, a_rj;
+			
+			a_ri = matrix_get(A, r, i);
+			a_rj = matrix_get(A, r, j);
+			
 			matrix_set(A_tag, r, i, c * a_ri - s * a_rj);
 			matrix_set(A_tag, i, r, c * a_ri - s * a_rj);
 			matrix_set(A_tag, r, j, c * a_rj + s * a_ri);

@@ -12,7 +12,6 @@ static void kmeans(size_t *initial_centroids_indices);
 static void print_kmeans(size_t* initial_centroids_indices);
 
 static void assert_input(bool condition);
-void assert_other(bool condition);
 static void collect_data(const char *filename);
 static void initialize_sets(size_t *initial_centroids_indices);
 static void get_num_and_dim(FILE *file);
@@ -22,9 +21,7 @@ static double sqdist(dpoint_t p1, dpoint_t p2);
 static void add_to_set(set_t *set, dpoint_t dpoint);
 static int update_centroid(set_t *set);
 static void parse_args(int argc, char **argv, char **infile);
-void init_datapoint(dpoint_t *dpoint);
-static void free_datapoint(dpoint_t);
-void free_program(void);
+static void free_program(void);
 
 
 /**************************** AUXILIARY FUNCTIONS *********************************/
@@ -339,7 +336,7 @@ void init_datapoint(dpoint_t *dpoint) {
 
 /* Frees the given datapoint. If it's already been freed or not yet allocated,
  * this function safely does nothing. */
-static void free_datapoint(dpoint_t dpoint) {
+void free_datapoint(dpoint_t dpoint) {
 	if(NULL != dpoint.data) {
 		free(dpoint.data);
 	}
@@ -369,23 +366,23 @@ static void print_kmeans(size_t* initial_centroids_indices) {
 
 /* Frees all of the memory allocated by the program. If a certain variable
  * hasn't been allocated yet, this function does not attempt to free it. */
-void free_program() {
+static void free_program() {
 	size_t i = 0;
 
 	/* Causing munmap_chunk(): invlaid pointer, free(): invalid pointer issues (both free-ing blocks) */
-	/* if(NULL != datapoints) {
+	if(NULL != datapoints) {
 		for(i = 0; i < num_data; i++) {
 			free_datapoint(datapoints[i]);
 		}
 		free(datapoints);
-	} */
+	}
 	
-	/* if(NULL != sets) {
+	if(NULL != sets) {
 		for(i = 0; i < K; i++) {
 			free_datapoint(sets[i].current_centroid);
 			free_datapoint(sets[i].sum);
 		}
 		free(sets);
-	} */
+	}
 }
 /*****************************************************************************/

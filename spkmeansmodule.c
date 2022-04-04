@@ -88,7 +88,6 @@ static PyObject* kmeans_fit(PyObject *self, PyObject *args) {
 
 	/* building the returned centroids' list */
 	spkmeans_pass_kmeans_info_and_run(initial_centroids_indices);
-	free_program();
 	Py_RETURN_NONE;
 }
 /**************************************************************************/
@@ -113,7 +112,7 @@ static int py_kmeans_parse_args(PyObject *args) {
 	}
 
 	/* Parsing the datapoints */
-	datapoints = calloc(num_data, sizeof(*datapoints));
+	datapoints = calloc(num_data, sizeof(dpoint_t));
 	assert_other(NULL != datapoints);
 
 	for (i = 0; i < num_data; i++) {
@@ -138,13 +137,18 @@ static int py_kmeans_parse_args(PyObject *args) {
 error:
 	/* if any of the CPython functions fail:
 	 * An error of py_parse_args doesn't trigger the free_program, 
-	 * since the program hasn't advanced enough, therefore we free datapoints_arg here */
-	if (datapoints_arg != NULL) {
+	 * since the program hasn't advanced enough, therefore we free datapoints + initial_centroids_indices here */
+	if (datapoints != NULL) {
 		for (i = 0; i < num_data; i++) {
-			if (datapoints_arg[i] != NULL) free(datapoints_arg[i]);
+			free_datapoint(datapoints[i]);
 		}
 		free(datapoints_arg);
 	}
+		
+	if (initial_centroids_indices != NULL) {
+		free(initial_centroids_indices);
+	}
+	
 	Py_XDECREF(datapoints_py);
 	Py_XDECREF(initial_centroids_indices_py);
 	return 1;

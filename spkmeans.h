@@ -32,16 +32,7 @@ extern dpoint_t *datapoints;
 
 
 
-
-
-/*********************** EXTERNAL FUNCTIONS ******************************/
-void init_datapoint(dpoint_t *dpoint);
-void free_program(void);
-/*************************************************************************/
-
-
-
-/**************************** API ************************************/
+/**************************** MECHANISM'S INTERFACES ************************************/
 /* A function to pass data about the vectors into the main mechanism of this file, produced by the spkmeansmodule.c interface.
  * That includes:
  * 		1. vectors (the vectors we want to process - corresponding to the wanted goal)
@@ -54,6 +45,21 @@ int spkmeans_pass_goal_info_and_run(char *infile, matrix_t *output);
 
 /* A function that passes the initial centroids indices into the Kmeans mechanism */
 void spkmeans_pass_kmeans_info_and_run(size_t *initial_centroids_indices);
+/*************************************************************************/
+
+
+
+
+
+/**************************** AUXILIARY FUNCTIONS ************************************/
+/* A function used to assert a certain condition and print out "An error has occurred" in case the condition isn't met */
+void assert_other(bool condition);
+
+/* A function used to initialize a datapoint (i.e., allocate an array to it) */
+void init_datapoint(dpoint_t *dpoint);
+
+/* A function used to free a datapoint */
+void free_datapoint(dpoint_t);
 /*************************************************************************/
 
 

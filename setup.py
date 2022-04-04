@@ -14,4 +14,4 @@ setup(
                 depends = ['spkmeans.h', 'spkmeans_goals.h', 'matrix.h', 'graph.h', 'eigen.h'],
                 ),
             ]
-)
+        )

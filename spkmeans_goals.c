@@ -17,7 +17,7 @@ int print_weighted_adjacency_matrix() {
 	if (0 != graph_adjacent_matrix(datapoints, num_data, dim, &output)) {
 		return BAD_ALLOC;
 	}
-	
+
 	/* Printing and free-ing */
 	matrix_print_rows(output);
 	matrix_free(output);
@@ -29,11 +29,11 @@ int print_diagonal_degree_matrix() {
 	if (0 != graph_adjacent_matrix(datapoints, num_data, dim, &WAM)) goto error;
 
 	if (0 != graph_diagonal_degree_matrix(WAM, false, &output)) goto error;
-	
+
 	/* Printing and free-ing */
 	matrix_print_rows(output);
 	return 0;
-	
+
 error:
 	matrix_free_safe(output);
 	matrix_free_safe(WAM);
@@ -45,7 +45,7 @@ int print_normalized_laplacian() {
 	if (0 != graph_normalized_laplacian(datapoints, num_data, dim, &output)) {
 		return BAD_ALLOC;
 	}
-	
+
 	/* Printing and free-ing */
 	matrix_print_rows(output);
 	matrix_free(output);
@@ -55,25 +55,25 @@ int print_normalized_laplacian() {
 int print_jacobi_output() {
 	matrix_t jacobi_input;
 	jacobi_output output;
-	
+
 	/* making sure that the given vectors' dataset represents a symmetric matrix (else jacobi isn't feasible) */
 	assert_other(num_data == dim);
 	if (0 != matrix_build_from_dpoints(datapoints, num_data, dim, &jacobi_input)) goto error;
 
 	if( 0 != eigen_jacobi(jacobi_input, num_data + 1, &output)) goto error;
-	
+
 	/* Printing and free-ing */
 	eigen_print_jacobi(output);
 	matrix_free(jacobi_input);
 	free(output.eigen_values);
-    matrix_free(output.K_eigen_vectors);
-    return 0;
-    
+	matrix_free(output.K_eigen_vectors);
+	return 0;
+
 error:
 	matrix_free_safe(jacobi_input);
 	if (NULL != output.eigen_values) free(output.eigen_values);
-    matrix_free_safe(output.K_eigen_vectors);
-    return BAD_ALLOC;
+	matrix_free_safe(output.K_eigen_vectors);
+	return BAD_ALLOC;
 }
 
 int get_T_of_spectral_kmeans(size_t K, matrix_t* output) {
@@ -81,11 +81,11 @@ int get_T_of_spectral_kmeans(size_t K, matrix_t* output) {
 	jacobi_output jacobi_res;
 	size_t i, j;
 
-	
+
 	if (0 != graph_normalized_laplacian(datapoints, num_data, dim, &L_norm)) goto error;
 
 	if (0 != eigen_jacobi(L_norm, K, &jacobi_res)) goto error;
-	
+
 	if (0 != matrix_new(jacobi_res.K_eigen_vectors.rows, jacobi_res.K_eigen_vectors.cols, output)) goto error;
 
 	for (i = 0; i < output->rows; i++) {
@@ -94,25 +94,25 @@ int get_T_of_spectral_kmeans(size_t K, matrix_t* output) {
 			norm_of_row += pow( matrix_get(*output, i, j), 2 );
 		}
 		norm_of_row = pow( norm_of_row, 0.5 );
-		
+
 		for (j = 0; j < output->cols; j++) {
 			matrix_set(*output, i, j, matrix_get(*output, i, j) / norm_of_row );
 		}
 	}
-	
+
 	/* Free-ing and Returning */
 	free(jacobi_res.eigen_values);
-    matrix_free(jacobi_res.K_eigen_vectors);
+	matrix_free(jacobi_res.K_eigen_vectors);
 	matrix_free(L_norm);
 	return 0;
-	
+
 error:
 	matrix_free_safe(L_norm);
 	matrix_free_safe(*output);
 	if (NULL != jacobi_res.eigen_values) free(jacobi_res.eigen_values);
-    matrix_free_safe(jacobi_res.K_eigen_vectors);
-    return BAD_ALLOC;
-	
+	matrix_free_safe(jacobi_res.K_eigen_vectors);
+	return BAD_ALLOC;
+
 }
 
 /*****************************************************************************/

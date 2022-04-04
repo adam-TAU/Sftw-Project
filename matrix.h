@@ -6,16 +6,16 @@
 #define BAD_ALLOC 2
 
 typedef struct matrix {
-    double *data;
-    size_t rows;
-    size_t cols;
-    size_t len;
+	double *data;
+	size_t rows;
+	size_t cols;
+	size_t len;
 } matrix_t;
 
 
 /* Define a structure that will hold a vector's coordinates. This will also be used in the spkmeans.c mechanism */
 typedef struct {
-    double *data;
+	double *data;
 } dpoint_t;
 
 
@@ -45,7 +45,7 @@ int matrix_clone(matrix_t mat, matrix_t* output);
 void matrix_swap(matrix_t *mat1, matrix_t *mat2);
 
 /* Builds a matrix out of an already existing dataset of <dpoint_t>s.
-   
+
    In case of allocation failure, the output matrix has a `data` field of
    `NULL`. */
 int matrix_build_from_dpoints(dpoint_t* vectors, size_t num_vectors, size_t dim, matrix_t* output);
@@ -97,10 +97,10 @@ int matrix_add_assign(matrix_t self, matrix_t other);
    The return value is `0` if and only if the operation was successful.
    The output matrix must be unrelated to the input matrices.
 
-   Errors:
+Errors:
 
-   In case of dimension mismatch, the return value is `DIM_MISMATCH`.
-   In case of allocation failure, the return value is `BAD_ALLOC`. */
+In case of dimension mismatch, the return value is `DIM_MISMATCH`.
+In case of allocation failure, the return value is `BAD_ALLOC`. */
 int matrix_add(matrix_t mat1, matrix_t mat2, matrix_t *output);
 
 /* Multiplies the given scalar into the given matrix. */
@@ -117,33 +117,33 @@ int matrix_mul_scalar(matrix_t mat, double scalar, matrix_t* output);
  */
 
 /* Multiplies the given matrices to produce a new matrix, stored in `output`.
-   Precondition: `mat1.cols == mat2.rows`.
-   The output matrix must be unrelated to the input matrices.
+Precondition: `mat1.cols == mat2.rows`.
+The output matrix must be unrelated to the input matrices.
 
-   Errors:
+Errors:
 
-   In case of dimension mismatch, the return value is `DIM_MISMATCH`.
-   In case of allocation failure, the return value is `BAD_ALLOC`. */
+In case of dimension mismatch, the return value is `DIM_MISMATCH`.
+In case of allocation failure, the return value is `BAD_ALLOC`. */
 int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output);
 
 
 /* Multiplies the given matrices to produce a new matrix, and stores it into <mat1>.
-   Precondition: `mat1.cols == mat1.rows == mat2.rows == mat2.cols`.
+Precondition: `mat1.cols == mat1.rows == mat2.rows == mat2.cols`.
 
-   Errors:
+Errors:
 
-   In case of dimension mismatch, the return value is `DIM_MISMATCH`.
-   In case of allocation failure, the return value is `BAD_ALLOC`. */
+In case of dimension mismatch, the return value is `DIM_MISMATCH`.
+In case of allocation failure, the return value is `BAD_ALLOC`. */
 int matrix_mul_assign_to_first(matrix_t *mat1, matrix_t mat2);
 
 
 /* Multiplies the given matrices to produce a new matrix, and stores it into <mat2>.
-   Precondition: `mat1.cols == mat1.rows == mat2.rows == mat2.cols`.
+Precondition: `mat1.cols == mat1.rows == mat2.rows == mat2.cols`.
 
-   Errors:
+Errors:
 
-   In case of dimension mismatch, the return value is `DIM_MISMATCH`.
-   In case of allocation failure, the return value is `BAD_ALLOC`. */
+In case of dimension mismatch, the return value is `DIM_MISMATCH`.
+In case of allocation failure, the return value is `BAD_ALLOC`. */
 int matrix_mul_assign_to_second(matrix_t mat1, matrix_t *mat2);
 
 

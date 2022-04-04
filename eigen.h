@@ -35,7 +35,7 @@ typedef struct eigen_value {
 typedef struct jacobi_output {
 	matrix_t K_eigen_vectors;
 	eigen* eigen_values;
-    int signal;
+	int signal;
 } jacobi_output;
 
 
@@ -71,7 +71,7 @@ int compare(const void* eigen1, const void* eigen2);
 
 /* Given an already diagonal matrix, extract its eigen values.
    If sort equals <true>, sort the eigen values..
-   
+
    Returns `NULL` on allocation failure. */
 int eigen_extract_eigen_values(matrix_t mat, bool sort, eigen** output);
 

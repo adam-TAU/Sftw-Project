@@ -11,7 +11,6 @@ static int handle_goal(matrix_t* output);
 static void kmeans(size_t *initial_centroids_indices);
 static void print_kmeans(size_t* initial_centroids_indices);
 
-static void assert_input(bool condition);
 static void collect_data(const char *filename);
 static void initialize_sets(size_t *initial_centroids_indices);
 static void get_num_and_dim(FILE *file);
@@ -25,7 +24,7 @@ static void free_program(void);
 
 
 /**************************** AUXILIARY FUNCTIONS *********************************/
-static void assert_input(bool condition) {
+void assert_input(bool condition) {
 	if(!condition) {
 		puts("Invalid Input!");
 		free_program();

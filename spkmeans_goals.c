@@ -9,6 +9,7 @@ extern size_t num_data;
 extern dpoint_t *datapoints;
 
 extern void assert_other(int condition);
+extern void assert_input(int condition);
 
 /************************* INTERFACE FOR GOALS *******************************/
 
@@ -58,7 +59,7 @@ int print_jacobi_output() {
 	jacobi_output output;
 
 	/* making sure that the given vectors' dataset represents a symmetric matrix (else jacobi isn't feasible) */
-	assert_other(num_data == dim);
+	assert_input(num_data == dim);
 	
 	/* Converting the input into a matrix and sending it into the jacobi algorithm */
 	if (matrix_build_from_dpoints(datapoints, num_data, dim, &jacobi_input)) goto error;

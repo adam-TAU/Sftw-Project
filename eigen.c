@@ -139,7 +139,10 @@ size_t eigen_heuristic_gap(eigen* sorted_eigen_values, size_t rows) {
 
 
 int eigen_compare(const void* eigen1, const void* eigen2) {
-	return ((eigen*)eigen1)->value - ((eigen*)eigen2)->value;
+	double eigen1_val = ((eigen*)eigen1)->value;
+	double eigen2_val = ((eigen*)eigen2)->value;
+
+	return (eigen1_val > eigen2_val) ? 1 : ( (eigen1_val < eigen2_val) ? -1 : 0 );
 }
 
 
@@ -156,7 +159,7 @@ int eigen_extract_eigen_values(matrix_t mat, bool sort, eigen** output) {
 	}
 
 	if (sort) {
-		qsort(*output, mat.rows, sizeof(eigen), eigen_compare);
+		qsort(*output, mat.cols, sizeof(eigen), eigen_compare);
 	}
 
 	return 0;	

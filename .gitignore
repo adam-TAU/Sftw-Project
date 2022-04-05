@@ -4,3 +4,7 @@ build
 dist
 *.egg*
 *.so
+C_Project_REFERENCE/207481268_208728139_final/__pycache__/
+C_Project_REFERENCE/207481268_208728139_final/lnorm_output_as_jacobi_input.txt
+Spectral-Clustering-K-means/
+Spectral_clustering/

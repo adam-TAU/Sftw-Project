@@ -33,8 +33,7 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 	do {
 		iterations++;
 
-		matrix_free_safe(A);
-		if (matrix_clone(A_tag, &A)) goto error;
+        matrix_copy(A, A_tag); // matrices are created with equal dims - no error check
 
 		loc = eigen_ind_of_largest_offdiagonal(A);
 		eigen_calc_c_s(&c, &s, A, loc);

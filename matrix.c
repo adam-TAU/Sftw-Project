@@ -19,15 +19,15 @@ int matrix_clone(matrix_t mat, matrix_t *output) {
 
 	if (matrix_new(mat.rows, mat.cols, output)) return BAD_ALLOC;
 
-	memcpy(output->data, mat.data, sizeof(double) * output->len);
+	matrix_copy(*output, mat); // no need to check error code - dims are equal
 
 	return 0;
 }
 
-void matrix_swap(matrix_t *mat1, matrix_t *mat2) {
-	matrix_t temp = *mat1;
-	*mat1 = *mat2;
-	*mat2 = temp;
+int matrix_copy(matrix_t dest, matrix_t src) {
+    if(!(dest.rows == src.rows && dest.cols == src.cols)) return DIM_MISMATCH;
+    memcpy(dest.data, src.data, sizeof(double) * src.len);
+    return 0;
 }
 
 

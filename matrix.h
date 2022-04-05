@@ -40,9 +40,10 @@ int matrix_new(size_t rows, size_t cols, matrix_t* output);
    `NULL`. */
 int matrix_clone(matrix_t mat, matrix_t* output);
 
-/* Swaps the data contained in both matrix instances.
-   This doesn't allocate, and is useful for loops. */
-void matrix_swap(matrix_t *mat1, matrix_t *mat2);
+/* Copies data from one matrix into another.
+   If the matrices are different in size, no change is made and
+   DIM_MISMATCH is returned. */
+int matrix_copy(matrix_t dest, matrix_t src);
 
 /* Builds a matrix out of an already existing dataset of <dpoint_t>s.
 

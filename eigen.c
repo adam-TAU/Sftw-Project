@@ -127,6 +127,7 @@ size_t eigen_heuristic_gap(eigen* sorted_eigen_values, size_t rows) {
 		tmp = fabs( sorted_eigen_values[i].value - sorted_eigen_values[i+1].value );
 
 		if (tmp > max_gap) {
+			max_gap = tmp;
 			K = i + 1;
 		}
 	}

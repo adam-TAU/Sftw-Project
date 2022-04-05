@@ -106,14 +106,12 @@ void matrix_print_rows(matrix_t mat) {
 
 
 void matrix_print_cols(matrix_t mat) {
-	size_t idx, row, col;
+	size_t i, j;
 
-	idx = 0;
-	for(col = 0; col < mat.cols; col++) {
-		for(row = 0; row < mat.rows; row++) {
-			printf("%.4f", mat.data[idx]);
-			if (row < mat.rows - 1) printf(",");
-			idx++;
+	for(j = 0; j < mat.cols; j++) {
+		for(i = 0; i < mat.rows; i++) {
+			printf("%.4f", matrix_get(mat, i, j));
+			if (i < mat.rows - 1) printf(",");
 		}
 		puts("");
 	}

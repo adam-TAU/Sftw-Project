@@ -14,7 +14,7 @@ void eigen_print_jacobi(jacobi_output out) {
 	}
 
 	puts("");
-	matrix_print_cols(out.K_eigen_vectors);
+	matrix_print_rows(out.K_eigen_vectors);
 }
 
 

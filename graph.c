@@ -71,14 +71,14 @@ int graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, ma
 	I.data = NULL;
 	MULT.data = NULL;
 
-	if (0 != matrix_identity(num_data, &I)) goto error;
+	if (matrix_identity(num_data, &I)) goto error;
 
-	if (0 != graph_adjacent_matrix(input, num_data, dim, &W)) goto error;
+	if (graph_adjacent_matrix(input, num_data, dim, &W)) goto error;
 
-	if (0 != graph_diagonal_degree_matrix(W, true, &D)) goto error;
+	if (graph_diagonal_degree_matrix(W, true, &D)) goto error;
 
-	if(0 != matrix_mul(D, W, &MULT)) goto error;
-	if(0 != matrix_mul_assign_to_first(&MULT, D)) goto error;
+	if(matrix_mul(D, W, &MULT)) goto error;
+	if(matrix_mul_assign_to_first(&MULT, D)) goto error;
 	matrix_mul_scalar_assign(MULT, -1);
 
 	*output = I;

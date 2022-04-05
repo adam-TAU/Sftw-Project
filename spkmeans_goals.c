@@ -14,7 +14,7 @@ extern void assert_other(int condition);
 
 int print_weighted_adjacency_matrix() {
 	matrix_t output;
-	if (0 != graph_adjacent_matrix(datapoints, num_data, dim, &output)) {
+	if (graph_adjacent_matrix(datapoints, num_data, dim, &output)) {
 		return BAD_ALLOC;
 	}
 
@@ -27,9 +27,9 @@ int print_weighted_adjacency_matrix() {
 int print_diagonal_degree_matrix() {
 	matrix_t WAM, output;
 	
-	if (0 != graph_adjacent_matrix(datapoints, num_data, dim, &WAM)) goto error;
+	if (graph_adjacent_matrix(datapoints, num_data, dim, &WAM)) goto error;
 	
-	if (0 != graph_diagonal_degree_matrix(WAM, true, &output)) goto error;
+	if (graph_diagonal_degree_matrix(WAM, true, &output)) goto error;
 
 	/* Printing and free-ing */
 	matrix_print_rows(output);
@@ -43,7 +43,7 @@ error:
 
 int print_normalized_laplacian() {
 	matrix_t output;
-	if (0 != graph_normalized_laplacian(datapoints, num_data, dim, &output)) {
+	if (graph_normalized_laplacian(datapoints, num_data, dim, &output)) {
 		return BAD_ALLOC;
 	}
 
@@ -61,9 +61,9 @@ int print_jacobi_output() {
 	assert_other(num_data == dim);
 	
 	/* Converting the input into a matrix and sending it into the jacobi algorithm */
-	if (0 != matrix_build_from_dpoints(datapoints, num_data, dim, &jacobi_input)) goto error;
+	if (matrix_build_from_dpoints(datapoints, num_data, dim, &jacobi_input)) goto error;
 	
-	if (0 != eigen_jacobi(jacobi_input, num_data + 1, &output)) goto error;
+	if (eigen_jacobi(jacobi_input, num_data + 1, &output)) goto error;
 
 	/* Printing and free-ing */
 	eigen_print_jacobi(output);
@@ -85,11 +85,11 @@ int get_T_of_spectral_kmeans(size_t K, matrix_t* output) {
 	size_t i, j;
 
 
-	if (0 != graph_normalized_laplacian(datapoints, num_data, dim, &L_norm)) goto error;
+	if (graph_normalized_laplacian(datapoints, num_data, dim, &L_norm)) goto error;
 	
-	if (0 != eigen_jacobi(L_norm, K, &jacobi_res)) goto error;
+	if (eigen_jacobi(L_norm, K, &jacobi_res)) goto error;
 
-	if (0 != matrix_new(jacobi_res.K_eigen_vectors.rows, jacobi_res.K_eigen_vectors.cols, output)) goto error;
+	if (matrix_new(jacobi_res.K_eigen_vectors.rows, jacobi_res.K_eigen_vectors.cols, output)) goto error;
 
 	for (i = 0; i < output->rows; i++) {
 		double norm_of_row = 0;

@@ -25,23 +25,23 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 	matrix_ind loc;
 	double s, c;
 
-	if (0 != matrix_identity(mat.rows, &V)) goto error;
-	if (0 != matrix_clone(mat, &A_tag)) goto error;
-	if (0 != matrix_clone(mat, &A)) goto error;
+	if (matrix_identity(mat.rows, &V)) goto error;
+	if (matrix_clone(mat, &A_tag)) goto error;
+	if (matrix_clone(mat, &A)) goto error;
 	P.data = NULL;
 
 	do {
 		iterations++;
 
 		matrix_free_safe(A);
-		if (0 != matrix_clone(A_tag, &A)) goto error;
+		if (matrix_clone(A_tag, &A)) goto error;
 
 		loc = eigen_ind_of_largest_offdiagonal(A);
 		eigen_calc_c_s(&c, &s, A, loc);
 
-		if (0 != eigen_build_rotation_matrix(A, loc, c, s, &P)) goto error;
+		if (eigen_build_rotation_matrix(A, loc, c, s, &P)) goto error;
 
-		if (0 != matrix_mul_assign_to_first(&V, P)) goto error;
+		if (matrix_mul_assign_to_first(&V, P)) goto error;
 
 		eigen_update_jacobi_A_tag(A_tag, A, loc, c, s);
 		matrix_free(P);
@@ -49,7 +49,7 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 	} while (( eigen_distance_of_squared_offdiagonals(A, A_tag) > epsilon ) && ( iterations <= 100 ));
 
 	/* Extract the eigen values and eigen vectors and insert them into an output format */
-	if (0 != eigen_format_eigen_vectors(V, A_tag, K, output)) goto error;
+	if (eigen_format_eigen_vectors(V, A_tag, K, output)) goto error;
 
 	/* In this case we had to create another matrix to hold the wanted eigen vectors */
 	if (K <= V.cols) { 
@@ -79,7 +79,7 @@ int eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t
 
 	if (K <= mat_vectors.cols) {	
 		/* find K */
-		if (0 != eigen_extract_eigen_values(mat_eigens, true, &sorted_eigen_values)) goto error;
+		if (eigen_extract_eigen_values(mat_eigens, true, &sorted_eigen_values)) goto error;
 
 		/* If K == 0, it means the CMD asked us to use the heuristic gap to determine K */
 		if (K == 0) { 
@@ -87,7 +87,7 @@ int eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t
 		}
 
 		/* Form a matrix with the K-first eigen values */
-		if (0 != matrix_new(mat_vectors.rows, K, &U_eigen_vectors)) goto error;
+		if (matrix_new(mat_vectors.rows, K, &U_eigen_vectors)) goto error;
 
 		for (j = 0; j < K; j++) {
 			size_t eigen_col = sorted_eigen_values[j].col;
@@ -107,7 +107,7 @@ int eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t
 		 * Moreover, it's since we use this case as an indicator to when jacobi was powered without any future spectral clustering use. 
 		 * In such case, a jacobi algorithm alone isn't due to any specification of K, and we will return all of the eigen values/vectors (unsorted) */
 		output->K_eigen_vectors = mat_vectors;
-		if (0 != eigen_extract_eigen_values(mat_eigens, false, &output->eigen_values)) goto error;
+		if (eigen_extract_eigen_values(mat_eigens, false, &output->eigen_values)) goto error;
 	}
 
 	return 0;
@@ -207,7 +207,7 @@ int eigen_build_rotation_matrix(matrix_t mat, matrix_ind loc, double c, double s
 	i = loc.i;
 	j = loc.j;
 
-	if (0 != matrix_identity(mat.rows, output)) return BAD_ALLOC;
+	if (matrix_identity(mat.rows, output)) return BAD_ALLOC;
 
 	matrix_set(*output, i, i, c); 
 	matrix_set(*output, j, j, c);

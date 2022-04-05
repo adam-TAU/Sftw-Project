@@ -44,7 +44,7 @@ static PyObject* run_goal(PyObject *self, PyObject *args) {
 	}
 
 	/* Perform the wanted goal's operation and return the result (if there's any) */
-	if ( 0 != (signal = spkmeans_pass_goal_info_and_run(infile, &output)) ) { /* run failed */
+	if ((signal = spkmeans_pass_goal_info_and_run(infile, &output)) ) { /* run failed */
 		goto error_goal;
 
 	} else if (strcmp(goal, "spk") == 0) { /* run succeeded. goal was "spk", therefore we have to return to python the output of the goal's mechanism */
@@ -56,7 +56,7 @@ static PyObject* run_goal(PyObject *self, PyObject *args) {
 		}
 
 		/* Buildin the T_points matrix into a python list of lists */
-		if (0 != matrixToList(output, &T_points)) goto error_generic;
+		if (matrixToList(output, &T_points)) goto error_generic;
 		matrix_free_safe(output);
 		
 		return T_points;
@@ -82,7 +82,7 @@ error_goal:
 static PyObject* kmeans_fit(PyObject *self, PyObject *args) {
 	/* parsing the given lists as arrays (If an error has been captured
 	 * a PyExc has been set, and we return NULL */
-	if (0 != py_kmeans_parse_args(args)) {
+	if (py_kmeans_parse_args(args)) {
 		return NULL;
 	}
 
@@ -125,10 +125,10 @@ static int py_kmeans_parse_args(PyObject *args) {
 		}
 
 		/* Appending a new datapoint to the datapoints array */
-		if (0 != listToArray_D(tmpItem, dim, &datapoints[i].data)) goto error;
+		if (listToArray_D(tmpItem, dim, &datapoints[i].data)) goto error;
 	}
 
-	if (0 != listToArray_L(initial_centroids_indices_py, K, &initial_centroids_indices)) goto error;
+	if (listToArray_L(initial_centroids_indices_py, K, &initial_centroids_indices)) goto error;
 
 	Py_XDECREF(datapoints_py);
 	return 0;
@@ -184,14 +184,14 @@ static int matrixToList(const matrix_t mat, PyObject **output) {
 				PyErr_SetString(PyExc_TypeError, "Double to Float conversion failed!");
 				goto error;
 			}
-			if(0 != PyList_SetItem(tmpList, (Py_ssize_t)j, pyfloat)) {
+			if(PyList_SetItem(tmpList, (Py_ssize_t)j, pyfloat)) {
 				PyErr_SetString(PyExc_IndexError, "Index out of bounds or the index isn't an integer!");
 				goto error;
 			}
 		}
 
 		/* Inserting inner list */
-		if(0 != PyList_SetItem(*output, (Py_ssize_t)i, tmpList)) {
+		if(PyList_SetItem(*output, (Py_ssize_t)i, tmpList)) {
 			PyErr_SetString(PyExc_IndexError, "Index out of bounds or the index isn't an integer!");
 			goto error;
 		}

@@ -17,7 +17,7 @@ int matrix_new(size_t rows, size_t cols, matrix_t *output) {
 
 int matrix_clone(matrix_t mat, matrix_t *output) {
 
-	if (0 != matrix_new(mat.rows, mat.cols, output)) return BAD_ALLOC;
+	if (matrix_new(mat.rows, mat.cols, output)) return BAD_ALLOC;
 
 	memcpy(output->data, mat.data, sizeof(double) * output->len);
 
@@ -33,7 +33,7 @@ void matrix_swap(matrix_t *mat1, matrix_t *mat2) {
 
 int matrix_build_from_dpoints(dpoint_t* vectors, size_t num_vectors, size_t dim, matrix_t *output) {
 	size_t i, j;
-	if (0 != matrix_new(num_vectors, dim, output)) return BAD_ALLOC;
+	if (matrix_new(num_vectors, dim, output)) return BAD_ALLOC;
 
 	for (i = 0; i < output->rows; i++) {
 		for (j = 0; j < output->cols; j++) {
@@ -147,7 +147,7 @@ int matrix_add(matrix_t mat1, matrix_t mat2, matrix_t *output) {
 		return DIM_MISMATCH;
 	}
 
-	if (0 != matrix_new(mat1.rows, mat1.cols, output)) return BAD_ALLOC;
+	if (matrix_new(mat1.rows, mat1.cols, output)) return BAD_ALLOC;
 
 	for(idx = 0; idx < mat1.len; idx++) {
 		output->data[idx] = mat1.data[idx] + mat2.data[idx];
@@ -165,7 +165,7 @@ void matrix_mul_scalar_assign(matrix_t mat, double scalar) {
 
 int matrix_mul_scalar(matrix_t mat, double scalar, matrix_t* output) {
 	size_t idx;
-	if (0 != matrix_new(mat.rows, mat.cols, output)) return BAD_ALLOC;
+	if (matrix_new(mat.rows, mat.cols, output)) return BAD_ALLOC;
 
 	for(idx = 0; idx < mat.len; idx++) {
 		output->data[idx] = mat.data[idx] * scalar;
@@ -180,7 +180,7 @@ int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output) {
 		return DIM_MISMATCH;
 	}
 
-	if (0 != matrix_new(mat1.rows, mat2.cols, output)) return BAD_ALLOC;
+	if (matrix_new(mat1.rows, mat2.cols, output)) return BAD_ALLOC;
 	idx = 0;
 	for(i = 0; i < output->rows; i++) {
 		size_t j;
@@ -246,7 +246,7 @@ int matrix_mul_assign_to_second(matrix_t mat1, matrix_t *mat2) {
 
 int matrix_identity(size_t dim, matrix_t* output) {
 	size_t i;
-	if (0 != matrix_new(dim, dim, output)) return BAD_ALLOC;
+	if (matrix_new(dim, dim, output)) return BAD_ALLOC;
 
 	for (i = 0; i < dim; i++) {
 		matrix_set(*output, i, i, 1);
@@ -259,7 +259,7 @@ int matrix_identity(size_t dim, matrix_t* output) {
 
 int matrix_transpose(matrix_t mat, matrix_t* output) {
 	size_t i, j;
-	if (0 != matrix_new(mat.cols, mat.rows, output)) return BAD_ALLOC;
+	if (matrix_new(mat.cols, mat.rows, output)) return BAD_ALLOC;
 
 	for (i = 0; i < output->rows; i++) {
 		for (j = 0; j < output->cols; j++) {

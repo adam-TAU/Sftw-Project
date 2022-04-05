@@ -88,23 +88,23 @@ void spkmeans_pass_kmeans_info_and_run(size_t *initial_centroids_indices) {
 
 static int handle_goal(matrix_t *output) {
 	if ( strcmp(goal, "wam") == 0 ) {
-		if (0 != print_weighted_adjacency_matrix()) goto error;
+		if (print_weighted_adjacency_matrix()) goto error;
 
 	}
 	if ( strcmp(goal, "ddg") == 0 ) {
-		if (0 != print_diagonal_degree_matrix()) goto error;
+		if (print_diagonal_degree_matrix()) goto error;
 
 	}
 	if ( strcmp(goal, "lnorm") == 0 ) {
-		if (0 != print_normalized_laplacian()) goto error;
+		if (print_normalized_laplacian()) goto error;
 
 	}
 	if ( strcmp(goal, "jacobi") == 0 ) {
-		if (0 != print_jacobi_output()) goto error;
+		if (print_jacobi_output()) goto error;
 
 	}
 	if ( strcmp(goal, "spk") == 0 ) {
-		if (0 != get_T_of_spectral_kmeans(K, output)) goto error;
+		if (get_T_of_spectral_kmeans(K, output)) goto error;
 	}
 
 	return 0;

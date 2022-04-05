@@ -20,7 +20,7 @@ void eigen_print_jacobi(jacobi_output out) {
 
 
 int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
-	size_t iterations = 0;
+	size_t iterations;
 	matrix_t A, A_tag, P, V;
 	matrix_ind loc;
 	double s, c;
@@ -30,10 +30,8 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 	if (matrix_clone(mat, &A)) goto error;
 	P.data = NULL;
 
-	do {
-		iterations++;
-
-        matrix_copy(A, A_tag); // matrices are created with equal dims - no error check
+    for(iterations = 0; iterations < max_jacobi_iterations; iterations++) {
+		matrix_copy(A, A_tag); // matrices are created with equal dims - no error check
 
 		loc = eigen_ind_of_largest_offdiagonal(A);
 		eigen_calc_c_s(&c, &s, A, loc);
@@ -45,7 +43,8 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 		eigen_update_jacobi_A_tag(A_tag, A, loc, c, s);
 		matrix_free(P);
 
-	} while (( eigen_distance_of_squared_offdiagonals(A, A_tag) > epsilon ) && ( iterations <= 100 ));
+        if(eigen_distance_of_squared_offdiagonals(A, A_tag) <= epsilon) break;
+	}
 
 	/* Extract the eigen values and eigen vectors and insert them into an output format */
 	if (eigen_format_eigen_vectors(V, A_tag, K, output)) goto error;

@@ -19,7 +19,7 @@ int matrix_clone(matrix_t mat, matrix_t *output) {
 
 	if (matrix_new(mat.rows, mat.cols, output)) return BAD_ALLOC;
 
-	matrix_copy(*output, mat); // no need to check error code - dims are equal
+	matrix_copy(*output, mat); /* no need to check error code - dims are equal */
 
 	return 0;
 }

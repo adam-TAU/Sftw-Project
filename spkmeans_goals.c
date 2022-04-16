@@ -34,6 +34,8 @@ int print_diagonal_degree_matrix() {
 
 	/* Printing and free-ing */
 	matrix_print_rows(output);
+	matrix_free_safe(output);
+	matrix_free_safe(WAM);
 	return 0;
 
 error:

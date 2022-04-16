@@ -66,7 +66,7 @@ function individual_test() {
 	if [[ "${1}" == "py" ]]; then # if we are testing the python interface
 		python3 spkmeans.py 0 $2 $testers_path/$3 &> $output_file
 	elif [[ "${1}" == "c" ]]; then # if we are testing the C interface
-		valgrind --leak-check=yes --log-file=$valgrind_file ./spkmeans $2 $testers_path/$3 > $output_file
+		valgrind --leak-check=yes --log-file=$valgrind_file ./spkmeans $2 $testers_path/$3 &> $output_file
 	else
 		echo "Individual test function failed: Invalid interface"
 		return -1

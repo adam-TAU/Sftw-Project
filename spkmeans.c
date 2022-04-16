@@ -159,12 +159,14 @@ static void kmeans(size_t *initial_centroids_indices) {
 /****************************** MAIN FUNCTION ************************************/
 int main(int argc, char **argv) {
 	char *infile;
-
+	int signal;
+	
 	parse_args(argc, argv, &infile);
 	collect_data(infile);
-	handle_goal(NULL);
+	if ( (signal = handle_goal(NULL)) ) {
+		assert_other(false);
+	}
 
-	/* printf("dim = %li, N = %li\n", dim, num_data); */
 	return 0;
 }
 /*****************************************************************************/

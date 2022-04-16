@@ -32,14 +32,14 @@ def main(K: int, goal: str, infile: str) -> None:
 		assignments = spkmeans.kmeans_fit(T_points, len(T_points), len(T_points[0]), initial_centroids_indices, len(initial_centroids_indices))
 
         # plot assignments to verify?
-		dpoints = pd.read_csv(infile, header=None)
-		dpoints = dpoints.to_numpy()
+		#dpoints = pd.read_csv(infile, header=None)
+		#dpoints = dpoints.to_numpy()
 
-		for i in range(K):
-			temp = [dpoints[j,:] for j in range(num_data) if assignments[j] == i]
-			temp = np.array(temp)
-			plt.scatter(temp[:,0], temp[:,1])
-		plt.savefig("clusters.png")
+		#for i in range(K):
+		#	temp = [dpoints[j,:] for j in range(num_data) if assignments[j] == i]
+		#	temp = np.array(temp)
+		#	plt.scatter(temp[:,0], temp[:,1])
+		#plt.savefig("clusters.png")
 
 	else: # In any other case that isn't a normalized spectral clustering - just perform the desired operation corresponding to the "goal" parameter
 		spkmeans.goal(K, goal, infile)

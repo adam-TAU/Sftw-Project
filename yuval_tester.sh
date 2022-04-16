@@ -11,11 +11,14 @@
 #	If you still wish to do so, you would need to replace the path of $output_file to somewhere
 #	that isn't write-protected (tau-related servers have /tmp/ write-protected)
 #
-#	3. The most important crucial instruction: you shall supply as the first and only
+#	3. Be sure to remove any build/dist/egg files from the working directory. Could
+#	allegdly lead to undefined behaviors of the test script.
+#
+#	4. The most important and crucial instruction: you shall supply as the first and only
 #	cmd-line argument, the relative (or absolute) path to the directory of tests that yuval created.
 #	You'll get a bozo message if you don't do so.
 #
-#	4. Yuval might increase the amount of test output files, so beware. You would probably
+#	5. Yuval might increase the amount of test output files, so beware. You would probably
 #	need to change some arguments here and there.
 
 
@@ -46,7 +49,7 @@ function individual_test() {
 	# the function returns the output of the 'diff' operation upon the output testing file and the actual output
 
 	if [[ "${1}" == "py" ]]; then # if we are testing the python interface
-		python3 spkmeans.py 0 $2 $testers_path/$3 > $output_file
+		python3 spkmeans.py 0 $2 $testers_path/$3 &> $output_file
 	elif [[ "${1}" == "c" ]]; then # if we are testing the C interface
 		./spkmeans $2 $testers_path/$3 > $output_file
 	else
@@ -103,6 +106,7 @@ function test_interface() {
 
 
 function run_comprehensive_test() {
+	# testing the C interface
 	rm test_transcript_c.txt &> /dev/null
 	touch test_transcript_c.txt
 	echo -e "Testing the interface for: \e[4;33m\e[1;33mC\e[0m"
@@ -110,6 +114,7 @@ function run_comprehensive_test() {
 	bash comp.sh &> /dev/null # compiling
 	test_interface c
 
+	# testing the CPython interface
 	rm test_transcript_py.txt &> /dev/null
 	touch test_transcript_py.txt
 	echo -e "\n\nTesting the interface for: \e[4;33m\e[1;33mPython\e[0m"
@@ -117,6 +122,7 @@ function run_comprehensive_test() {
 	python3 setup.py build_ext --inplace &> /dev/null # building
 	test_interface py
 
+	# Summary 
 	echo -e "\n\n\e[1;31mNOTICE:\e[0m More detailed results are in: \e[4;34m\e[1;34mtest_transcript_c.txt\e[0m and \e[4;34m\e[1;34mtest_transcript_py.txt\e[0m"
 }
 

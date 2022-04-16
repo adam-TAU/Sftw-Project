@@ -15,11 +15,12 @@ static void collect_data(const char *filename);
 static void initialize_sets(size_t *initial_centroids_indices);
 static void get_num_and_dim(FILE *file);
 static void parse_datapoint(FILE *file, dpoint_t *dpoint);
-static void assign_to_closest(dpoint_t dpoint);
+static void assign_to_closest(dpoint_t *dpoint);
 static double sqdist(dpoint_t p1, dpoint_t p2);
 static void add_to_set(set_t *set, dpoint_t dpoint);
 static int update_centroid(set_t *set);
 static void parse_args(int argc, char **argv, char **infile);
+static void free_program_without_datapoints(void);
 static void free_program(void);
 
 
@@ -134,7 +135,7 @@ static void kmeans(size_t *initial_centroids_indices) {
 
 	for(iter = 0; iter < MAX_ITER; iter++) {
 		for(i = 0; i < num_data; i++) {
-			assign_to_closest(datapoints[i]);
+			assign_to_closest(&datapoints[i]);
 		}
 
 		updated_centroids = 0;
@@ -147,9 +148,8 @@ static void kmeans(size_t *initial_centroids_indices) {
 		}
 	}
 
-	/* Printing and free-ing */
 	print_kmeans(initial_centroids_indices);
-	free_program();
+    free_program_without_datapoints();
 }
 /*****************************************************************************/
 
@@ -177,12 +177,12 @@ int main(int argc, char **argv) {
 /***************************** KMEANS++ MECHANISM **************************/
 /* Assigns the given datapoint to the closest set that it can find, using the
  * sqdist function. */
-static void assign_to_closest(dpoint_t dpoint) {
+static void assign_to_closest(dpoint_t *dpoint) {
 	size_t i, min_idx = 0;
 	double min_dist = -1.0;
 
 	for(i = 0; i < K; i++) {
-		double dist = sqdist(sets[i].current_centroid, dpoint);
+		double dist = sqdist(sets[i].current_centroid, *dpoint);
 
 		if((min_dist < 0.0) || (dist < min_dist)) {
 			min_idx = i;
@@ -190,7 +190,8 @@ static void assign_to_closest(dpoint_t dpoint) {
 		}
 	}
 
-	add_to_set(&sets[min_idx], dpoint);
+	add_to_set(&sets[min_idx], *dpoint);
+    dpoint->current_set = min_idx;
 }
 
 /* Updates the centroid of the given set using its stored `sum` and `count`
@@ -339,6 +340,8 @@ void init_datapoint(dpoint_t *dpoint) {
 
 	dpoint->data = calloc(dim, sizeof(*dpoint->data));
 	assert_other(NULL != dpoint->data);
+
+    dpoint->current_set = (size_t)-1;
 }
 
 /* Frees the given datapoint. If it's already been freed or not yet allocated,
@@ -370,20 +373,9 @@ static void print_kmeans(size_t* initial_centroids_indices) {
 	}
 }
 
+static void free_program_without_datapoints() {
+    size_t i;
 
-/* Frees all of the memory allocated by the program. If a certain variable
- * hasn't been allocated yet, this function does not attempt to free it. */
-static void free_program() {
-	size_t i = 0;
-
-	/* Causing munmap_chunk(): invlaid pointer, free(): invalid pointer issues (both free-ing blocks) */
-	if(NULL != datapoints) {
-		for(i = 0; i < num_data; i++) {
-			free_datapoint(datapoints[i]);
-		}
-		free(datapoints);
-	}
-	
 	if(NULL != sets) {
 		for(i = 0; i < K; i++) {
 			free_datapoint(sets[i].current_centroid);
@@ -391,5 +383,24 @@ static void free_program() {
 		}
 		free(sets);
 	}
+}
+
+void free_datapoints() {
+    size_t i = 0;
+
+	if(NULL != datapoints) {
+		for(i = 0; i < num_data; i++) {
+			free_datapoint(datapoints[i]);
+		}
+		free(datapoints);
+	}
+}
+
+
+/* Frees all of the memory allocated by the program. If a certain variable
+ * hasn't been allocated yet, this function does not attempt to free it. */
+static void free_program() {
+    free_datapoints();
+    free_program_without_datapoints();
 }
 /*****************************************************************************/

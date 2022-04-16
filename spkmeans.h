@@ -63,6 +63,8 @@ void init_datapoint(dpoint_t *dpoint);
 
 /* A function used to free a datapoint */
 void free_datapoint(dpoint_t);
+
+void free_datapoints(void);
 /*************************************************************************/
 
 

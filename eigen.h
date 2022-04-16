@@ -79,9 +79,8 @@ int eigen_extract_eigen_values(matrix_t mat, bool sort, eigen** output);
 /* In the jacobi algorithm, this is the function that transforms A_tag (the next matrix in the recursive algorithm), through the current A matrix */
 void eigen_update_jacobi_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, double c, double s);
 
-/* Given a symmetric matrix called <mat>, find the corresponding rotation matrix for it.
-   The return value has a data field of `NULL` in case of allocation failure. */
-int eigen_build_rotation_matrix(matrix_t mat, matrix_ind loc, double c, double s, matrix_t* output);
+/* Calculate the rotation matrix using the given data, and store the result in the pre-allocated `output`. */
+int eigen_build_rotation_matrix(matrix_ind loc, double c, double s, matrix_t output);
 
 /* Given two matrices, determine the distance between their sum of squared off-diagonals */
 double eigen_distance_of_squared_offdiagonals(matrix_t mat1, matrix_t mat2);

@@ -21,14 +21,21 @@ void eigen_print_jacobi(jacobi_output out) {
 
 int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 	size_t iterations;
-	matrix_t A, A_tag, P, V;
+	matrix_t A, A_tag, P, V, buffer;
 	matrix_ind loc;
 	double s, c;
+
+    A.data = NULL;
+    A_tag.data = NULL;
+    P.data = NULL;
+    V.data = NULL;
+    buffer.data = NULL;
 
 	if (matrix_identity(mat.rows, &V)) goto error;
 	if (matrix_clone(mat, &A_tag)) goto error;
 	if (matrix_clone(mat, &A)) goto error;
-	P.data = NULL;
+    if (matrix_new(mat.rows, mat.cols, &P)) goto error;
+    if (matrix_new(mat.rows, mat.cols, &buffer)) goto error;
 
     for(iterations = 0; iterations < max_jacobi_iterations; iterations++) {
 		matrix_copy(A, A_tag); /* matrices are created with equal dims - no error check */
@@ -36,12 +43,12 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 		loc = eigen_ind_of_largest_offdiagonal(A);
 		eigen_calc_c_s(&c, &s, A, loc);
 
-		if (eigen_build_rotation_matrix(A, loc, c, s, &P)) goto error;
+		eigen_build_rotation_matrix(loc, c, s, P);
 
-		if (matrix_mul_assign_to_first(&V, P)) goto error;
+		matrix_mul_buffer(V, P, buffer);
+        matrix_swap(&V, &buffer);
 
 		eigen_update_jacobi_A_tag(A_tag, A, loc, c, s);
-		matrix_free(P);
 
         if(eigen_distance_of_squared_offdiagonals(A, A_tag) <= epsilon) break;
 	}
@@ -56,6 +63,8 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 
 	matrix_free(A);
 	matrix_free(A_tag);
+    matrix_free(P);
+    matrix_free(buffer);
 	return 0;
 
 error:
@@ -63,6 +72,7 @@ error:
 	matrix_free_safe(A_tag);
 	matrix_free_safe(P);
 	matrix_free_safe(V);
+    matrix_free_safe(buffer);
 
 	return BAD_ALLOC;
 }
@@ -200,20 +210,20 @@ void eigen_update_jacobi_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, doubl
 
 
 
-int eigen_build_rotation_matrix(matrix_t mat, matrix_ind loc, double c, double s, matrix_t* output) {
+int eigen_build_rotation_matrix(matrix_ind loc, double c, double s, matrix_t output) {
 	size_t i, j;
 
 	i = loc.i;
 	j = loc.j;
 
-	if (matrix_identity(mat.rows, output)) return BAD_ALLOC;
+	if(matrix_set_identity(output)) return DIM_MISMATCH;
 
-	matrix_set(*output, i, i, c); 
-	matrix_set(*output, j, j, c);
+	matrix_set(output, i, i, c); 
+	matrix_set(output, j, j, c);
 
 	s *= (i < j) ? 1 : -1;
-	matrix_set(*output, i, j, s);  
-	matrix_set(*output, j, i, -s);
+	matrix_set(output, i, j, s);  
+	matrix_set(output, j, i, -s);
 
 	return 0;
 }

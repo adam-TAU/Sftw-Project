@@ -16,6 +16,7 @@ static PyObject* run_goal(PyObject *self, PyObject *args);
 static PyObject* kmeans_fit(PyObject *self, PyObject *args);
 
 static int matrixToList(const matrix_t mat, PyObject **output);
+static int extract_datapoint_indices(PyObject **output);
 static int listToArray_D(PyObject *list, size_t length, double** output);
 static int listToArray_L(PyObject *list, size_t length, size_t** output);
 static int py_kmeans_parse_args(PyObject*);
@@ -36,6 +37,8 @@ static PyObject* run_goal(PyObject *self, PyObject *args) {
 	matrix_t output;
 	PyObject* T_points = NULL;
 	int signal;
+
+    output.data = NULL; // in case of an error, `output`'s data field is freed if it's not null
 
 	/* Fetch the string of the infile */
 	if(!PyArg_ParseTuple(args, "lss", &K, &goal, &infile)) goto error;
@@ -66,15 +69,18 @@ error:
 
 
 static PyObject* kmeans_fit(PyObject *self, PyObject *args) {
+    PyObject *dpoint_assignments;
+
 	/* parsing the given lists as arrays (If an error has been captured
 	 * a PyExc has been set, and we return NULL */
-	if (py_kmeans_parse_args(args)) {
-		assert_other(false);
-	}
+    assert_other(0 == py_kmeans_parse_args(args));
 
 	/* building the returned centroids' list */
 	spkmeans_pass_kmeans_info_and_run(initial_centroids_indices);
-	Py_RETURN_NONE;
+    assert_other(0 == extract_datapoint_indices(&dpoint_assignments));
+
+    free_datapoints(); // they weren't freed before because we needed to access their data
+	return dpoint_assignments;
 }
 /**************************************************************************/
 
@@ -178,6 +184,27 @@ static int matrixToList(const matrix_t mat, PyObject **output) {
 error:
 	Py_XDECREF(*output);
 	Py_XDECREF(pyfloat);
+	return PY_ERROR;
+}
+
+
+static int extract_datapoint_indices(PyObject **output) {
+	PyObject *pylong = NULL;
+	size_t i;
+
+	/* Creating outer list */
+	if ( NULL == (*output = PyList_New((Py_ssize_t)num_data)) ) goto error;
+
+	for (i = 0; i < num_data; ++i) {
+		if(NULL == (pylong = PyLong_FromSize_t( datapoints[i].current_set ) ) ) goto error;
+		if(PyList_SetItem(*output, (Py_ssize_t)i, pylong)) goto error;	
+	}
+
+	return 0;
+
+error:
+	Py_XDECREF(*output);
+	Py_XDECREF(pylong);
 	return PY_ERROR;
 }
 

@@ -24,6 +24,12 @@ int matrix_clone(matrix_t mat, matrix_t *output) {
 	return 0;
 }
 
+void matrix_swap(matrix_t *mat1, matrix_t *mat2) {
+    matrix_t temp = *mat1;
+    *mat1 = *mat2;
+    *mat2 = temp;
+}
+
 int matrix_copy(matrix_t dest, matrix_t src) {
     if(!(dest.rows == src.rows && dest.cols == src.cols)) return DIM_MISMATCH;
     memcpy(dest.data, src.data, sizeof(double) * src.len);
@@ -175,71 +181,31 @@ int matrix_mul_scalar(matrix_t mat, double scalar, matrix_t* output) {
 }
 
 int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output) {
-	size_t idx, i;
-	if(mat1.cols != mat2.rows) {
-		return DIM_MISMATCH;
-	}
-
 	if (matrix_new(mat1.rows, mat2.cols, output)) return BAD_ALLOC;
-	idx = 0;
-	for(i = 0; i < output->rows; i++) {
-		size_t j;
-		for(j = 0; j < output->cols; j++) {
-			size_t k;
+	return matrix_mul_buffer(mat1, mat2, *output);
+}
+
+
+int matrix_mul_buffer(matrix_t mat1, matrix_t mat2, matrix_t output) {
+    size_t idx, i, j, k;
+
+    if(!(mat1.cols == mat2.rows && mat1.rows == output.rows && mat2.cols == output.rows)) return DIM_MISMATCH;
+    
+    idx = 0;
+	for(i = 0; i < output.rows; i++) {
+		for(j = 0; j < output.cols; j++) {
 			double sum = 0;
 			for(k = 0; k < mat1.cols; k++) {
 				sum += matrix_get(mat1, i, k) * matrix_get(mat2, k, j);
 			}
 
-			output->data[idx] = sum;
+			output.data[idx] = sum;
 
 			idx++;
 		}
 	}
 
-	return 0;
-}
-
-
-
-static int matrix_mul_assign_prelude(matrix_t mat1, matrix_t mat2, matrix_t *output) {
-	size_t n = mat1.cols;
-
-	if(!(mat1.rows == n && mat2.rows == n && mat2.cols == n)) {
-		return DIM_MISMATCH;
-	}
-
-	return matrix_mul(mat1, mat2, output);
-	/* if output were correctly allocated, we wouldn't have a nonzero signal, so it's fine
-	   to not free it */
-}
-
-
-
-int matrix_mul_assign_to_first(matrix_t *mat1, matrix_t mat2) {
-	matrix_t output;
-	int signal = matrix_mul_assign_prelude(*mat1, mat2, &output);
-
-	if(signal) return signal;
-
-	matrix_free(*mat1);
-	mat1->data = output.data;
-
-	return 0;
-}
-
-
-
-int matrix_mul_assign_to_second(matrix_t mat1, matrix_t *mat2) {
-	matrix_t output;
-	int signal = matrix_mul_assign_prelude(mat1, *mat2, &output);
-
-	if(signal) return signal;
-
-	matrix_free(*mat2);
-	mat2->data = output.data;
-
-	return 0;
+    return 0;
 }
 
 
@@ -253,6 +219,21 @@ int matrix_identity(size_t dim, matrix_t* output) {
 	}
 
 	return 0;
+}
+
+int matrix_set_identity(matrix_t mat) {
+    size_t i, j, idx;
+    if(mat.rows != mat.cols) return DIM_MISMATCH;
+
+    idx = 0;
+    for(i = 0; i < mat.rows; i++) {
+        for(j = 0; j < mat.cols; j++) {
+            mat.data[idx] = (i == j) ? 1 : 0;
+            idx++;
+        }
+    }
+
+    return 0;
 }
 
 

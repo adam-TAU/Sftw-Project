@@ -16,6 +16,7 @@ typedef struct matrix {
 /* Define a structure that will hold a vector's coordinates. This will also be used in the spkmeans.c mechanism */
 typedef struct {
 	double *data;
+    size_t current_set;
 } dpoint_t;
 
 
@@ -39,6 +40,9 @@ int matrix_new(size_t rows, size_t cols, matrix_t* output);
    In case of allocation failure, the output matrix has a `data` field of
    `NULL`. */
 int matrix_clone(matrix_t mat, matrix_t* output);
+
+/* Swaps the data contained in the given matrices, efficiently (by swapping pointers). */
+void matrix_swap(matrix_t *mat1, matrix_t *mat2);
 
 /* Copies data from one matrix into another.
    If the matrices are different in size, no change is made and
@@ -128,25 +132,12 @@ In case of allocation failure, the return value is `BAD_ALLOC`. */
 int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output);
 
 
-/* Multiplies the given matrices to produce a new matrix, and stores it into <mat1>.
-Precondition: `mat1.cols == mat1.rows == mat2.rows == mat2.cols`.
+/* Calculates `mat1` * `mat2`, and stores the result in `output`.
+   Precondition: `mat1.cols == mat2.rows`, `mat1.rows == output.rows`, and `mat2.cols == output.rows`.
+   Additionally, `output` MUST point to a different memory location than either `mat1` or `mat2`.
 
-Errors:
-
-In case of dimension mismatch, the return value is `DIM_MISMATCH`.
-In case of allocation failure, the return value is `BAD_ALLOC`. */
-int matrix_mul_assign_to_first(matrix_t *mat1, matrix_t mat2);
-
-
-/* Multiplies the given matrices to produce a new matrix, and stores it into <mat2>.
-Precondition: `mat1.cols == mat1.rows == mat2.rows == mat2.cols`.
-
-Errors:
-
-In case of dimension mismatch, the return value is `DIM_MISMATCH`.
-In case of allocation failure, the return value is `BAD_ALLOC`. */
-int matrix_mul_assign_to_second(matrix_t mat1, matrix_t *mat2);
-
+   This function performs no allocations - therefore, the only possible error value is `DIM_MISMATCH`. */
+int matrix_mul_buffer(matrix_t mat1, matrix_t mat2, matrix_t output);
 
 
 /* Create an Identity Matrix, with the dimensions of dim x dim.
@@ -154,6 +145,11 @@ int matrix_mul_assign_to_second(matrix_t mat1, matrix_t *mat2);
    In case of allocation failure, the output matrix has a `data` field of
    `NULL`. */
 int matrix_identity(size_t dim, matrix_t* output);
+
+
+/* Overwrites the given matrix so that it becomes an identity matrix.
+   The input matrix must be of square dimensions. */
+int matrix_set_identity(matrix_t mat);
 
 /* Given a matrix named <mat>, return <mat ^ t>: meaning its transposed matrix.
 

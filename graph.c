@@ -63,25 +63,27 @@ int graph_diagonal_degree_matrix(matrix_t mat, bool is_sqrt, matrix_t* output) {
 
 
 int graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, matrix_t *output) {
-	matrix_t D, W, I, MULT;
+	matrix_t D, W, MULT;
 
 	/* in case of an error */
 	D.data = NULL;
 	W.data = NULL;
-	I.data = NULL;
+	output->data = NULL;
 	MULT.data = NULL;
 
-	if (matrix_identity(num_data, &I)) goto error;
+	if (matrix_identity(num_data, output)) goto error;
 
 	if (graph_adjacent_matrix(input, num_data, dim, &W)) goto error;
 
 	if (graph_diagonal_degree_matrix(W, true, &D)) goto error;
 
 	if(matrix_mul(D, W, &MULT)) goto error;
-	if(matrix_mul_assign_to_first(&MULT, D)) goto error;
+
+    matrix_mul_buffer(MULT, D, W); /* W is essentially a buffer at this point */
+	matrix_swap(&MULT, &W);
+
 	matrix_mul_scalar_assign(MULT, -1);
 
-	*output = I;
 	matrix_add_assign(*output, MULT);
 
 	matrix_free(MULT);
@@ -95,6 +97,6 @@ error:
 	matrix_free_safe(MULT);
 	matrix_free_safe(W);
 	matrix_free_safe(D);
-	matrix_free_safe(I);
+	matrix_free_safe(*output);
 	return BAD_ALLOC;
 }

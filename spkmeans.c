@@ -11,6 +11,7 @@ static int handle_goal(matrix_t* output);
 static void kmeans(size_t *initial_centroids_indices);
 static void print_kmeans(size_t* initial_centroids_indices);
 
+static const char *get_filename_ext(const char *filename);
 static void collect_data(const char *filename);
 static void initialize_sets(size_t *initial_centroids_indices);
 static void get_num_and_dim(FILE *file);
@@ -261,12 +262,24 @@ static void initialize_sets(size_t *initial_centroids_indices) {
 	}
 }
 
+/* Given a file name, it returns the file extension of the file */
+const char *get_filename_ext(const char *filename) {
+    const char *dot = strrchr(filename, '.');
+    if(!dot || dot == filename) return "";
+    return dot + 1;
+}
+
 /* Given an input filename, gathers all of the datapoints stored in that file,
  * while also figuring out what `dim` and `num_data` are supposed to be. */
 static void collect_data(const char *filename) {
 	FILE *input;
 	size_t i;
 
+	/* Asserting that the file extension is either .csv or .txt */
+	const char* file_ext = get_filename_ext(filename);
+	assert_input( (strcmp(file_ext, "csv") == 0) || (strcmp(file_ext, "txt") == 0) );
+
+	/* Extracting the data from the input file */
 	input = fopen(filename, "r");
 
 	assert_input(NULL != input);

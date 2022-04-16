@@ -21,7 +21,9 @@ def main(K: int, goal: str, infile: str) -> None:
 
         # Fetch the matrix of points produced from the eigen vectors of the normalized graph laplacian matrix of the given vectors
 		T_points = spkmeans.goal(K, goal, infile)
-		K = len(T_points[0])
+		
+		# Make sure that the amount of centroids isn't 1 (this can be determined by <T_points>)
+		assert_generic(len(T_points[0]) != 1)
 
         # Initialize centroids picked by the Kmeans++ algorithm
 		initial_centroids_indices = initialize_centroids(len(T_points[0]), T_points)

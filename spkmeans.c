@@ -107,15 +107,13 @@ static int handle_goal(matrix_t *output) {
 	}
 	if ( strcmp(goal, "spk") == 0 ) {
 		if ( (signal = get_T_of_spectral_kmeans(K, output)) ) goto error;
-		if (output->rows == 1) {/* If eigen heuritic picked K=1 */
-			signal = HEURISTIC_PICKED_1;
-			goto error; 
-		}
+
 	}
 
 	return 0;
 
 error:
+
 	/* This mechanism uses only the datapoints, hence we can free the resources more responsively */
 	if(NULL != datapoints) {
 		size_t i;

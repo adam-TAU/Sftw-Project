@@ -26,68 +26,98 @@
 # global variables
 testers_path=$1
 output_file="/tmp/output.txt"
-
+valgrind_file="/tmp/valgrind.txt"
 
 
 # auxiliary functions
+function verdict_memory_loss() {
+	# this function shall be used only upon the C interface comprehensive test
+	# this function assumes the $valgrind_file matches the very last running of a test using the C interface
+	
+	bytes_lost=$(cat $valgrind_file | grep "LEAK SUMMARY" -A 1 | tail -n1 | awk '{print $4}')
+	
+	if [[ ${bytes_lost//,} -eq 0 ]]; then
+		echo -e '\033[1;32mNO MEMORY LEAK\e[0m' # print out a 'success' message
+	else
+		echo -e "\e[1;31mMEMORY LEAK\e[0m" # print out a 'failed' message
+		cat $valgrind_file >> memory_transcript_c.txt
+		echo -e "\n\n\n" >> memory_transcript_c.txt
+	fi
+}
+
 function verdict_diff() {
 	# the first argument shall be the length (in characters) of the result of diff
+	
 	if [[ $1 -eq 0 ]]; then
-		echo -e '\033[1;32mSUCCESS\e[0m' # print out a 'success' message
+		echo -ne '\033[1;32mSUCCESS\e[0m' # print out a 'success' message
 	else
-		echo -e "\e[1;31mFAILED\e[0m" # print out a 'failed' message
+		echo -ne "\e[1;31mFAILED\e[0m" # print out a 'failed' message
 	fi
 }
 
 
-
+# invidividual test - specific input file, specific goal, specific interface only
 function individual_test() {
 	# the first argument shall be the interface being tested: c/py
 	# the second argument shall be the goal being tested
 	# the third argument shall be the input file being used
 
-	# the function returns the output of the 'diff' operation upon the output testing file and the actual output
-
+	# running the commands
 	if [[ "${1}" == "py" ]]; then # if we are testing the python interface
 		python3 spkmeans.py 0 $2 $testers_path/$3 &> $output_file
 	elif [[ "${1}" == "c" ]]; then # if we are testing the C interface
-		./spkmeans $2 $testers_path/$3 > $output_file
+		valgrind --leak-check=yes --log-file=$valgrind_file ./spkmeans $2 $testers_path/$3 > $output_file
 	else
 		echo "Individual test function failed: Invalid interface"
 		return -1
 	fi
 
-	diff_result=$(diff $output_file $testers_path/outputs/$1/$2/$3)
-	echo -e "DIFF RESULT FOR: ${1}: ${2}: ${3}:\n${diff_result}\n\n" >> test_transcript_$1.txt
-
-	return ${#diff_result}
+	# calculating the difference between the desired output and the actual output
+	diff_result=$(diff $output_file $testers_path/outputs/$1/$2/$3 2>&1)
+	
+	# verdicting if the test failed, then print an appropriate status
+	verdict_diff ${#diff_result}
+	
+	# if the test failed, print a report of the 'diff' operation into the test transcript of the interface
+	if [[ ${#diff_result} -ne 0 ]]; then 
+		echo -e "DIFF RESULT FOR: ${1}: ${2}: ${3}:\n${diff_result}\n\n" >> test_transcript_$1.txt
+	fi
+	
+	# if the interface is C, verdict if the test had a memory leak, and print an appropriate status accordingly
+	if [[ $1 == "c" ]]; then
+		echo -n ": "
+		verdict_memory_loss
+	else
+		echo
+	fi
 }
 
 
 
+# comprehensive goal test - specific goal, specific interface only
 function test_goal() {
 	# the first argument shall be the interface being tested c/py
 	# the second argument shall be the goal being tested
 
 	if [[ "${2}" == "jacobi" ]]; then
 		for i in {0..19}; do
-			individual_test $1 $2 jacobi_$i.txt
-			diff_res_len=$?
 			echo -n "${1^^}: ${2^^}: ${testers_path}/jacobi_${i}.txt: "
-			verdict_diff $diff_res_len
+			individual_test $1 $2 jacobi_$i.txt
 		done
 	else
 		for i in {0..9}; do
-			individual_test $1 $2 spk_$i.txt
-			diff_res_len=$?
 			echo -n "${1^^}: ${2^^}: ${testers_path}/spk_${i}.txt: "
-			verdict_diff $diff_res_len
+			individual_test $1 $2 spk_$i.txt
 		done
 	fi
+	
+
+
 }
 
 
 
+# comprehensive interface test - specific interface only
 function test_interface() {
 	# the first argument shall be the interface being tested
 	interface=$1
@@ -105,10 +135,13 @@ function test_interface() {
 
 
 
+# comprehensive test
 function run_comprehensive_test() {
 	# testing the C interface
 	rm test_transcript_c.txt &> /dev/null
+	rm memory_transcript_c.txt &> /dev/null
 	touch test_transcript_c.txt
+	touch memory_transcript_c.txt
 	echo -e "Testing the interface for: \e[4;33m\e[1;33mC\e[0m"
 	echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
 	bash comp.sh &> /dev/null # compiling
@@ -123,7 +156,7 @@ function run_comprehensive_test() {
 	test_interface py
 
 	# Summary 
-	echo -e "\n\n\e[1;31mNOTICE:\e[0m More detailed results are in: \e[4;34m\e[1;34mtest_transcript_c.txt\e[0m and \e[4;34m\e[1;34mtest_transcript_py.txt\e[0m"
+	echo -e "\n\n\e[1;31mNOTICE:\e[0m More detailed results are in: \e[4;34m\e[1;34mtest_transcript_c.txt\e[0m and \e[4;34m\e[1;34mtest_transcript_py.txt\e[0m.\n\e[4;37mOnly the results of failed tests will be viewed in the transcripts.\e[0m\nTests that had memory leaks have their memory reports at \e[4;34m\e[1;34mmemory_transcript_c.txt\e[0m."
 }
 
 

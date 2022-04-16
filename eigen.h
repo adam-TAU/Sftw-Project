@@ -13,6 +13,7 @@
 /* Defining exception types */
 #define ASYMMETRIC 3
 #define NOT_REAL 4
+#define HEURISTIC_PICKED_1 5
 
 
 /* Define a structre the will hold the indices in the matrix of a value.

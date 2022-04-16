@@ -18,6 +18,9 @@ typedef struct {
 } set_t;
 
 
+/* Error codes */
+#define HEURISTIC_PICKED_1 5
+
 
 /***************************** EXTERNAL VARIABLES *************************/
 extern char* goal;

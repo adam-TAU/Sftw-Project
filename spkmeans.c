@@ -86,24 +86,30 @@ void spkmeans_pass_kmeans_info_and_run(size_t *initial_centroids_indices) {
 /*************************** 2 SEPARATE MAIN MECHANISMS ************************************/
 
 static int handle_goal(matrix_t *output) {
+	int signal;
+
 	if ( strcmp(goal, "wam") == 0 ) {
-		if (print_weighted_adjacency_matrix()) goto error;
+		if ( (signal = print_weighted_adjacency_matrix()) ) goto error;
 
 	}
 	if ( strcmp(goal, "ddg") == 0 ) {
-		if (print_diagonal_degree_matrix()) goto error;
+		if ( (signal = print_diagonal_degree_matrix()) ) goto error;
 
 	}
 	if ( strcmp(goal, "lnorm") == 0 ) {
-		if (print_normalized_laplacian()) goto error;
+		if ( (signal = print_normalized_laplacian()) ) goto error;
 
 	}
 	if ( strcmp(goal, "jacobi") == 0 ) {
-		if (print_jacobi_output()) goto error;
+		if ( (signal = print_jacobi_output()) ) goto error;
 
 	}
 	if ( strcmp(goal, "spk") == 0 ) {
-		if (get_T_of_spectral_kmeans(K, output)) goto error;
+		if ( (signal = get_T_of_spectral_kmeans(K, output)) ) goto error;
+		if (output->rows == 1) {/* If eigen heuritic picked K=1 */
+			signal = HEURISTIC_PICKED_1;
+			goto error; 
+		}
 	}
 
 	return 0;
@@ -117,7 +123,7 @@ error:
 		}
 		free(datapoints);
 	}
-	return BAD_ALLOC;
+	return signal;
 }
 
 

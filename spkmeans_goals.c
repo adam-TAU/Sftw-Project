@@ -93,12 +93,20 @@ int get_T_of_spectral_kmeans(size_t K, matrix_t* output) {
 	if (matrix_new(jacobi_res.K_eigen_vectors.rows, jacobi_res.K_eigen_vectors.cols, output)) goto error;
 
 	for (i = 0; i < output->rows; i++) {
-		double norm_of_row = 0;
+		double sum_squared_of_rows = 0;
+		double norm_of_row;
+		
+		/* Calculating the sum of squared of the row */
 		for (j = 0; j < output->cols; j++) {
-			norm_of_row += pow( matrix_get(jacobi_res.K_eigen_vectors, i, j), 2 );
+			sum_squared_of_rows += pow( matrix_get(jacobi_res.K_eigen_vectors, i, j), 2 );
 		}
-		norm_of_row = pow( norm_of_row, 0.5 );
+		
+		/* Calculating the norm of the row with the sum of squared of the row */
+		if ( 0 == (norm_of_row = pow( sum_squared_of_rows, 0.5 )) ) { /* if the norm of the row equals to 0, turn it to 1, since no normalization can be applied */
+			norm_of_row = 1;
+		}
 
+		/* Normalize the jacobi output into the new matrix: T */
 		for (j = 0; j < output->cols; j++) {
 			matrix_set(*output, i, j, matrix_get(jacobi_res.K_eigen_vectors, i, j) / norm_of_row );
 		}

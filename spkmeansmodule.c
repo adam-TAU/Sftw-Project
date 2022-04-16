@@ -32,50 +32,36 @@ static size_t* initial_centroids_indices = NULL;
 
 /************************* configuring the C API ****************************************************/
 static PyObject* run_goal(PyObject *self, PyObject *args) {
-	char* error_str;
 	char* infile;
 	matrix_t output;
 	PyObject* T_points = NULL;
 	int signal;
 
 	/* Fetch the string of the infile */
-	if(!PyArg_ParseTuple(args, "lss", &K, &goal, &infile)) {
-		return NULL;
-	}
+	if(!PyArg_ParseTuple(args, "lss", &K, &goal, &infile)) goto error;
 
 	/* Perform the wanted goal's operation and return the result (if there's any) */
-	if ((signal = spkmeans_pass_goal_info_and_run(infile, &output)) ) { /* run failed */
-		goto error_goal;
+	if ( (signal = spkmeans_pass_goal_info_and_run(infile, &output)) ) { /* run failed */
+		goto error;
 
 	} else if (strcmp(goal, "spk") == 0) { /* run succeeded. goal was "spk", therefore we have to return to python the output of the goal's mechanism */
 		
 		/* Initializing T_points as a list */
-		if ( NULL == (T_points = PyList_New(K)) ) {
-			PyErr_SetString(PyExc_RuntimeError, "Error: trying to create a new python list!");
-			goto error_generic;
-		}
+		if ( NULL == (T_points = PyList_New(K)) ) goto error;
 
 		/* Buildin the T_points matrix into a python list of lists */
-		if (matrixToList(output, &T_points)) goto error_generic;
+		if (matrixToList(output, &T_points)) goto error;
 		matrix_free_safe(output);
-		
 		return T_points;
 	}
 
 	Py_RETURN_NONE;
 
-error_generic:
+error:
 	matrix_free_safe(output);
 	Py_XDECREF(T_points);
-	return NULL;
-
-error_goal:
-	matrix_free_safe(output);
-	if (signal == BAD_ALLOC) error_str = "Error: Bad Allocation!";
-	if (signal == DIM_MISMATCH) error_str = "Error: Dimension Mismatch!";
-	PyErr_SetString(PyExc_RuntimeError, error_str);
-	return NULL;
-
+	assert_other(false);
+	Py_RETURN_NONE;
 }
 
 
@@ -83,7 +69,7 @@ static PyObject* kmeans_fit(PyObject *self, PyObject *args) {
 	/* parsing the given lists as arrays (If an error has been captured
 	 * a PyExc has been set, and we return NULL */
 	if (py_kmeans_parse_args(args)) {
-		return NULL;
+		assert_other(false);
 	}
 
 	/* building the returned centroids' list */
@@ -105,30 +91,34 @@ static int py_kmeans_parse_args(PyObject *args) {
 	size_t i;
 	PyObject *datapoints_py = NULL;
 	PyObject *initial_centroids_indices_py = NULL;
-
+	int signal;
+	
 	/* Fetching Arguments from Python */
 	if(!PyArg_ParseTuple(args, "OllOl", &datapoints_py, &num_data, &dim, &initial_centroids_indices_py, &K)) {
-		return 1;
+		signal = PY_ERROR;
 	}
 
 	/* Parsing the datapoints */
 	datapoints = calloc(num_data, sizeof(dpoint_t));
-	assert_other(NULL != datapoints);
+	if (NULL == datapoints) {
+		signal = BAD_ALLOC;
+		goto error;
+	}
 
 	for (i = 0; i < num_data; i++) {
 		PyObject *tmpItem;
 
 		/* PyList_GetItem returns a borrowed reference - no need to Py_DECREF */
 		if ( NULL == (tmpItem = PyList_GetItem(datapoints_py, i)) ) {
-			PyErr_SetString(PyExc_RuntimeError, "Error: couldn't fetch an item from a python list!");
+			signal = PY_ERROR;
 			goto error;
 		}
 
 		/* Appending a new datapoint to the datapoints array */
-		if (listToArray_D(tmpItem, dim, &datapoints[i].data)) goto error;
+		if ( (signal = listToArray_D(tmpItem, dim, &datapoints[i].data)) ) goto error;
 	}
 
-	if (listToArray_L(initial_centroids_indices_py, K, &initial_centroids_indices)) goto error;
+	if ( (signal = listToArray_L(initial_centroids_indices_py, K, &initial_centroids_indices)) ) goto error;
 
 	Py_XDECREF(datapoints_py);
 	return 0;
@@ -151,7 +141,7 @@ error:
 	
 	Py_XDECREF(datapoints_py);
 	Py_XDECREF(initial_centroids_indices_py);
-	return 1;
+	return signal;
 
 }
 
@@ -163,38 +153,24 @@ static int matrixToList(const matrix_t mat, PyObject **output) {
 	size_t i, j;
 
 	/* Creating outer list */
-	if ( NULL == (*output = PyList_New(mat.rows)) ) {
-		PyErr_SetString(PyExc_RuntimeError, "Creation of a PyList has failed!");
-		goto error;
-	}
+	if ( NULL == (*output = PyList_New(mat.rows)) ) goto error;
 
 	for (i = 0; i < mat.rows; ++i) {
 		PyObject* tmpList;
 
 		/* Creating inner list */
-		if ( NULL == (tmpList = PyList_New(mat.cols)) ) {
-			PyErr_SetString(PyExc_RuntimeError, "Creation of a PyList has failed!");
-			goto error;
-		}
+		if ( NULL == (tmpList = PyList_New(mat.cols)) ) goto error;
 
 		/* Building inner list */
 		for (j = 0; j < mat.cols; ++j) {
 
-			if(NULL == (pyfloat = PyFloat_FromDouble( matrix_get(mat, i, j) ) ) ) {
-				PyErr_SetString(PyExc_TypeError, "Double to Float conversion failed!");
-				goto error;
-			}
-			if(PyList_SetItem(tmpList, (Py_ssize_t)j, pyfloat)) {
-				PyErr_SetString(PyExc_IndexError, "Index out of bounds or the index isn't an integer!");
-				goto error;
-			}
+			if(NULL == (pyfloat = PyFloat_FromDouble( matrix_get(mat, i, j) ) ) ) goto error;
+			if(PyList_SetItem(tmpList, (Py_ssize_t)j, pyfloat)) goto error;
 		}
 
 		/* Inserting inner list */
-		if(PyList_SetItem(*output, (Py_ssize_t)i, tmpList)) {
-			PyErr_SetString(PyExc_IndexError, "Index out of bounds or the index isn't an integer!");
-			goto error;
-		}
+		if(PyList_SetItem(*output, (Py_ssize_t)i, tmpList)) goto error;
+		
 	}
 
 	return 0;
@@ -213,16 +189,20 @@ error:
 static int listToArray_D(PyObject *list, size_t length, double** output) {
 	size_t i;
 	PyObject *pypoint = NULL;
-
+	int signal;
+	
 	/* first check if the given PyObject is indeed a list */
 	if (!PyList_Check(list)) {
-		PyErr_SetString(PyExc_TypeError, "The passed argument isn't a list");
+		signal = PY_ERROR;
 		goto error;
 	}
 	
 	/* Initialize the array */
 	(*output) = calloc(length, sizeof(**output));
-	assert_other(NULL != (*output));
+	if (NULL == (*output)) {
+		signal = BAD_ALLOC;
+		goto error;
+	}
 
 
 	/* Insert the data into the array */
@@ -230,7 +210,7 @@ static int listToArray_D(PyObject *list, size_t length, double** output) {
 		/* PyList_GetItem returns a borrowed reference - no need to Py_DECREF */
 		pypoint = PyList_GetItem(list, (Py_ssize_t)i);
 		if (!PyFloat_Check(pypoint)) {
-			PyErr_SetString(PyExc_TypeError, "Must pass an list of floats");
+			signal = PY_ERROR;
 			goto error;
 		}
 		(*output)[i] = (double) PyFloat_AsDouble(pypoint);
@@ -242,7 +222,7 @@ static int listToArray_D(PyObject *list, size_t length, double** output) {
 error:
 	/* If any of the CPython functions fail */
 	Py_XDECREF(pypoint);
-	return PY_ERROR;
+	return signal;
 }
 
 
@@ -253,23 +233,27 @@ error:
 static int listToArray_L(PyObject *list, size_t length, size_t** output) {
 	size_t i;
 	PyObject *pypoint = NULL;
-
+	int signal;
+	
 	/* first check if the given PyObject is indeed a list */
 	if (!PyList_Check(list)) {
-		PyErr_SetString(PyExc_TypeError, "The passed argument isn't a list");
+		signal = PY_ERROR;
 		goto error;
 	}
 
 	/* Initialize the array */
 	(*output) = calloc(length, sizeof(**output));
-	assert_other(NULL != (*output));
+	if (NULL == (*output)) {
+		signal = BAD_ALLOC;
+		goto error;
+	}
 
 	/* Insert the data into the array */
 	for(i = 0; i < length; ++i) {
 		/* PyList_GetItem returns a borrowed reference - no need to Py_DECREF */
 		pypoint = PyList_GetItem(list, (Py_ssize_t)i);
 		if (!PyLong_Check(pypoint)) {
-			PyErr_SetString(PyExc_TypeError, "Must pass an list of floats");
+			signal = PY_ERROR;
 			goto error;
 		}
 		(*output)[i] = (size_t) PyLong_AsLong(pypoint);
@@ -282,7 +266,7 @@ static int listToArray_L(PyObject *list, size_t length, size_t** output) {
 error:
 	/* If any of the CPython functions fail */
 	Py_XDECREF(pypoint);
-	return PY_ERROR;
+	return signal;
 }
 /**************************************************************************/
 

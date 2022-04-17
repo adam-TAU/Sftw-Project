@@ -100,7 +100,6 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 
 	matrix_free(A);
 	matrix_free(A_tag);
-	matrix_free(V);
 	return 0;
 
 error:

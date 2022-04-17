@@ -355,7 +355,8 @@ potentially lead to undefined behaviors of the test script.
 (2) Don't run this script from hosts that have the \`/tmp\` directory
 write-protected. Else, you would need to change a few arguments here and there.
 (3) You shall place this shell script and the \`\033[4;37mtestfiles\e[0m\` directory (that came in the zip)
-within the directory that contains all of the files that you need to assign."
+within the directory that contains all of the files that you need to assign.
+(4) You shall install or have installed the package \`\e[4;37mvalgrind\e[0m\`"
 	exit
 }
 

@@ -67,15 +67,13 @@ void eigen_print_jacobi(jacobi_output out) {
 
 int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 	size_t iterations;
-	matrix_t A, A_tag, P, V, buffer;
+	matrix_t A, A_tag, V;
 	matrix_ind loc;
 	double s, c;
 
     A.data = NULL;
     A_tag.data = NULL;
-    P.data = NULL;
     V.data = NULL;
-    buffer.data = NULL;
 
 	if (matrix_identity(mat.rows, &V)) goto error;
 	if (matrix_clone(mat, &A_tag)) goto error;
@@ -86,7 +84,7 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 
 		loc = matrix_ind_of_largest_offdiagonal(A);
 		jacobi_calc_c_s(&c, &s, A, loc);
-		jacobi_apply_rotation(V, c, s, loc);
+		jacobi_apply_rotation(V, loc, c, s);
 		jacobi_update_A_tag(A_tag, A, loc, c, s);
 
         if(jacobi_distance_of_squared_offdiagonals(A, A_tag) <= epsilon) break;
@@ -260,7 +258,7 @@ static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, doub
 static void jacobi_apply_rotation(matrix_t V, matrix_ind loc, double c, double s) {
 	size_t row;
 	
-	for (row = 0; row < V.rows; rows++) {
+	for (row = 0; row < V.rows; row++) {
 		double row_i, row_j;
 		row_i = c * matrix_get(V, row, loc.i) - s * matrix_get(V, row, loc.j);
 		row_j = s * matrix_get(V, row, loc.i) + c * matrix_get(V, row, loc.j);

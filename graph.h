@@ -31,6 +31,6 @@ int graph_diagonal_degree_matrix(matrix_t mat, bool is_sqrt, matrix_t* output);
    In case of any allocation failure, the return value is `BAD_ALLOC`.*/
 int graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, matrix_t *output);
 
-
+int experimental_graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, matrix_t *output);
 
 #endif

@@ -61,6 +61,55 @@ int graph_diagonal_degree_matrix(matrix_t mat, bool is_sqrt, matrix_t* output) {
 
 
 
+int experimental_graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, matrix_t *output) {
+	matrix_t W;
+	double* D_sqrt;
+	size_t i, j;
+	printf("check");
+	/* in case of an error */
+	W.data = NULL;
+	D_sqrt = NULL;
+	output->data = NULL;
+	
+
+	if (graph_adjacent_matrix(input, num_data, dim, &W)) goto error;
+	
+	D_sqrt = (double*) calloc(W.rows, sizeof(double));
+	for (i = 0; i < W.rows; i++) {
+		double sum = 0.0;
+		for (j = 0; j < W.rows; j++) {
+			sum += matrix_get(W, i, j);
+		}
+		
+		D_sqrt[i] = 1 / sqrt(sum);
+	}
+
+
+	matrix_new(W.rows, W.rows, output);
+	for (i = 0; i < output->rows; i++) {
+		for (j = 0; j < output->cols; j++) {
+			matrix_set(*output, i, j, D_sqrt[j] * matrix_get(W, i, j));
+		}
+	}
+
+	for (i = 0; i < output->rows; i++) {
+		for (j = 0; j < output->cols; j++) {
+			double mult_ij;
+			mult_ij = D_sqrt[i] * matrix_get(*output, i, j);
+			if (i == j) mult_ij = 1 - mult_ij;
+			else mult_ij = -mult_ij;
+			matrix_set(*output, i, j, mult_ij);
+		}
+	}
+
+	matrix_free(W);
+
+	/* do not free `I`, because it's the output */
+error:
+	return 0;
+}
+
+
 
 int graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, matrix_t *output) {
 	matrix_t D, W, MULT;

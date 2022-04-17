@@ -104,29 +104,30 @@ static int py_kmeans_parse_args(PyObject *args) {
 		signal = PY_ERROR;
 	}
 
-	/* Parsing the datapoints */
+	/* Parsing the datapoints: creating the datapoints array */
 	datapoints = calloc(num_data, sizeof(dpoint_t));
 	if (NULL == datapoints) {
 		signal = BAD_ALLOC;
 		goto error;
 	}
 
+	/* Building the datapoints array: inserting inner lists */
 	for (i = 0; i < num_data; i++) {
 		PyObject *tmpItem;
 
-		/* PyList_GetItem returns a borrowed reference - no need to Py_DECREF */
+		/* Extracting inner object of the given list */
 		if ( NULL == (tmpItem = PyList_GetItem(datapoints_py, i)) ) {
 			signal = PY_ERROR;
 			goto error;
 		}
 
-		/* Appending a new datapoint to the datapoints array */
+		/* Parsing the list into an array of doubles and storing it as a datapoints in the datapoints array */
 		if ( (signal = listToArray_D(tmpItem, dim, &datapoints[i].data)) ) goto error;
 	}
 
+	/* Parsing the initial centroids indices array: extracting the list from python into the array */
 	if ( (signal = listToArray_L(initial_centroids_indices_py, K, &initial_centroids_indices)) ) goto error;
 
-	/* Py_XDECREF(datapoints_py); */ 
 	return 0;
 
 
@@ -140,10 +141,6 @@ error:
 		}
 		free(datapoints_arg);
 	}
-		
-	if (initial_centroids_indices != NULL) {
-		free(initial_centroids_indices);
-	}
 	
 	Py_XDECREF(datapoints_py);
 	Py_XDECREF(initial_centroids_indices_py);
@@ -152,8 +149,8 @@ error:
 }
 
 
-/* This builds a PyList out of an existing array
- * No need to care about reference counts - it's managed by fit_capi */
+/* This builds a PyList out of an existing matrix.
+ * Creates an untracked reference. */
 static int matrixToList(const matrix_t mat, PyObject **output) {
 	PyObject *pyfloat = NULL;
 	size_t i, j;
@@ -183,11 +180,12 @@ static int matrixToList(const matrix_t mat, PyObject **output) {
 
 error:
 	Py_XDECREF(*output);
-	Py_XDECREF(pyfloat);
 	return PY_ERROR;
 }
 
 
+
+/* Creates a PyList out of the indices of centroids of the datapoints. */
 static int extract_datapoint_indices(PyObject **output) {
 	PyObject *pylong = NULL;
 	size_t i;
@@ -204,7 +202,6 @@ static int extract_datapoint_indices(PyObject **output) {
 
 error:
 	Py_XDECREF(*output);
-	Py_XDECREF(pylong);
 	return PY_ERROR;
 }
 
@@ -212,7 +209,7 @@ error:
 
 
 /* This parses a python Floats' List into a C Double's array
- * No need to worry about reference counts, it's managed by py_parse_args() */
+ * No need to worry about reference counts, it's managed by py_parse_args(). */
 static int listToArray_D(PyObject *list, size_t length, double** output) {
 	size_t i;
 	PyObject *pypoint = NULL;
@@ -243,12 +240,10 @@ static int listToArray_D(PyObject *list, size_t length, double** output) {
 		(*output)[i] = (double) PyFloat_AsDouble(pypoint);
 	}
 	
-	/* Py_XDECREF(pypoint); */
 	return 0;
 
 error:
-	/* If any of the CPython functions fail */
-	Py_XDECREF(pypoint);
+	if ( NULL != (*output) ) free(*output);
 	return signal;
 }
 
@@ -256,7 +251,7 @@ error:
 
 
 /* This parses a python Integers' List into a C Long's array
- * No need to worry about reference counts, it's managed by py_parse_args() */
+ * No need to worry about reference counts, it's managed by py_parse_args(). */
 static int listToArray_L(PyObject *list, size_t length, size_t** output) {
 	size_t i;
 	PyObject *pypoint = NULL;
@@ -286,13 +281,11 @@ static int listToArray_L(PyObject *list, size_t length, size_t** output) {
 		(*output)[i] = (size_t) PyLong_AsLong(pypoint);
 	}
 	
-	/* Py_XDECREF(pypoint); */
 	return 0;
 
 
 error:
-	/* If any of the CPython functions fail */
-	Py_XDECREF(pypoint);
+	if ( NULL != (*output) ) free(*output);
 	return signal;
 }
 /**************************************************************************/

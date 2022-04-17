@@ -32,12 +32,12 @@ def main(K: int, goal: str, infile: str) -> None:
         # Perform the kmeans clustering algorith on the
 		asg = spkmeans.kmeans_fit(T_points, len(T_points), len(T_points[0]), initial_centroids_indices, len(initial_centroids_indices))
 		
-		data = pd.read_csv(infile, header=None).to_numpy()
-		for cluster in range(K):
-			points = np.array([data[i,:] for i in range(len(asg)) if asg[i] == cluster])
-			plt.scatter(points[:,0], points[:,1])
+		# data = pd.read_csv(infile, header=None).to_numpy()
+		# for cluster in range(K):
+		#	points = np.array([data[i,:] for i in range(len(asg)) if asg[i] == cluster])
+		#	plt.scatter(points[:,0], points[:,1])
 			
-		plt.savefig("output.png")
+		# plt.savefig("output.png")
 
 
 	else: # In any other case that isn't a normalized spectral clustering - just perform the desired operation corresponding to the "goal" parameter

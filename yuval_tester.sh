@@ -1,30 +1,8 @@
 #!/bin/bash
 
-
-
-
-# INSTRUCTIONS: Read, else get a bozo message.
-#	1. You shall place this shell script within the directory that contains all of the files
-#	That you need to assign.
-#	
-#	2. You shouldn't run this from Nova/Beast/rack-mad/any tau-related server.
-#	If you still wish to do so, you would need to replace the path of $output_file to somewhere
-#	that isn't write-protected (tau-related servers have /tmp/ write-protected)
-#
-#	3. Be sure to remove any build/dist/egg files from the working directory. Could
-#	allegdly lead to undefined behaviors of the test script.
-#
-#	4. The most important and crucial instruction: you shall supply as the first and only
-#	cmd-line argument, the relative (or absolute) path to the directory of tests that yuval created.
-#	You'll get a bozo message if you don't do so.
-#
-#	5. Yuval might increase the amount of test output files, so beware. You would probably
-#	need to change some arguments here and there.
-
-
-
 # global variables
 testers_path=$1
+leaks=$2
 output_file="/tmp/output.txt"
 valgrind_file="/tmp/valgrind.txt"
 
@@ -37,7 +15,7 @@ function verdict_memory_loss() {
 	bytes_lost=$(cat $valgrind_file | grep "LEAK SUMMARY" -A 1 | tail -n1 | awk '{print $4}')
 	
 	if [[ ${bytes_lost//,} -eq 0 ]]; then
-		echo -e '\033[1;32mNO MEMORY LEAK\e[0m' # print out a 'success' message
+		echo -ne '\033[1;32mNO MEMORY LEAK\e[0m' # print out a 'success' message
 	else
 		echo -e "\e[1;31mMEMORY LEAK\e[0m" # print out a 'failed' message
 		cat $valgrind_file >> memory_transcript_c.txt
@@ -84,11 +62,11 @@ function individual_test() {
 	fi
 	
 	# if the interface is C, verdict if the test had a memory leak, and print an appropriate status accordingly
-	if [[ $1 == "c" ]]; then
-		echo -n ": "
-		verdict_memory_loss
-	else
-		echo
+	if [[ $leaks == "yes" ]]; then
+		if [[ $1 == "c" ]]; then
+			echo -n ": "
+			verdict_memory_loss
+		fi
 	fi
 }
 
@@ -103,11 +81,13 @@ function test_goal() {
 		for i in {0..19}; do
 			echo -n "${1^^}: ${2^^}: ${testers_path}/jacobi_${i}.txt: "
 			individual_test $1 $2 jacobi_$i.txt
+			echo
 		done
 	else
 		for i in {0..9}; do
 			echo -n "${1^^}: ${2^^}: ${testers_path}/spk_${i}.txt: "
 			individual_test $1 $2 spk_$i.txt
+			echo
 		done
 	fi
 	
@@ -120,47 +100,232 @@ function test_goal() {
 # comprehensive interface test - specific interface only
 function test_interface() {
 	# the first argument shall be the interface being tested
-	interface=$1
+	local_interface=$1
 
-	test_goal $interface wam
-	test_goal $interface ddg
-	test_goal $interface lnorm
-	test_goal $interface jacobi
+	test_goal $local_interface wam
+	test_goal $local_interface ddg
+	test_goal $local_interface lnorm
+	test_goal $local_interface jacobi
 
-	if [[ $interface == "py" ]]; then
-		test_goal $interface spk
+	if [[ $local_interface == "py" ]]; then
+		test_goal $local_interface spk
 	fi
 }
 
 
 
 
-# comprehensive test
-function run_comprehensive_test() {
-	# testing the C interface
-	rm test_transcript_c.txt &> /dev/null
-	rm memory_transcript_c.txt &> /dev/null
-	touch test_transcript_c.txt
-	touch memory_transcript_c.txt
-	echo -e "Testing the interface for: \e[4;33m\e[1;33mC\e[0m"
-	echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
-	bash comp.sh &> /dev/null # compiling
-	test_interface c
+# =================
+# REGULAR TEST
+# =================
+function regular_test() {
 
-	# testing the CPython interface
-	rm test_transcript_py.txt &> /dev/null
-	touch test_transcript_py.txt
-	echo -e "\n\nTesting the interface for: \e[4;33m\e[1;33mPython\e[0m"
-	echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
-	python3 setup.py build_ext --inplace &> /dev/null # building
-	test_interface py
+	if [[ $interface == @(c|both) ]]; then
+		# testing the C interface
+		rm $results_dir/test_transcript_c.txt &> /dev/null
+		rm $results_dir/memory_transcript_c.txt &> /dev/null
+		touch $results_dir/test_transcript_c.txt
+		touch $results_dir/memory_transcript_c.txt
+		echo -e "\e[4;37mTesting the interface for: \e[4;33m\e[1;33mC\e[0m:"
+		echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
+		bash comp.sh &> /dev/null # compiling
+		test_interface c
+	fi
 
-	# Summary 
-	echo -e "\n\n\e[1;31mNOTICE:\e[0m More detailed results are in: \e[4;34m\e[1;34mtest_transcript_c.txt\e[0m and \e[4;34m\e[1;34mtest_transcript_py.txt\e[0m.\n\e[4;37mOnly the results of failed tests will be viewed in the transcripts.\e[0m\nTests that had memory leaks have their memory reports at \e[4;34m\e[1;34mmemory_transcript_c.txt\e[0m."
+
+	if [[ $interface == @(py|both) ]]; then
+		# testing the CPython interface
+		rm $results_dir/test_transcript_py.txt &> /dev/null
+		touch $results_dir/test_transcript_py.txt
+		echo -e "\n\n\e[4;37mTesting the interface for: \e[4;33m\e[1;33mPython\e[0m:"
+		echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
+		python3 setup.py build_ext --inplace &> /dev/null # building
+		test_interface py
+	fi
+	
+	echo -e "\n\n\n"
 }
 
 
-if [[ $# -ne 1 ]]; then
+
+
+
+# =================
+# EFFICIENCY TEST
+# =================
+function efficiency_test() {
+	# test message
+	echo -e "Testing the \e[4;33m\e[1;33mefficiency of the algorithms\e[0m.\n\e[1;31mNOTICE: This test is going to take quite a while.\nMoreoever, this test is subjective.\nAlbeit, don't be a bozo and do optimize your code - you might get a penalty for inefficient code.\e[0m"
+	
+	# creating a maximized file
+	echo -e 'from sklearn import datasets
+import numpy as np
+def save_dataset(dataset, filename):
+    lines = map(stringify_row, dataset)
+    with open(filename + ".csv", "w") as f:
+        f.writelines(lines)
+     
+def stringify_row(row):
+    row = map(str, row)
+    return ",".join(row) + "\\n"
+
+# datapoints      
+save_dataset(datasets.make_blobs(n_samples=100, centers=3, cluster_std=0.05, n_features=10, shuffle=True, random_state=31)[0], "1000_blobs_10_feat")
+
+# symmetric matrix
+a = np.random.rand(1000, 1000)
+m = np.tril(a) + np.tril(a, -1).T
+save_dataset(m, "jacobi_input_10_6")' | python3
+	
+	if [[ $interface == @(c|both) ]]; then
+		# testing the efficiency of the C interface
+		rm efficiency_transcript_c.txt &> /dev/null
+		touch efficiency_transcript_c.txt
+		echo -e "\nTesting the efficiency for the interface: \e[4;33m\e[1;33mC\e[0m:"
+		echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
+		test_efficiency_interface c
+	fi
+	
+	
+	if [[ $interface == @(py|both) ]]; then
+		# testing the efficiency of the CPython interface
+		rm efficiency_transcript_py.txt &> /dev/null
+		touch efficiency_transcript_py.txt
+		echo -e "\n\n\nTesting the efficiency for the interface: \e[4;33m\e[1;33mPython\e[0m:"
+		echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
+		test_efficiency_interface py
+	fi
+	
+	rm jacobi_input.csv &> /dev/null
+	rm 1000_blobs_10_feat.csv &> /dev/null
+}
+
+
+function test_efficiency_interface() {
+	# the first argument shall be the interface being tested
+	local_interface=$1
+
+	test_efficiency_goal $local_interface wam
+	test_efficiency_goal $local_interface ddg
+	test_efficiency_goal $local_interface lnorm
+	test_efficiency_goal $local_interface jacobi
+
+	if [[ $local_interface == "py" ]]; then
+		test_efficiency_goal $local_interface spk
+	fi
+}
+
+
+function test_efficiency_goal() {
+	# the first argument is the interface that is currently being tested
+	# the second argument is the goal being tested
+	
+	echo -n "${1^^}: ${2^^}: Checking efficiency: "
+	local time_result
+	
+	if [[ $1 == "c" ]]; then
+	
+		if [[ $2 == "jacobi" ]]; then
+			time_result=$(timeout 8 bash -c "time ./spkmeans jacobi jacobi_input_10_6.csv 1> /dev/null" 2>&1) 
+		else
+			time_result=$(timeout 0.04 bash -c "time ./spkmeans ${2} 1000_blobs_10_feat.csv 1> /dev/null" 2>&1) 
+		fi
+	
+	else
+		if [[ $2 == "jacobi" ]]; then
+			time_result=$(timeout 3.5 bash -c "time python3 spkmeans.py 0 jacobi jacobi_input_10_6.csv 1> /dev/null" 2>&1) 
+		else
+			time_result=$(timeout 0.55 bash -c "time python3 spkmeans.py 0 ${2} 1000_blobs_10_feat.csv 1> /dev/null" 2>&1) 
+		fi
+	fi
+	
+	
+	# verdicting result of test, and outputting a corresponding log message to the efficiency transcript
+	if [[ ${#time_result} -ne 0 ]]; then # test succeeded
+		echo -e '\033[1;32mSUCCESS\e[0m' # print out a 'success' message
+	else
+		echo -e "\e[1;31mFAILED\e[0m" # print out a 'failed' message
+		echo -e "REQUIRED EFFICIENCY FOR: ${1}: ${2}: is:\n" >> efficiency_transcript_$1.txt
+		
+		if [[ $1 == "c" ]]; then
+			if [[ $2 == "jacobi" ]]; then
+				echo -ne "8" >> efficiency_transcript_$1.txt
+			else
+				echo -ne "0.04" >> efficiency_transcript_$1.txt
+			fi
+		else
+			if [[ $2 == "jacobi" ]]; then
+				echo -ne "3.5" >> efficiency_transcript_$1.txt
+			else
+				echo -ne "0.55" >> efficiency_transcript_$1.txt
+			fi
+		fi
+		
+		echo -e " seconds.\nGood luck next time!\n\n\n" >> efficiency_transcript_$1.txt
+	fi
+	
+	
+}
+
+
+
+
+
+# =================
+# Organizer
+# =================
+function comprehensive_test() {
+	if [[ $skip_regular == "no" ]]; then
+		regular_test
+	fi
+	
+	if [[ $efficiency == "yes" ]]; then
+		efficiency_test
+	fi
+	
+	
+	# Summary 
+	echo -e "\n\n\033[4;31m\e[1;31mNOTICE:\e[0m Detailed regular tests' results are in: \e[4;34m\e[1;34m${results_dir}/test_transcript_<interface>.txt\e[0m.\nDetailed memory leak tests' results have their memory reports at \e[4;34m\e[1;34m${results_dir}/memory_transcript_c.txt\e[0m.\nDetailed efficiency tests' results have their efficiency reports at \e[4;34m\e[1;34m${results_dir}/efficiency_transcript_<interface>.txt\e[0m.\n\e[4;37mOnly the results of failed tests will be viewed in the transcripts.\e[0m\n\n\n"
+}
+
+
+
+
+
+# =================
+# PRELUDE
+# =================
+function instructions() {
+	echo -e "\e[4;37m\e[1;37mHelp\e[0m: bash yuval_tester.sh <testfiles> <interface> <skip_regular> <leaks> <efficiency> [results_dir]\n
+- testfiles: 	Specifies the path to the directory containing the test files that were supplied with this test.
+- interface:	Specifies which interface you want to test. Any of the following: [c/py/both]
+- skip_regular:	Specifies whether to skip the regular tests. Any of the following: [yes/no]
+- leaks:	Specified if you want memory leak tests. Applies to the \e[4;37m\e[1;37mC\e[0m interface only: [yes/no]
+- efficiency:	Specifies whether you want an efficiency test on the interfaces you chose Any of the following: [yes/no]
+- results_dir:	Specifies the path of the directory you wish store the tests' results into (default: running directory)
+
+\e[4;37m\e[1;37mNotes\e[0m: 
+(1) The efficiency tests are quite long, take that into account.
+(2) Detailed regular tests' results are saved into \`\033[4;37mtest_transcript_<interface>.txt\e[0m\`.
+Only failed tests' results are saved into the transcripts.
+(3) Detailed memory leak tests' results are saved into \`\033[4;37mmemory_transcript_c.txt\e[0m\`.
+Only failed tests' results are saved into the transcript.
+(4) Detailed Efficiency tests' outputs are saved into \`\033[4;37mefficiency_transcript_<interface>.txt\e[0m\`.
+Only failed efficiency tests' results are saved into the transcript.
+
+\e[4;37m\e[1;37mInstructions\e[0m:
+(1) Be sure to remove any build/dist/egg files from the working directory. Could
+potentially lead to undefined behaviors of the test script.
+(2) Don't run this script from hosts that have the \`/tmp\` directory
+write-protected. Else, you would need to change a few arguments here and there.
+(3) You shall place this shell script within the directory that contains all of the files
+that you need to assign."
+	exit
+}
+
+
+
+function youre_a_bozo() {
 	echo -e "
  _               ____      _  _____ ___ ___            ____   ___ ________  
 | |        _    |  _ \    / \|_   _|_ _/ _ \     _    | __ ) / _ \__  / _ \ 
@@ -179,6 +344,66 @@ if [[ $# -ne 1 ]]; then
  | |\___ \___ \| | | |  _|  
  | | ___) |__) | |_| | |___ 
 |___|____/____/ \___/|_____|"
-else
-	run_comprehensive_test $1
+	exit
+}
+
+
+
+# blah0
+if [[ $1 == "--help" ]]; then # help
+	instructions
 fi
+
+# blah1
+if [[ $# -le 3 ]]; then # args
+	instructions
+	youre_a_bozo
+fi
+
+# blah2
+if [[ ! -d $1 ]]; then # testfiles
+	youre_a_bozo
+else
+	testers_path=$1
+fi
+
+# blah3
+if [[ $2 != @(c|py|both) ]]; then # interface 
+	youre_a_bozo
+else
+	interface=$2
+fi
+
+# blah4
+if [[ $3 != @(yes|no) ]]; then # leaks
+	youre_a_bozo
+else
+	skip_regular=$3
+fi
+
+# blah5
+if [[ $4 != @(yes|no) ]]; then # leaks
+	youre_a_bozo
+else
+	leaks=$4
+fi
+
+# blah6
+if [[ $5 != @(yes|no) ]]; then # efficiency
+	youre_a_bozo
+else
+	efficiency=$5
+fi
+
+# blah7
+if [[ $# -eq 6 ]]; then # results dir
+	if [[ ! -d $6 ]]; then
+		mkdir $6
+	fi
+	results_dir=$6
+else
+	results_dir="."
+fi
+
+# run
+comprehensive_test

@@ -4,7 +4,45 @@
 
 
 
+/************************************************ STATIC FUNCTION DECLARATIONS *******************************************************************/
+/* Given the diagonal matrix <mat_of_eigens>, pull the eigen values out of its diagonal,
+ * sort them if needed, and determine how many of them we need to store in the <jacobi_output> argument.
+ * The determination of the amount of eigen values, is done by the value of <K>. If K==0, then we use the heuristic gap to determine a new K.
+ * Once K is determined, we store the <K>-first eigen vectors into the <jacobi_output> argument.
+ * Most of this function's work is to simply format the output of the jacobi algorithm - And when needed, apply the heuristic gap. */
+static int jacobi_format_output(matrix_t mat_vectors, matrix_t mat_of_eigens, size_t K, jacobi_output* output);
 
+/* In case K==0 was given as input, we try to determine a new valid K using the eigen heuristic gap.
+ * <eigen_values_amount> is the amount of eigen values. We need that for the heuristic's algorithm.
+ * Pre-Conditions:
+ *		the given array of eigen values must be sorted by value (remember: eigen is a struct) */
+static size_t jacobi_eigen_heuristic(eigen* sorted_eigen_values, size_t eigen_values_amount);
+
+/* Given an the last stage of A_tag in the jacobi algorithm, extract its eigen values.
+   If sort equals <true>, sort the eigen values.
+   An array of eigen values would be assigned to the output argument. */
+static int jacobi_extract_eigen_values(matrix_t mat, bool sort, eigen** output);
+
+/* In the jacobi algorithm, this is the function that transforms A_tag (the next matrix in the recursive algorithm), through the current A matrix */
+static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, double c, double s);
+
+/* Calculate the rotation matrix using the given data, and store the result in the pre-allocated `output`. */
+int eigen_build_rotation_matrix(matrix_ind loc, double c, double s, matrix_t output);
+
+/* Given two matrices, determine the distance between their sum of squared off-diagonals */
+static double jacobi_distance_of_squared_offdiagonals(matrix_t mat1, matrix_t mat2);
+
+/* Calculae the values of 'c' and 's' of the desired rotation matrix */
+static void jacobi_calc_c_s(double* c, double *s, matrix_t current_jacobi_mat, matrix_ind loc);
+/*****************************************************************************************************************************************/
+
+
+
+
+
+
+
+/********************************************* GLOBAL FUNCTIONS **************************************************************/
 void eigen_print_jacobi(jacobi_output out) {
 	size_t i;
 
@@ -40,21 +78,21 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
     for(iterations = 0; iterations < max_jacobi_iterations; iterations++) {
 		matrix_copy(A, A_tag); /* matrices are created with equal dims - no error check */
 
-		loc = eigen_ind_of_largest_offdiagonal(A);
-		eigen_calc_c_s(&c, &s, A, loc);
+		loc = matrix_ind_of_largest_offdiagonal(A);
+		jacobi_calc_c_s(&c, &s, A, loc);
 
 		eigen_build_rotation_matrix(loc, c, s, P);
 
 		matrix_mul_buffer(V, P, buffer);
         matrix_swap(&V, &buffer);
 
-		eigen_update_jacobi_A_tag(A_tag, A, loc, c, s);
+		jacobi_update_A_tag(A_tag, A, loc, c, s);
 
-        if(eigen_distance_of_squared_offdiagonals(A, A_tag) <= epsilon) break;
+        if(jacobi_distance_of_squared_offdiagonals(A, A_tag) <= epsilon) break;
 	}
 
 	/* Extract the eigen values and eigen vectors and insert them into an output format */
-	if (eigen_format_eigen_vectors(V, A_tag, K, output)) goto error;
+	if (jacobi_format_output(V, A_tag, K, output)) goto error;
 
 	/* In this case we had to create another matrix to hold the wanted eigen vectors */
 	if (K <= V.cols) { 
@@ -78,35 +116,57 @@ error:
 }
 
 
+int eigen_compare(const void* eigen1, const void* eigen2) {
+	double eigen1_val = ((eigen*)eigen1)->value;
+	double eigen2_val = ((eigen*)eigen2)->value;
 
-int eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t K, jacobi_output* output) {
+	return (eigen1_val > eigen2_val) ? 1 : ( (eigen1_val < eigen2_val) ? -1 : 0 );
+}
+
+
+
+int sign(double val) {
+	if (val >= 0) return 1;
+	return -1;
+}
+
+
+
+
+
+
+
+
+
+static int jacobi_format_output(matrix_t mat_vectors, matrix_t mat_of_eigens, size_t K, jacobi_output* output) {
 	size_t i, j;
 	eigen* sorted_eigen_values = NULL;
-	matrix_t U_eigen_vectors;
+	matrix_t K_eigen_vectors;
 
 
 	if (K <= mat_vectors.cols) {	
 		/* find K */
-		if (eigen_extract_eigen_values(mat_eigens, true, &sorted_eigen_values)) goto error;
+		if (jacobi_extract_eigen_values(mat_of_eigens, true, &sorted_eigen_values)) goto error;
 
 		/* If K == 0, it means the CMD asked us to use the heuristic gap to determine K */
 		if (K == 0) { 
-			K = eigen_heuristic_gap(sorted_eigen_values, mat_eigens.rows);
+			K = jacobi_eigen_heuristic(sorted_eigen_values, mat_of_eigens.rows);
 		}
 
 		/* Form a matrix with the K-first eigen values */
-		if (matrix_new(mat_vectors.rows, K, &U_eigen_vectors)) goto error;
+		if (matrix_new(mat_vectors.rows, K, &K_eigen_vectors)) goto error;
 
+		/* For each eigen value out of the first K, find its corresponding column in V, and copy it into <K_eigen_vectors> */
 		for (j = 0; j < K; j++) {
 			size_t eigen_col = sorted_eigen_values[j].col;
 
-			for (i = 0; i < U_eigen_vectors.rows; i++) {
-				matrix_set(U_eigen_vectors, i, j, matrix_get(mat_vectors, i, eigen_col) ); 
+			for (i = 0; i < K_eigen_vectors.rows; i++) {
+				matrix_set(K_eigen_vectors, i, j, matrix_get(mat_vectors, i, eigen_col) ); 
 			}
 		}
 
 		/* Format the output */
-		output->K_eigen_vectors = U_eigen_vectors;
+		output->K_eigen_vectors = K_eigen_vectors;
 		output->eigen_values = sorted_eigen_values;
 
 	} else {
@@ -115,7 +175,7 @@ int eigen_format_eigen_vectors(matrix_t mat_vectors, matrix_t mat_eigens, size_t
 		 * Moreover, it's since we use this case as an indicator to when jacobi was powered without any future spectral clustering use. 
 		 * In such case, a jacobi algorithm alone isn't due to any specification of K, and we will return all of the eigen values/vectors (unsorted) */
 		output->K_eigen_vectors = mat_vectors;
-		if (eigen_extract_eigen_values(mat_eigens, false, &output->eigen_values)) goto error;
+		if (jacobi_extract_eigen_values(mat_of_eigens, false, &output->eigen_values)) goto error;
 	}
 
 	return 0;
@@ -128,12 +188,12 @@ error:
 }
 
 
-size_t eigen_heuristic_gap(eigen* sorted_eigen_values, size_t rows) {
-	size_t i, K = rows;
+static size_t jacobi_eigen_heuristic(eigen* sorted_eigen_values, size_t eigen_values_amount) {
+	size_t i, K = eigen_values_amount;
 	double tmp;
 	double max_gap = -1;
 
-	for (i = 0; i < rows/2; i++) {
+	for (i = 0; i < eigen_values_amount/2; i++) {
 		tmp = fabs( sorted_eigen_values[i].value - sorted_eigen_values[i+1].value );
 
 		if (tmp > max_gap) {
@@ -146,17 +206,7 @@ size_t eigen_heuristic_gap(eigen* sorted_eigen_values, size_t rows) {
 }
 
 
-
-int eigen_compare(const void* eigen1, const void* eigen2) {
-	double eigen1_val = ((eigen*)eigen1)->value;
-	double eigen2_val = ((eigen*)eigen2)->value;
-
-	return (eigen1_val > eigen2_val) ? 1 : ( (eigen1_val < eigen2_val) ? -1 : 0 );
-}
-
-
-
-int eigen_extract_eigen_values(matrix_t mat, bool sort, eigen** output) {
+static int jacobi_extract_eigen_values(matrix_t mat, bool sort, eigen** output) {
 	size_t i;
 
 	*output = malloc(mat.rows * sizeof(eigen));
@@ -175,7 +225,7 @@ int eigen_extract_eigen_values(matrix_t mat, bool sort, eigen** output) {
 }
 
 
-void eigen_update_jacobi_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, double c, double s) {
+static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, double c, double s) {
 	double c2, s2, Aii, Ajj, Aij;
 	size_t i, j, r;
 
@@ -231,61 +281,17 @@ int eigen_build_rotation_matrix(matrix_ind loc, double c, double s, matrix_t out
 
 
 
-double eigen_distance_of_squared_offdiagonals(matrix_t mat1, matrix_t mat2) {
-	return eigen_sum_squared_off(mat1) - eigen_sum_squared_off(mat2);
+static double jacobi_distance_of_squared_offdiagonals(matrix_t mat1, matrix_t mat2) {
+	return matrix_sum_squared_off(mat1) - matrix_sum_squared_off(mat2);
 }
 
 
 
-double eigen_sum_squared_off(matrix_t mat) {
-	double sum = 0.0;
-	size_t i, j;
-
-	for (i = 0; i < mat.rows; i++) {
-		for (j = 0; j < mat.cols; j++) {
-			sum += (i != j) ? pow( matrix_get(mat, i, j), 2 ) : 0;
-		}
-	}
-
-	return sum;
-}
-
-
-
-
-matrix_ind eigen_ind_of_largest_offdiagonal(matrix_t mat) {
-	matrix_ind output;
-	size_t i, j;
-	double current_max = -1;
-
-	for (i = 0; i < mat.rows; i++) {
-		for (j = i + 1; j < mat.cols; j++) { /* The jacobi algorithm is due to get a symmetric matrix, therefore we check only half of the off_diagonals */
-			double tmp = fabs(matrix_get(mat, i, j));
-			if (tmp > current_max) {
-				output.i = i;
-				output.j = j;
-				current_max = tmp;
-			}
-		}
-	}
-	return output;
-}
-
-
-
-
-void eigen_calc_c_s(double* c, double *s, matrix_t mat, matrix_ind loc) {
+static void jacobi_calc_c_s(double* c, double *s, matrix_t current_jacobi_mat, matrix_ind loc) {
 	double theta, tmp;
 
-	theta = (matrix_get(mat, loc.j, loc.j) - matrix_get(mat, loc.i, loc.i)) / (2 * matrix_get(mat, loc.i, loc.j));
+	theta = (matrix_get(current_jacobi_mat, loc.j, loc.j) - matrix_get(current_jacobi_mat, loc.i, loc.i)) / (2 * matrix_get(current_jacobi_mat, loc.i, loc.j));
 	tmp = sign(theta) / ( fabs(theta) + sqrt( pow(theta, 2) + 1 ) );
 	*c = 1 / sqrt( pow(tmp, 2) + 1 );
 	*s = tmp * (*c);
-}
-
-
-
-int sign(double val) {
-	if (val >= 0) return 1;
-	return -1;
 }

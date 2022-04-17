@@ -13,6 +13,13 @@ typedef struct matrix {
 } matrix_t;
 
 
+/* Define a structre the will hold the indices in the matrix of a value.
+ * Inconvient in terms of cache locality, therefore why we chose to have this only for a specific use in this file */
+typedef struct matrix_ind {
+	size_t i;
+	size_t j;
+} matrix_ind;
+
 /* Define a structure that will hold a vector's coordinates. This will also be used in the spkmeans.c mechanism */
 typedef struct {
 	double *data;
@@ -156,5 +163,15 @@ int matrix_set_identity(matrix_t mat);
    In case of allocation failure, the output matrix has a `data` field of
    `NULL`. */
 int matrix_transpose(matrix_t mat, matrix_t* output);
+
+/* Given a matrix, return the sum of squared off-diagonals. */
+double matrix_sum_squared_off(matrix_t mat);
+
+/* Return the index of an off diagonal inside the one matrix's array that holds the largest absolute value.
+ * Pre-condition: <sym_mat> must be a symmetric matrix!
+ * Notice: due to the pre-condition, only the higher half of the matrix will be scanned for the largest off diagonal value.
+ * Therefore, the index returned will and must be out of the higher half of the matrix. */  
+matrix_ind matrix_ind_of_largest_offdiagonal(matrix_t sym_mat);
+
 
 #endif /* MATRIX_H */

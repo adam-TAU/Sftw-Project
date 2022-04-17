@@ -1,6 +1,7 @@
 #include "matrix.h"
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 int matrix_new(size_t rows, size_t cols, matrix_t *output) {
 	size_t len = rows * cols;
@@ -250,3 +251,40 @@ int matrix_transpose(matrix_t mat, matrix_t* output) {
 
 	return 0;
 }
+
+
+
+
+double matrix_sum_squared_off(matrix_t mat) {
+	double sum = 0.0;
+	size_t i, j;
+
+	for (i = 0; i < mat.rows; i++) {
+		for (j = 0; j < mat.cols; j++) {
+			sum += (i != j) ? pow( matrix_get(mat, i, j), 2 ) : 0;
+		}
+	}
+
+	return sum;
+}
+
+
+
+matrix_ind matrix_ind_of_largest_offdiagonal(matrix_t sym_mat) {
+	matrix_ind output;
+	size_t i, j;
+	double current_max = -1;
+
+	for (i = 0; i < sym_mat.rows; i++) {
+		for (j = i + 1; j < sym_mat.cols; j++) {
+			double tmp = fabs(matrix_get(sym_mat, i, j));
+			if (tmp > current_max) {
+				output.i = i;
+				output.j = j;
+				current_max = tmp;
+			}
+		}
+	}
+	return output;
+}
+

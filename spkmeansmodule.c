@@ -126,7 +126,7 @@ static int py_kmeans_parse_args(PyObject *args) {
 
 	if ( (signal = listToArray_L(initial_centroids_indices_py, K, &initial_centroids_indices)) ) goto error;
 
-	Py_XDECREF(datapoints_py);
+	/* Py_XDECREF(datapoints_py); */ 
 	return 0;
 
 
@@ -243,7 +243,7 @@ static int listToArray_D(PyObject *list, size_t length, double** output) {
 		(*output)[i] = (double) PyFloat_AsDouble(pypoint);
 	}
 	
-	Py_XDECREF(pypoint);
+	/* Py_XDECREF(pypoint); */
 	return 0;
 
 error:
@@ -286,7 +286,7 @@ static int listToArray_L(PyObject *list, size_t length, size_t** output) {
 		(*output)[i] = (size_t) PyLong_AsLong(pypoint);
 	}
 	
-	Py_XDECREF(pypoint);
+	/* Py_XDECREF(pypoint); */
 	return 0;
 
 

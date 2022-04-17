@@ -4,7 +4,7 @@
 
 
 
-/************************************************ STATIC FUNCTION DECLARATIONS *******************************************************************/
+/********************************************* STATIC FUNCTION DECLARATIONS (RELATED TO JACOBI's ALGORITHM) **************************************************************/
 /* Given the diagonal matrix <mat_of_eigens>, pull the eigen values out of its diagonal,
  * sort them if needed, and determine how many of them we need to store in the <jacobi_output> argument.
  * The determination of the amount of eigen values, is done by the value of <K>. If K==0, then we use the heuristic gap to determine a new K.
@@ -25,6 +25,14 @@ static int jacobi_extract_eigen_values(matrix_t mat, bool sort, eigen** output);
 
 /* In the jacobi algorithm, this is the function that transforms A_tag (the next matrix in the recursive algorithm), through the current A matrix */
 static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, double c, double s);
+
+/* Given the <c> and <s> and <i,j> (in <loc>), which we are supposed to build a rotation matrix upon, simply
+ * apply the changes *in-place*, that would have occurred due to a right-hand multiplication in the rotation matrix.
+ * This changes will be applied to the matrix <V>.
+ * Pre-condition: 
+ 	- matrix_ind <loc> must be an index of the the largest off diagonal value, in the upper half of the current jacobi matrix.
+ 	  This means, that <loc> must point to an index that satisfies i < j. */
+static void jacobi_apply_rotation(matrix_t V, matrix_ind loc, double c, double s);
 
 /* Calculate the rotation matrix using the given data, and store the result in the pre-allocated `output`. */
 int eigen_build_rotation_matrix(matrix_ind loc, double c, double s, matrix_t output);
@@ -72,20 +80,13 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 	if (matrix_identity(mat.rows, &V)) goto error;
 	if (matrix_clone(mat, &A_tag)) goto error;
 	if (matrix_clone(mat, &A)) goto error;
-    if (matrix_new(mat.rows, mat.cols, &P)) goto error;
-    if (matrix_new(mat.rows, mat.cols, &buffer)) goto error;
 
     for(iterations = 0; iterations < max_jacobi_iterations; iterations++) {
 		matrix_copy(A, A_tag); /* matrices are created with equal dims - no error check */
 
 		loc = matrix_ind_of_largest_offdiagonal(A);
 		jacobi_calc_c_s(&c, &s, A, loc);
-
-		eigen_build_rotation_matrix(loc, c, s, P);
-
-		matrix_mul_buffer(V, P, buffer);
-        matrix_swap(&V, &buffer);
-
+		jacobi_apply_rotation(V, c, s, loc);
 		jacobi_update_A_tag(A_tag, A, loc, c, s);
 
         if(jacobi_distance_of_squared_offdiagonals(A, A_tag) <= epsilon) break;
@@ -101,16 +102,12 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 
 	matrix_free(A);
 	matrix_free(A_tag);
-    matrix_free(P);
-    matrix_free(buffer);
 	return 0;
 
 error:
 	matrix_free_safe(A);
 	matrix_free_safe(A_tag);
-	matrix_free_safe(P);
 	matrix_free_safe(V);
-    matrix_free_safe(buffer);
 
 	return BAD_ALLOC;
 }
@@ -129,6 +126,7 @@ int sign(double val) {
 	if (val >= 0) return 1;
 	return -1;
 }
+/*****************************************************************************************************************************************/
 
 
 
@@ -136,7 +134,7 @@ int sign(double val) {
 
 
 
-
+/********************************************* STATIC FUNCTION DEFINITIONS (RELATED TO JACOBI's ALGORITHM) **************************************************************/
 
 static int jacobi_format_output(matrix_t mat_vectors, matrix_t mat_of_eigens, size_t K, jacobi_output* output) {
 	size_t i, j;
@@ -259,25 +257,17 @@ static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, doub
 }
 
 
-
-int eigen_build_rotation_matrix(matrix_ind loc, double c, double s, matrix_t output) {
-	size_t i, j;
-
-	i = loc.i;
-	j = loc.j;
-
-	if(matrix_set_identity(output)) return DIM_MISMATCH;
-
-	matrix_set(output, i, i, c); 
-	matrix_set(output, j, j, c);
-
-	s *= (i < j) ? 1 : -1;
-	matrix_set(output, i, j, s);  
-	matrix_set(output, j, i, -s);
-
-	return 0;
+static void jacobi_apply_rotation(matrix_t V, matrix_ind loc, double c, double s) {
+	size_t row;
+	
+	for (row = 0; row < V.rows; rows++) {
+		double row_i, row_j;
+		row_i = c * matrix_get(V, row, loc.i) - s * matrix_get(V, row, loc.j);
+		row_j = s * matrix_get(V, row, loc.i) + c * matrix_get(V, row, loc.j);
+		matrix_set(V, row, loc.i, row_i);
+		matrix_set(V, row, loc.j, row_j);
+	}
 }
-
 
 
 
@@ -295,3 +285,7 @@ static void jacobi_calc_c_s(double* c, double *s, matrix_t current_jacobi_mat, m
 	*c = 1 / sqrt( pow(tmp, 2) + 1 );
 	*s = tmp * (*c);
 }
+/*****************************************************************************************************************************************/
+
+
+

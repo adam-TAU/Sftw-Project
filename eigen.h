@@ -7,7 +7,7 @@
 #include "matrix.h"
 
 /* Configuring convergence conditions to the Jacobi algorithm */
-#define max_jacobi_iterations 100
+#define max_jacobi_iterations 100 /* must be 100 */
 #define epsilon 1e-5
 
 /* Defining exception types */

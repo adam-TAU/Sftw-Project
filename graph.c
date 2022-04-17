@@ -61,19 +61,20 @@ int graph_diagonal_degree_matrix(matrix_t mat, bool is_sqrt, matrix_t* output) {
 
 
 
-int experimental_graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, matrix_t *output) {
+int graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, matrix_t *output) {
 	matrix_t W;
 	double* D_sqrt;
 	size_t i, j;
-	printf("check");
+
 	/* in case of an error */
 	W.data = NULL;
 	D_sqrt = NULL;
 	output->data = NULL;
 	
-
+	/* Build the WAM matrix */
 	if (graph_adjacent_matrix(input, num_data, dim, &W)) goto error;
 	
+	/* Create an array that contains at index <i> the sum of row <i> in matrix WAM <W> */
 	D_sqrt = (double*) calloc(W.rows, sizeof(double));
 	for (i = 0; i < W.rows; i++) {
 		double sum = 0.0;
@@ -84,68 +85,27 @@ int experimental_graph_normalized_laplacian(dpoint_t input[], size_t num_data, s
 		D_sqrt[i] = 1 / sqrt(sum);
 	}
 
-
+	/* Build the output */
 	matrix_new(W.rows, W.rows, output);
 	for (i = 0; i < output->rows; i++) {
 		for (j = 0; j < output->cols; j++) {
-			matrix_set(*output, i, j, D_sqrt[j] * matrix_get(W, i, j));
+			/* Lnorm = I - D_sqrt * WAM * D_sqrt */
+			double mult_val;
+			mult_val = D_sqrt[i] * matrix_get(W, i, j) * D_sqrt[j];
+			matrix_set(*output, i, j, (i == j) * 1 - mult_val); 
 		}
 	}
 
-	for (i = 0; i < output->rows; i++) {
-		for (j = 0; j < output->cols; j++) {
-			double mult_ij;
-			mult_ij = D_sqrt[i] * matrix_get(*output, i, j);
-			if (i == j) mult_ij = 1 - mult_ij;
-			else mult_ij = -mult_ij;
-			matrix_set(*output, i, j, mult_ij);
-		}
-	}
-
+	/* Free-ing */
+	if (D_sqrt != NULL) free(D_sqrt);
 	matrix_free(W);
-
-	/* do not free `I`, because it's the output */
-error:
-	return 0;
-}
-
-
-
-int graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, matrix_t *output) {
-	matrix_t D, W, MULT;
-
-	/* in case of an error */
-	D.data = NULL;
-	W.data = NULL;
-	output->data = NULL;
-	MULT.data = NULL;
-
-	if (matrix_identity(num_data, output)) goto error;
-
-	if (graph_adjacent_matrix(input, num_data, dim, &W)) goto error;
-
-	if (graph_diagonal_degree_matrix(W, true, &D)) goto error;
-
-	if(matrix_mul(D, W, &MULT)) goto error;
-
-    matrix_mul_buffer(MULT, D, W); /* W is essentially a buffer at this point */
-	matrix_swap(&MULT, &W);
-
-	matrix_mul_scalar_assign(MULT, -1);
-
-	matrix_add_assign(*output, MULT);
-
-	matrix_free(MULT);
-	matrix_free(W);
-	matrix_free(D);
-	/* do not free `I`, because it's the output */
-
 	return 0;
 
 error:
-	matrix_free_safe(MULT);
+	/* Free-ing */
+	if (D_sqrt != NULL) free(D_sqrt);
 	matrix_free_safe(W);
-	matrix_free_safe(D);
-	matrix_free_safe(*output);
 	return BAD_ALLOC;
 }
+
+

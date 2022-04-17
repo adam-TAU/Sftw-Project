@@ -42,5 +42,5 @@ plt.savefig("blobs.png")
 save_dataset(10 * blobs[0], "blobs")
 
 # Save 1000 * 10 points to disk
-save_dataset(datasets.make_blobs(n_samples=1000, centers=3, n_features=10, shuffle=True, random_state=31)[0], "1000_blobs_10.csv")
+save_dataset(datasets.make_blobs(n_samples=1000, centers=20, n_features=10, shuffle=True, random_state=31)[0], "1000_blobs_10.csv")
 

@@ -82,10 +82,10 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
     for(iterations = 0; iterations < max_jacobi_iterations; iterations++) {
 		matrix_copy(A, A_tag); /* matrices are created with equal dims - no error check */
 
-		loc = matrix_ind_of_largest_offdiagonal(A);
+		loc = matrix_ind_of_largest_offdiagonal(A); 
 		jacobi_calc_c_s(&c, &s, A, loc);
-		jacobi_apply_rotation(V, loc, c, s);
-		jacobi_update_A_tag(A_tag, A, loc, c, s);
+		jacobi_apply_rotation(V, loc, c, s); /* in-place multiplication of the rotation matrix of the current iteration and V (the output eigen vector matrix) */
+		jacobi_update_A_tag(A_tag, A, loc, c, s); /* updating the current matrix of the jacobi algorith into the new matrix of the next iteration */
 
         if(jacobi_distance_of_squared_offdiagonals(A, A_tag) <= epsilon) break;
 	}
@@ -100,6 +100,7 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 
 	matrix_free(A);
 	matrix_free(A_tag);
+	matrix_free(V);
 	return 0;
 
 error:
@@ -258,6 +259,8 @@ static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, doub
 static void jacobi_apply_rotation(matrix_t V, matrix_ind loc, double c, double s) {
 	size_t row;
 	
+	/* P is essentially an identity matrix with 4 values changed. No need for a robust matrix multiplication algorithm.
+	 * We'll change just the values in V that are supposed to be changed due to such multiplication, accordingly */
 	for (row = 0; row < V.rows; row++) {
 		double row_i, row_j;
 		row_i = c * matrix_get(V, row, loc.i) - s * matrix_get(V, row, loc.j);

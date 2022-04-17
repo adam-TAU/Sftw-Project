@@ -1,72 +1,84 @@
 #!/bin/bash
 
+
+# This is a test script for both `memory leaks` and correct outputs (corresponding to the output files that Yuval created), 
+# as well as an efficiency test, for those who don't care to optimize their lanky code.
+# You're welcome.
+# - Adam
+#
+# For help:
+# bash tester.sh --help
+
+
+
+
 # global variables
 testers_path=$1
 leaks=$2
 output_file="/tmp/output.txt"
 valgrind_file="/tmp/valgrind.txt"
 
-
-# auxiliary functions
-function verdict_memory_loss() {
-	# this function shall be used only upon the C interface comprehensive test
-	# this function assumes the $valgrind_file matches the very last running of a test using the C interface
-	
-	bytes_lost=$(cat $valgrind_file | grep "LEAK SUMMARY" -A 1 | tail -n1 | awk '{print $4}')
-	
-	if [[ ${bytes_lost//,} -eq 0 ]]; then
-		echo -ne '\033[1;32mNO MEMORY LEAK\e[0m' # print out a 'success' message
-	else
-		echo -e "\e[1;31mMEMORY LEAK\e[0m" # print out a 'failed' message
-		cat $valgrind_file >> memory_transcript_c.txt
-		echo -e "\n\n\n" >> memory_transcript_c.txt
-	fi
-}
-
-function verdict_diff() {
-	# the first argument shall be the length (in characters) of the result of diff
-	
-	if [[ $1 -eq 0 ]]; then
-		echo -ne '\033[1;32mSUCCESS\e[0m' # print out a 'success' message
-	else
-		echo -ne "\e[1;31mFAILED\e[0m" # print out a 'failed' message
-	fi
+# buffering between tests
+function buffer() {
+	echo -e "\n"
+	echo "
+*****
+*   *
+*   *
+*   *
+*****"
+	echo -e "\n"
 }
 
 
-# invidividual test - specific input file, specific goal, specific interface only
-function individual_test() {
-	# the first argument shall be the interface being tested: c/py
-	# the second argument shall be the goal being tested
-	# the third argument shall be the input file being used
 
-	# running the commands
-	if [[ "${1}" == "py" ]]; then # if we are testing the python interface
-		python3 spkmeans.py 0 $2 $testers_path/$3 &> $output_file
-	elif [[ "${1}" == "c" ]]; then # if we are testing the C interface
-		valgrind --leak-check=yes --log-file=$valgrind_file ./spkmeans $2 $testers_path/$3 &> $output_file
-	else
-		echo "Individual test function failed: Invalid interface"
-		return -1
+# =================
+# REGULAR TEST
+# =================
+function regular_test() {
+
+	if [[ $interface == @(c|both) ]]; then
+		# testing the C interface
+		rm $results_dir/test_transcript_c.txt &> /dev/null
+		rm $results_dir/memory_transcript_c.txt &> /dev/null
+		touch $results_dir/test_transcript_c.txt
+		touch $results_dir/memory_transcript_c.txt
+		echo -e "\n\e[4;37mTesting correct outputs for the interface of \e[4;33m\e[1;33mC\e[0m:"
+		echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
+		bash comp.sh &> /dev/null # compiling
+		test_interface c
+		
+		buffer
 	fi
 
-	# calculating the difference between the desired output and the actual output
-	diff_result=$(diff $output_file $testers_path/outputs/$1/$2/$3 2>&1)
-	
-	# verdicting if the test failed, then print an appropriate status
-	verdict_diff ${#diff_result}
-	
-	# if the test failed, print a report of the 'diff' operation into the test transcript of the interface
-	if [[ ${#diff_result} -ne 0 ]]; then 
-		echo -e "DIFF RESULT FOR: ${1}: ${2}: ${3}:\n${diff_result}\n\n" >> test_transcript_$1.txt
+
+	if [[ $interface == @(py|both) ]]; then
+		# testing the CPython interface
+		rm $results_dir/test_transcript_py.txt &> /dev/null
+		touch $results_dir/test_transcript_py.txt
+		echo -e "\e[4;37mTesting correct outputs for the interface of \e[4;33m\e[1;33mPython\e[0m:"
+		echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
+		python3 setup.py build_ext --inplace &> /dev/null # building
+		test_interface py
+		
+		buffer
 	fi
-	
-	# if the interface is C, verdict if the test had a memory leak, and print an appropriate status accordingly
-	if [[ $leaks == "yes" ]]; then
-		if [[ $1 == "c" ]]; then
-			echo -n ": "
-			verdict_memory_loss
-		fi
+
+}
+
+
+# comprehensive interface test - specific interface only
+function test_interface() {
+	# the first argument shall be the interface being tested
+	local_interface=$1
+
+	test_goal $local_interface wam
+	test_goal $local_interface ddg
+	test_goal $local_interface lnorm
+	test_goal $local_interface jacobi
+
+	if [[ $local_interface == "py" ]]; then
+		test_goal $local_interface spk
 	fi
 }
 
@@ -97,53 +109,73 @@ function test_goal() {
 
 
 
-# comprehensive interface test - specific interface only
-function test_interface() {
-	# the first argument shall be the interface being tested
-	local_interface=$1
 
-	test_goal $local_interface wam
-	test_goal $local_interface ddg
-	test_goal $local_interface lnorm
-	test_goal $local_interface jacobi
+# invidividual test - specific input file, specific goal, specific interface only
+function individual_test() {
+	# the first argument shall be the interface being tested: c/py
+	# the second argument shall be the goal being tested
+	# the third argument shall be the input file being used
 
-	if [[ $local_interface == "py" ]]; then
-		test_goal $local_interface spk
+	# running the commands
+	if [[ "${1}" == "py" ]]; then # if we are testing the python interface
+		python3 spkmeans.py 0 $2 $testers_path/$3 &> $output_file
+	elif [[ "${1}" == "c" ]]; then # if we are testing the C interface
+		valgrind --leak-check=yes --log-file=$valgrind_file ./spkmeans $2 $testers_path/$3 &> $output_file
+	else
+		echo "Individual test function failed: Invalid interface"
+		return -1
+	fi
+
+	# calculating the difference between the desired output and the actual output
+	diff_result=$(diff $output_file $testers_path/outputs/$1/$2/$3 2>&1)
+	
+	# verdicting if the test failed, then print an appropriate status
+	verdict_diff ${#diff_result}
+	
+	# if the test failed, print a report of the 'diff' operation into the test transcript of the interface
+	if [[ ${#diff_result} -ne 0 ]]; then 
+		echo -e "DIFF RESULT FOR: ${1}: ${2}: ${3}:\n${diff_result}\n\n" >> $results_dir/test_transcript_$1.txt
+	fi
+	
+	# if the interface is C, verdict if the test had a memory leak, and print an appropriate status accordingly
+	if [[ $leaks == "yes" ]]; then
+		if [[ $1 == "c" ]]; then
+			echo -n ": "
+			verdict_memory_loss
+		fi
+	fi
+}
+
+
+
+function verdict_diff() {
+	# the first argument shall be the length (in characters) of the result of diff
+	
+	if [[ $1 -eq 0 ]]; then
+		echo -ne '\033[1;32mSUCCESS\e[0m' # print out a 'success' message
+	else
+		echo -ne "\e[1;31mFAILED\e[0m" # print out a 'failed' message
 	fi
 }
 
 
 
 
-# =================
-# REGULAR TEST
-# =================
-function regular_test() {
-
-	if [[ $interface == @(c|both) ]]; then
-		# testing the C interface
-		rm $results_dir/test_transcript_c.txt &> /dev/null
-		rm $results_dir/memory_transcript_c.txt &> /dev/null
-		touch $results_dir/test_transcript_c.txt
-		touch $results_dir/memory_transcript_c.txt
-		echo -e "\e[4;37mTesting the interface for: \e[4;33m\e[1;33mC\e[0m:"
-		echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
-		bash comp.sh &> /dev/null # compiling
-		test_interface c
-	fi
 
 
-	if [[ $interface == @(py|both) ]]; then
-		# testing the CPython interface
-		rm $results_dir/test_transcript_py.txt &> /dev/null
-		touch $results_dir/test_transcript_py.txt
-		echo -e "\n\n\e[4;37mTesting the interface for: \e[4;33m\e[1;33mPython\e[0m:"
-		echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
-		python3 setup.py build_ext --inplace &> /dev/null # building
-		test_interface py
-	fi
+function verdict_memory_loss() {
+	# this function shall be used only upon the C interface comprehensive test
+	# this function assumes the $valgrind_file matches the very last running of a test using the C interface
 	
-	echo -e "\n\n\n"
+	bytes_lost=$(cat $valgrind_file | grep "LEAK SUMMARY" -A 1 | tail -n1 | awk '{print $4}')
+	
+	if [[ ${bytes_lost//,} -eq 0 ]]; then
+		echo -ne '\033[1;32mNO MEMORY LEAK\e[0m' # print out a 'success' message
+	else
+		echo -e "\e[1;31mMEMORY LEAK\e[0m" # print out a 'failed' message
+		cat $valgrind_file >> $results_dir/memory_transcript_c.txt
+		echo -e "\n\n\n" >> $results_dir/memory_transcript_c.txt
+	fi
 }
 
 
@@ -155,7 +187,7 @@ function regular_test() {
 # =================
 function efficiency_test() {
 	# test message
-	echo -e "Testing the \e[4;33m\e[1;33mefficiency of the algorithms\e[0m.\n\e[1;31mNOTICE: This test is going to take quite a while.\nMoreoever, this test is subjective.\nAlbeit, don't be a bozo and do optimize your code - you might get a penalty for inefficient code.\e[0m"
+	echo -e "\e[4;37mTesting the \e[4;33m\e[1;33mefficiency of the algorithms\e[0m.\n\e[1;31mNOTICE: This test is going to take quite a while.\nMoreoever, this test is subjective.\nAlbeit, don't be a bozo and do optimize your code - you might get a penalty for inefficient code.\e[0m"
 	
 	# creating a maximized file
 	echo -e 'from sklearn import datasets
@@ -179,21 +211,25 @@ save_dataset(m, "jacobi_input_10_6")' | python3
 	
 	if [[ $interface == @(c|both) ]]; then
 		# testing the efficiency of the C interface
-		rm efficiency_transcript_c.txt &> /dev/null
-		touch efficiency_transcript_c.txt
-		echo -e "\nTesting the efficiency for the interface: \e[4;33m\e[1;33mC\e[0m:"
+		rm $results_dir/efficiency_transcript_c.txt &> /dev/null
+		touch $results_dir/efficiency_transcript_c.txt
+		echo -e "\n\e[4;37mTesting the efficiency for the interface: \e[4;33m\e[1;33mC\e[0m:"
 		echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
 		test_efficiency_interface c
+		
+		buffer
 	fi
 	
 	
 	if [[ $interface == @(py|both) ]]; then
 		# testing the efficiency of the CPython interface
-		rm efficiency_transcript_py.txt &> /dev/null
-		touch efficiency_transcript_py.txt
-		echo -e "\n\n\nTesting the efficiency for the interface: \e[4;33m\e[1;33mPython\e[0m:"
+		rm $results_dir/efficiency_transcript_py.txt &> /dev/null
+		touch $results_dir/efficiency_transcript_py.txt
+		echo -e "\e[4;37mTesting the efficiency for the interface: \e[4;33m\e[1;33mPython\e[0m:"
 		echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
 		test_efficiency_interface py
+		
+		buffer
 	fi
 	
 	rm jacobi_input.csv &> /dev/null
@@ -226,7 +262,7 @@ function test_efficiency_goal() {
 	if [[ $1 == "c" ]]; then
 	
 		if [[ $2 == "jacobi" ]]; then
-			time_result=$(timeout 8 bash -c "time ./spkmeans jacobi jacobi_input_10_6.csv 1> /dev/null" 2>&1) 
+			time_result=$(timeout 15 bash -c "time ./spkmeans jacobi jacobi_input_10_6.csv 1> /dev/null" 2>&1) 
 		else
 			time_result=$(timeout 0.04 bash -c "time ./spkmeans ${2} 1000_blobs_10_feat.csv 1> /dev/null" 2>&1) 
 		fi
@@ -235,7 +271,7 @@ function test_efficiency_goal() {
 		if [[ $2 == "jacobi" ]]; then
 			time_result=$(timeout 3.5 bash -c "time python3 spkmeans.py 0 jacobi jacobi_input_10_6.csv 1> /dev/null" 2>&1) 
 		else
-			time_result=$(timeout 0.55 bash -c "time python3 spkmeans.py 0 ${2} 1000_blobs_10_feat.csv 1> /dev/null" 2>&1) 
+			time_result=$(timeout 1 bash -c "time python3 spkmeans.py 0 ${2} 1000_blobs_10_feat.csv 1> /dev/null" 2>&1) 
 		fi
 	fi
 	
@@ -245,23 +281,23 @@ function test_efficiency_goal() {
 		echo -e '\033[1;32mSUCCESS\e[0m' # print out a 'success' message
 	else
 		echo -e "\e[1;31mFAILED\e[0m" # print out a 'failed' message
-		echo -e "REQUIRED EFFICIENCY FOR: ${1}: ${2}: is:\n" >> efficiency_transcript_$1.txt
+		echo -e "REQUIRED EFFICIENCY FOR: ${1}: ${2}: is:\n" >> $results_dir/efficiency_transcript_$1.txt
 		
 		if [[ $1 == "c" ]]; then
 			if [[ $2 == "jacobi" ]]; then
-				echo -ne "8" >> efficiency_transcript_$1.txt
+				echo -ne "8" >> $results_dir/efficiency_transcript_$1.txt
 			else
-				echo -ne "0.04" >> efficiency_transcript_$1.txt
+				echo -ne "0.04" >> $results_dir/efficiency_transcript_$1.txt
 			fi
 		else
 			if [[ $2 == "jacobi" ]]; then
-				echo -ne "3.5" >> efficiency_transcript_$1.txt
+				echo -ne "3.5" >> $results_dir/efficiency_transcript_$1.txt
 			else
-				echo -ne "0.55" >> efficiency_transcript_$1.txt
+				echo -ne "0.55" >> $results_dir/efficiency_transcript_$1.txt
 			fi
 		fi
 		
-		echo -e " seconds.\nGood luck next time!\n\n\n" >> efficiency_transcript_$1.txt
+		echo -e " seconds.\nGood luck next time!\n\n\n" >> $results_dir/efficiency_transcript_$1.txt
 	fi
 	
 	
@@ -285,7 +321,7 @@ function comprehensive_test() {
 	
 	
 	# Summary 
-	echo -e "\n\n\033[4;31m\e[1;31mNOTICE:\e[0m Detailed regular tests' results are in: \e[4;34m\e[1;34m${results_dir}/test_transcript_<interface>.txt\e[0m.\nDetailed memory leak tests' results have their memory reports at \e[4;34m\e[1;34m${results_dir}/memory_transcript_c.txt\e[0m.\nDetailed efficiency tests' results have their efficiency reports at \e[4;34m\e[1;34m${results_dir}/efficiency_transcript_<interface>.txt\e[0m.\n\e[4;37mOnly the results of failed tests will be viewed in the transcripts.\e[0m\n\n\n"
+	echo -e "\033[4;31m\e[1;31mNOTICE:\e[0m Detailed regular tests' results are in: \e[4;34m\e[1;34m${results_dir}/test_transcript_<interface>.txt\e[0m.\nDetailed memory leak tests' results have their memory reports at \e[4;34m\e[1;34m${results_dir}/memory_transcript_c.txt\e[0m.\nDetailed efficiency tests' results have their efficiency reports at \e[4;34m\e[1;34m${results_dir}/efficiency_transcript_<interface>.txt\e[0m.\n\e[4;37mOnly the results of failed tests will be viewed in the transcripts.\e[0m\n\n\n"
 }
 
 
@@ -318,8 +354,8 @@ Only failed efficiency tests' results are saved into the transcript.
 potentially lead to undefined behaviors of the test script.
 (2) Don't run this script from hosts that have the \`/tmp\` directory
 write-protected. Else, you would need to change a few arguments here and there.
-(3) You shall place this shell script within the directory that contains all of the files
-that you need to assign."
+(3) You shall place this shell script and the \`\033[4;37mtestfiles\e[0m\` directory (that came in the zip)
+within the directory that contains all of the files that you need to assign."
 	exit
 }
 

@@ -57,7 +57,7 @@ void eigen_print_jacobi(jacobi_output out) {
 	for (i = 0; i < out.K_eigen_vectors.cols; i++) {
 	
 		/* If an eigen value will be printed as -0.0000, we'll replace the printage with 0.0000 */
-		if ( (fabs(out.eigen_values[i].value) < 0.0001) && (out.eigen_values[i].value < 0) ) {
+		if ( (out.eigen_values[i].value > -0.0001) && (out.eigen_values[i].value < 0) ) {
 			printf("%.4f", (double)0);
 		} else {
 			printf("%.4f", out.eigen_values[i].value);

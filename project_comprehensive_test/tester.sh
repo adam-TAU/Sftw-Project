@@ -367,7 +367,7 @@ function comprehensive_test() {
 # PRELUDE
 # =================
 function instructions() {
-	echo -e "\e[4;37m\e[1;37mHelp\e[0m: bash yuval_tester.sh <testfiles> <interface> <regular> <leaks> <efficiency> [results_dir]\n
+	echo -e "\e[4;37m\e[1;37mHelp\e[0m: bash tester.sh <testfiles> <interface> <regular> <leaks> <efficiency> [results_dir]\n
 - testfiles	<path>: 	The path of the directory containing the test files that were supplied with this test.
 - interface 	[c|py|both]:	Specifies the interface you want to test.
 - regular 	[yes|no]:	Specifies whether to run the regular tests or not.

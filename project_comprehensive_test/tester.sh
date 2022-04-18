@@ -52,6 +52,12 @@ function regular_test() {
 
 
 	if [[ $interface == @(py|both) ]]; then
+		
+		# if no regular tests were ordered, we shouldn't run the CPython interface test (happens when $regular == no, $leaks == yes)
+		if [[ $regular == "no" ]]; then
+			return
+		fi
+	
 		# testing the CPython interface
 		rm $results_dir/test_transcript_py.txt &> /dev/null
 		touch $results_dir/test_transcript_py.txt
@@ -70,6 +76,7 @@ function test_interface() {
 	# the first argument shall be the interface being tested
 	local_interface=$1
 
+	# else, run a test
 	test_goal $local_interface wam
 	test_goal $local_interface ddg
 	test_goal $local_interface lnorm
@@ -87,6 +94,7 @@ function test_goal() {
 	# the first argument shall be the interface being tested c/py
 	# the second argument shall be the goal being tested
 
+	# running a test for the goal
 	if [[ "${2}" == "jacobi" ]]; then
 		for i in {0..19}; do
 			echo -n "${1^^}: ${2^^}: ${testers_path}/jacobi_${i}.txt: "
@@ -124,22 +132,34 @@ function individual_test() {
 		return -1
 	fi
 
-	# calculating the difference between the desired output and the actual output
-	diff_result=$(diff $output_file $testers_path/outputs/$1/$2/$3 2>&1)
-	
-	# verdicting if the test failed, then print an appropriate status
-	verdict_diff ${#diff_result}
-	
-	# if the test failed, print a report of the 'diff' operation into the test transcript of the interface
-	if [[ ${#diff_result} -ne 0 ]]; then 
-		echo -e "DIFF RESULT FOR: ${1}: ${2}: ${3}:\n${diff_result}\n\n" >> $results_dir/test_transcript_$1.txt
+	# if a regular test was asked
+	if [[ $regular == "yes" ]]; then
+		# calculating the difference between the desired output and the actual output
+		diff_result=$(diff $output_file $testers_path/outputs/$1/$2/$3 2>&1)
+		
+		# verdicting if the test failed, then print an appropriate status
+		verdict_diff ${#diff_result}
+		
+		# if the test failed, print a report of the 'diff' operation into the test transcript of the interface
+		if [[ ${#diff_result} -ne 0 ]]; then 
+			echo -e "DIFF RESULT FOR: ${1}: ${2}: ${3}:\n${diff_result}\n\n" >> $results_dir/test_transcript_$1.txt
+		fi
 	fi
 	
 	# if the interface is C, verdict if the test had a memory leak, and print an appropriate status accordingly
 	if [[ $leaks == "yes" ]]; then
 		if [[ $1 == "c" ]]; then
-			echo -n ": "
+		
+			# buffering
+			if [[ $regular == "yes" ]]; then
+				echo -n ": "
+			fi
+			
+			# running memory test
 			verdict_memory_loss
+			echo -e "MEMORY LEAK RESULT FOR: ${1}: ${2}: ${3}:\n\n" >> $results_dir/memory_transcript_c.txt
+			cat $valgrind_file >> $results_dir/memory_transcript_c.txt
+			echo -e "\n\n\n" >> $results_dir/memory_transcript_c.txt
 		fi
 	fi
 }
@@ -171,8 +191,6 @@ function verdict_memory_loss() {
 		echo -ne '\033[1;32mNO MEMORY LEAK\e[0m' # print out a 'success' message
 	else
 		echo -e "\e[1;31mMEMORY LEAK\e[0m" # print out a 'failed' message
-		cat $valgrind_file >> $results_dir/memory_transcript_c.txt
-		echo -e "\n\n\n" >> $results_dir/memory_transcript_c.txt
 	fi
 }
 
@@ -328,7 +346,7 @@ function comprehensive_test() {
 	fi
 	
 	# Running the necessary tests
-	if [[ $regular == "yes" ]]; then
+	if [[ $regular == "yes" || $leaks == "yes" ]]; then
 		regular_test
 	fi
 	

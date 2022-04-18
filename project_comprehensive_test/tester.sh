@@ -218,7 +218,7 @@ def stringify_row(row):
     return ",".join(row) + "\\n"
 
 # datapoints      
-save_dataset(datasets.make_blobs(n_samples=100, centers=3, cluster_std=0.05, n_features=10, shuffle=True, random_state=31)[0], "1000_blobs_10_feat")
+save_dataset(datasets.make_blobs(n_samples=1000, centers=3, cluster_std=0.05, n_features=10, shuffle=True, random_state=31)[0], "1000_blobs_10_feat")
 
 # symmetric matrix
 a = np.random.rand(1000, 1000)
@@ -278,14 +278,16 @@ function test_efficiency_goal() {
 	if [[ $1 == "c" ]]; then
 	
 		if [[ $2 == "jacobi" ]]; then
-			time_result=$(timeout 15 bash -c "time ./spkmeans jacobi jacobi_input_10_6.csv 1> /dev/null" 2>&1) 
+			time_result=$(timeout 10 bash -c "time ./spkmeans jacobi jacobi_input_10_6.csv 1> /dev/null" 2>&1) 
 		else
-			time_result=$(timeout 0.04 bash -c "time ./spkmeans ${2} 1000_blobs_10_feat.csv 1> /dev/null" 2>&1) 
+			time_result=$(timeout 0.6 bash -c "time ./spkmeans ${2} 1000_blobs_10_feat.csv 1> /dev/null" 2>&1) 
 		fi
 	
 	else
 		if [[ $2 == "jacobi" ]]; then
 			time_result=$(timeout 3.5 bash -c "time python3 spkmeans.py 0 jacobi jacobi_input_10_6.csv 1> /dev/null" 2>&1) 
+		elif [[ $2 == "spk" ]]; then
+			time_result=$(timeout 60 bash -c "time python3 spkmeans.py 0 spk 1000_blobs_10_feat.csv 1> /dev/null" 2>&1) 
 		else
 			time_result=$(timeout 1 bash -c "time python3 spkmeans.py 0 ${2} 1000_blobs_10_feat.csv 1> /dev/null" 2>&1) 
 		fi

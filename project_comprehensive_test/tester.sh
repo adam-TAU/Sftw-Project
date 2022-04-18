@@ -385,10 +385,10 @@ function instructions() {
 
 \e[4;37m\e[1;37mInstructions\e[0m:
 (1) Avoid any build/dist/egg directories/files from the working directory. Could potentially lead to undefined behaviors of the test script.
-(2) Don't run this script from hosts that have the \`/tmp\` directory
-write-protected. Else, you would need to change a few arguments here and there.
+(2) Don't run this script from hosts that have the \`/tmp\` directory write-protected. Else, you would need to change a few arguments here and there.
 (3) You shall place this shell script within the directory that contains all of the files that you need to assign.
-(4) You shall install or have installed the package \`\e[4;37mvalgrind\e[0m\` if you wish to have memory leak tests."
+(4) You shall install or have installed the package \`\e[4;37mvalgrind\e[0m\` if you wish to have memory leak tests.
+(5) When running from any tau-related servers, note that the efficiency tests become invalid, and that you need to remove the \`sudo\` at line 341 in the script"
 	exit
 }
 

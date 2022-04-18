@@ -384,14 +384,11 @@ function instructions() {
 (6) Any tests regarding the CPython interface must be ran under sudo privileges.
 
 \e[4;37m\e[1;37mInstructions\e[0m:
-(1) Avoid any build/dist/egg directories/files from the working directory. Could
-potentially lead to undefined behaviors of the test script.
+(1) Avoid any build/dist/egg directories/files from the working directory. Could potentially lead to undefined behaviors of the test script.
 (2) Don't run this script from hosts that have the \`/tmp\` directory
 write-protected. Else, you would need to change a few arguments here and there.
-(3) You shall place this shell script and the \`\033[4;37mtestfiles\e[0m\` directory (that came in the zip)
-within the directory that contains all of the files that you need to assign.
-(4) You shall install or have installed the package \`\e[4;37mvalgrind\e[0m\` if you wish
-to have memory leak tests."
+(3) You shall place this shell script within the directory that contains all of the files that you need to assign.
+(4) You shall install or have installed the package \`\e[4;37mvalgrind\e[0m\` if you wish to have memory leak tests."
 	exit
 }
 

@@ -288,3 +288,18 @@ matrix_ind matrix_ind_of_largest_offdiagonal(matrix_t sym_mat) {
 	return output;
 }
 
+
+bool matrix_is_diagonal(matrix_t mat) {
+	size_t i, j;
+	
+	for (i = 0; i < mat.rows; i++) {
+		for (j = 0; j < mat.cols; j++) {
+			if (i != j) {
+				if (0 != matrix_get(mat, i, j)) return false;
+			}
+		}
+	}
+	
+	return true;
+}
+

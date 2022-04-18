@@ -173,5 +173,8 @@ double matrix_sum_squared_off(matrix_t mat);
  * Therefore, the index returned will and must be out of the higher half of the matrix. */  
 matrix_ind matrix_ind_of_largest_offdiagonal(matrix_t sym_mat);
 
+/* Return true in case the given matrix <mat> is diagonal, else return false */
+bool matrix_is_diagonal(matrix_t mat);
+
 
 #endif /* MATRIX_H */

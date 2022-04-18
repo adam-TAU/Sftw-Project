@@ -287,9 +287,9 @@ function test_efficiency_goal() {
 		if [[ $2 == "jacobi" ]]; then
 			time_result=$(timeout 3.5 bash -c "time python3 spkmeans.py 0 jacobi jacobi_input_10_6.csv 1> /dev/null" 2>&1) 
 		elif [[ $2 == "spk" ]]; then
-			time_result=$(timeout 60 bash -c "time python3 spkmeans.py 0 spk 1000_blobs_10_feat.csv 1> /dev/null" 2>&1) 
+			time_result=$(timeout 65 bash -c "time python3 spkmeans.py 0 spk 1000_blobs_10_feat.csv 1> /dev/null" 2>&1) 
 		else
-			time_result=$(timeout 1 bash -c "time python3 spkmeans.py 0 ${2} 1000_blobs_10_feat.csv 1> /dev/null" 2>&1) 
+			time_result=$(timeout 1.5 bash -c "time python3 spkmeans.py 0 ${2} 1000_blobs_10_feat.csv 1> /dev/null" 2>&1) 
 		fi
 	fi
 	
@@ -303,15 +303,17 @@ function test_efficiency_goal() {
 		
 		if [[ $1 == "c" ]]; then
 			if [[ $2 == "jacobi" ]]; then
-				echo -ne "8" >> $results_dir/efficiency_transcript_$1.txt
+				echo -ne "10" >> $results_dir/efficiency_transcript_$1.txt
 			else
-				echo -ne "0.04" >> $results_dir/efficiency_transcript_$1.txt
+				echo -ne "0.6" >> $results_dir/efficiency_transcript_$1.txt
 			fi
 		else
 			if [[ $2 == "jacobi" ]]; then
 				echo -ne "3.5" >> $results_dir/efficiency_transcript_$1.txt
+			elif [[ $2 == "spk" ]]; then
+				echo -ne "65" >> $results_dir/efficiency_transcript_$1.txt
 			else
-				echo -ne "0.55" >> $results_dir/efficiency_transcript_$1.txt
+				echo -ne "1.5" >> $results_dir/efficiency_transcript_$1.txt
 			fi
 		fi
 		

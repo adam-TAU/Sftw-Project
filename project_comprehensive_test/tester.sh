@@ -356,7 +356,7 @@ function comprehensive_test() {
 	
 	
 	# Summary 
-	echo -e "\033[4;31m\e[1;31mDONE -> NOTICE:\e[0m Detailed regular tests' results are in: \e[4;34m\e[1;34m${results_dir}/test_transcript_<interface>.txt\e[0m.\nDetailed memory leak tests' results have their memory reports at \e[4;34m\e[1;34m${results_dir}/memory_transcript_c.txt\e[0m.\nDetailed efficiency tests' results have their efficiency reports at \e[4;34m\e[1;34m${results_dir}/efficiency_transcript_<interface>.txt\e[0m.\n\e[4;37mOnly the results of failed tests will be viewed in the transcripts.\e[0m"
+	echo -e "\033[4;31m\e[1;31mDONE -> NOTICE:\e[0m\nDetailed regular tests' results are in: \e[1;34m${results_dir}/test_transcript_[c|py].txt\e[0m.\nDetailed memory leak tests' results have their memory reports at \e[1;34m${results_dir}/memory_transcript_c.txt\e[0m.\nDetailed efficiency tests' results have their efficiency reports at \e[1;34m${results_dir}/efficiency_transcript_[c|py].txt\e[0m.\n\e[4;37mOnly the results of failed tests will be viewed in the transcripts.\e[0m"
 }
 
 

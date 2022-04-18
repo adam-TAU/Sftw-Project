@@ -96,13 +96,13 @@ function test_goal() {
 
 	# running a test for the goal
 	if [[ "${2}" == "jacobi" ]]; then
-		for i in {0..19}; do
+		for (( i = 0; i <= $jacobi; i++ )); do
 			echo -n "${1^^}: ${2^^}: ${testers_path}/jacobi_${i}.txt: "
 			individual_test $1 $2 jacobi_$i.txt
 			echo
 		done
 	else
-		for i in {0..9}; do
+		for (( i = 0; i <= $spk; i++ )); do
 			echo -n "${1^^}: ${2^^}: ${testers_path}/spk_${i}.txt: "
 			individual_test $1 $2 spk_$i.txt
 			echo
@@ -438,6 +438,8 @@ if [[ ! -d $1 ]]; then # testfiles
 	youre_a_bozo
 else
 	testers_path=$1
+	jacobi=$(ls project_comprehensive_test/testfiles | grep "jacobi" | cut -d "_" -f2 | cut -d "." -f1 | sort -n | tail -n1)
+	spk=$(ls project_comprehensive_test/testfiles | grep "spk" | cut -d "_" -f2 | cut -d "." -f1 | sort -n | tail -n1)
 fi
 
 # blah3

@@ -1,6 +1,6 @@
 #include "eigen.h"
 #include "matrix.h"
-
+#include <math.h>
 
 
 
@@ -55,7 +55,15 @@ void eigen_print_jacobi(jacobi_output out) {
 	size_t i;
 
 	for (i = 0; i < out.K_eigen_vectors.cols; i++) {
-		printf("%.4f", out.eigen_values[i].value);
+	
+		/* If an eigen value will be printed as -0.0000, we'll replace the printage with 0.0000 */
+		if ( (fabs(out.eigen_values[i].value) < 0.0001) && (out.eigen_values[i].value < 0) ) {
+			printf("%.4f", (double)0);
+		} else {
+			printf("%.4f", out.eigen_values[i].value);
+		}
+		
+		/* Segregation of eigen values */
 		if (i < out.K_eigen_vectors.cols - 1) printf(",");
 	}
 

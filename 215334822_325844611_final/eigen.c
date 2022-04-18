@@ -89,9 +89,10 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 
     for(iterations = 0; iterations < max_jacobi_iterations; iterations++) {
 		matrix_copy(A, A_tag); /* matrices are created with equal dims - no error check */
-		if (matrix_is_diagonal(A)) break; /* stop the algorithm if the matrix of the last iteration is diagonal (the next step will result in nan-s) */
-
+		
 		loc = matrix_ind_of_largest_offdiagonal(A); 
+		if (0 == matrix_get(A, loc.i, loc.j)) break;/* stop the algorithm if the matrix of the last iteration is diagonal (the next step will result in nan-s) */
+		
 		jacobi_calc_c_s(&c, &s, A, loc);
 		jacobi_apply_rotation(V, loc, c, s); /* in-place multiplication of the rotation matrix of the current iteration and V (the output eigen vector matrix) */
 		jacobi_update_A_tag(A_tag, A, loc, c, s); /* updating the current matrix of the jacobi algorith into the new matrix of the next iteration */

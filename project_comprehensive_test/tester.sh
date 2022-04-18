@@ -373,7 +373,7 @@ function instructions() {
 - regular 	[yes|no]:	Specifies whether to run the regular tests or not.
 - leaks		[yes|no]:	Specifies if you want memory leak tests. Applies to the \e[4;37m\e[1;37mC\e[0m interface only.
 - efficiency	[yes|no]:	Specifies whether you want an efficiency test on the interfaces you chose.
-- results_dir	<path>:		Creates a new directory to store the tests\' results into (default: running directory).
+- results_dir	<path>:		Creates a new directory to store the tests' results into (default: running directory).
 
 \e[4;37m\e[1;37mNotes\e[0m: 
 (1) The efficiency tests are quite long, take that into account.

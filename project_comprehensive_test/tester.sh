@@ -45,7 +45,6 @@ function regular_test() {
 		touch $results_dir/memory_transcript_c.txt
 		echo -e "\n\e[4;37mTesting correct outputs for the interface of \e[4;33m\e[1;33mC\e[0m:"
 		echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
-		bash comp.sh &> /dev/null # compiling
 		test_interface c
 		
 		buffer
@@ -58,7 +57,6 @@ function regular_test() {
 		touch $results_dir/test_transcript_py.txt
 		echo -e "\e[4;37mTesting correct outputs for the interface of \e[4;33m\e[1;33mPython\e[0m:"
 		echo -e "\n\e[4;34m\e[1;34mRESULTS\e[0m"
-		python3 setup.py build_ext --inplace &> /dev/null # building
 		test_interface py
 		
 		buffer
@@ -311,6 +309,25 @@ function test_efficiency_goal() {
 # Organizer
 # =================
 function comprehensive_test() {
+
+	# Trying to build the necessary resources
+	if [[ $interface == @(c|both) ]]; then
+		comp_output=$(bash comp.sh 2>&1) # compiling
+		if [[ ${#comp_output} -ne 0 ]]; then
+			echo -e "\e[1;31mFailed to compile your C module with \`\033[4;31mcomp.sh\e[0m\e[1;31m\`!\n"
+			youre_a_bozo
+		fi
+	fi
+	
+	if [[ $interface == @(py|both) ]]; then
+		build_output=$(sudo python3 setup.py build_ext --inplace 2>&1 1>/dev/null)
+		if [[ ${#build_output} -ne 0 ]]; then
+			echo -e "\e[1;31mFailed to build the CPython extension with \`\033[4;31msetup.py\e[0m\e[1;31m\`!\n"
+			youre_a_bozo
+		fi
+	fi
+	
+	# Running the necessary tests
 	if [[ $regular == "yes" ]]; then
 		regular_test
 	fi
@@ -321,7 +338,7 @@ function comprehensive_test() {
 	
 	
 	# Summary 
-	echo -e "\033[4;31m\e[1;31mNOTICE:\e[0m Detailed regular tests' results are in: \e[4;34m\e[1;34m${results_dir}/test_transcript_<interface>.txt\e[0m.\nDetailed memory leak tests' results have their memory reports at \e[4;34m\e[1;34m${results_dir}/memory_transcript_c.txt\e[0m.\nDetailed efficiency tests' results have their efficiency reports at \e[4;34m\e[1;34m${results_dir}/efficiency_transcript_<interface>.txt\e[0m.\n\e[4;37mOnly the results of failed tests will be viewed in the transcripts.\e[0m\n\n\n"
+	echo -e "\033[4;31m\e[1;31mDONE -> NOTICE:\e[0m Detailed regular tests' results are in: \e[4;34m\e[1;34m${results_dir}/test_transcript_<interface>.txt\e[0m.\nDetailed memory leak tests' results have their memory reports at \e[4;34m\e[1;34m${results_dir}/memory_transcript_c.txt\e[0m.\nDetailed efficiency tests' results have their efficiency reports at \e[4;34m\e[1;34m${results_dir}/efficiency_transcript_<interface>.txt\e[0m.\n\e[4;37mOnly the results of failed tests will be viewed in the transcripts.\e[0m"
 }
 
 
@@ -346,9 +363,10 @@ function instructions() {
 (3) Detailed memory leak tests' results are saved into \`\033[4;37mmemory_transcript_c.txt\e[0m\`.
 (4) Detailed Efficiency tests' results are saved into \`\033[4;37mefficiency_transcript_<interface>.txt\e[0m\`.
 (5) Only failed efficiency tests' results are saved into the transcript.
+(6) Any tests regarding the CPython interface must be ran under sudo privileges.
 
 \e[4;37m\e[1;37mInstructions\e[0m:
-(1) Be sure to remove any build/dist/egg files from the working directory. Could
+(1) Avoid any build/dist/egg directories/files from the working directory. Could
 potentially lead to undefined behaviors of the test script.
 (2) Don't run this script from hosts that have the \`/tmp\` directory
 write-protected. Else, you would need to change a few arguments here and there.
@@ -362,7 +380,7 @@ to have memory leak tests."
 
 
 function youre_a_bozo() {
-	echo -e "
+	echo -e "\e[0m
  _               ____      _  _____ ___ ___            ____   ___ ________  
 | |        _    |  _ \    / \|_   _|_ _/ _ \     _    | __ ) / _ \__  / _ \ 
 | |      _| |_  | |_) |  / _ \ | |  | | | | |  _| |_  |  _ \| | | |/ / | | |
@@ -398,6 +416,7 @@ fi
 
 # blah2
 if [[ ! -d $1 ]]; then # testfiles
+	echo -e "\e[1;31mThe following directory is a non-existing directory \`\033[4;31m${1}\e[0m\e[1;31m\`!\n"
 	youre_a_bozo
 else
 	testers_path=$1

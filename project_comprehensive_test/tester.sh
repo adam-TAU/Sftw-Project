@@ -311,7 +311,7 @@ function test_efficiency_goal() {
 # Organizer
 # =================
 function comprehensive_test() {
-	if [[ $skip_regular == "no" ]]; then
+	if [[ $regular == "yes" ]]; then
 		regular_test
 	fi
 	
@@ -332,22 +332,20 @@ function comprehensive_test() {
 # PRELUDE
 # =================
 function instructions() {
-	echo -e "\e[4;37m\e[1;37mHelp\e[0m: bash yuval_tester.sh <testfiles> <interface> <skip_regular> <leaks> <efficiency> [results_dir]\n
-- testfiles: 	Specifies the path to the directory containing the test files that were supplied with this test.
-- interface:	Specifies which interface you want to test. Any of the following: [c/py/both]
-- skip_regular:	Specifies whether to skip the regular tests. Any of the following: [yes/no]
-- leaks:	Specified if you want memory leak tests. Applies to the \e[4;37m\e[1;37mC\e[0m interface only: [yes/no]
-- efficiency:	Specifies whether you want an efficiency test on the interfaces you chose Any of the following: [yes/no]
-- results_dir:	Specifies the path of the directory you wish store the tests' results into (default: running directory)
+	echo -e "\e[4;37m\e[1;37mHelp\e[0m: bash yuval_tester.sh <testfiles> <interface> <regular> <leaks> <efficiency> [results_dir]\n
+- testfiles	<path>: 	The path of the directory containing the test files that were supplied with this test.
+- interface 	[c|py|both]:	Specifies the interface you want to test.
+- regular 	[yes|no]:	Specifies whether to run the regular tests or not.
+- leaks		[yes|no]:	Specifies if you want memory leak tests. Applies to the \e[4;37m\e[1;37mC\e[0m interface only.
+- efficiency	[yes|no]:	Specifies whether you want an efficiency test on the interfaces you chose.
+- results_dir	<path>:		Creates a new directory to store the tests\' results into (default: running directory).
 
 \e[4;37m\e[1;37mNotes\e[0m: 
 (1) The efficiency tests are quite long, take that into account.
 (2) Detailed regular tests' results are saved into \`\033[4;37mtest_transcript_<interface>.txt\e[0m\`.
-Only failed tests' results are saved into the transcripts.
 (3) Detailed memory leak tests' results are saved into \`\033[4;37mmemory_transcript_c.txt\e[0m\`.
-Only failed tests' results are saved into the transcript.
-(4) Detailed Efficiency tests' outputs are saved into \`\033[4;37mefficiency_transcript_<interface>.txt\e[0m\`.
-Only failed efficiency tests' results are saved into the transcript.
+(4) Detailed Efficiency tests' results are saved into \`\033[4;37mefficiency_transcript_<interface>.txt\e[0m\`.
+(5) Only failed efficiency tests' results are saved into the transcript.
 
 \e[4;37m\e[1;37mInstructions\e[0m:
 (1) Be sure to remove any build/dist/egg files from the working directory. Could
@@ -356,7 +354,8 @@ potentially lead to undefined behaviors of the test script.
 write-protected. Else, you would need to change a few arguments here and there.
 (3) You shall place this shell script and the \`\033[4;37mtestfiles\e[0m\` directory (that came in the zip)
 within the directory that contains all of the files that you need to assign.
-(4) You shall install or have installed the package \`\e[4;37mvalgrind\e[0m\`"
+(4) You shall install or have installed the package \`\e[4;37mvalgrind\e[0m\` if you wish
+to have memory leak tests."
 	exit
 }
 
@@ -415,7 +414,7 @@ fi
 if [[ $3 != @(yes|no) ]]; then # leaks
 	youre_a_bozo
 else
-	skip_regular=$3
+	regular=$3
 fi
 
 # blah5

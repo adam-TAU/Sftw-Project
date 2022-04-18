@@ -15,8 +15,8 @@
 # global variables
 testers_path=$1
 leaks=$2
-output_file="/tmp/output.txt"
-valgrind_file="/tmp/valgrind.txt"
+output_file="./tmp/output.txt"
+valgrind_file="./tmp/valgrind.txt"
 
 # buffering between tests
 function buffer() {
@@ -330,6 +330,8 @@ function test_efficiency_goal() {
 # =================
 function comprehensive_test() {
 
+	mkdir ./tmp &> /dev/null
+
 	# Trying to build the necessary resources
 	if [[ $interface == @(c|both) ]]; then
 		comp_output=$(bash comp.sh 2>&1) # compiling
@@ -382,12 +384,11 @@ function instructions() {
 (2) Detailed regular tests' results are saved into \`\033[4;37mtest_transcript_<interface>.txt\e[0m\`.
 (3) Detailed memory leak tests' results are saved into \`\033[4;37mmemory_transcript_c.txt\e[0m\`.
 (4) Detailed Efficiency tests' results are saved into \`\033[4;37mefficiency_transcript_<interface>.txt\e[0m\`.
-(5) Only failed efficiency tests' results are saved into the transcript.
-(6) Any tests regarding the CPython interface must be ran under sudo privileges.
+(5) Only failed tests' results are saved into their transcript.
 
 \e[4;37m\e[1;37mInstructions\e[0m:
 (1) Avoid any build/dist/egg directories/files from the working directory. Could potentially lead to undefined behaviors of the test script.
-(2) Don't run this script from hosts that have the \`/tmp\` directory write-protected. Else, you would need to change a few arguments here and there.
+(2) You shall run this script under \`sudo\` privileges (Required for \`setup.py\`).
 (3) You shall place this shell script within the directory that contains all of the files that you need to assign.
 (4) You shall install or have installed the package \`\e[4;37mvalgrind\e[0m\` if you wish to have memory leak tests.
 (5) When running from any tau-related servers, note that the efficiency tests become invalid, and that you need to remove the \`sudo\` at line 341 in the script"

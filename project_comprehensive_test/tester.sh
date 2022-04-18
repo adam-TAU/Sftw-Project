@@ -436,7 +436,7 @@ if [[ ! -d $1 ]]; then # testfiles
 else
 	testers_path=$1
 	jacobi=$(ls $testers_path | grep "jacobi" | cut -d "_" -f2 | cut -d "." -f1 | sort -n | tail -n1)
-	spk=$(ls $tester_path | grep "spk" | cut -d "_" -f2 | cut -d "." -f1 | sort -n | tail -n1)
+	spk=$(ls $testers_path | grep "spk" | cut -d "_" -f2 | cut -d "." -f1 | sort -n | tail -n1)
 fi
 
 # blah3

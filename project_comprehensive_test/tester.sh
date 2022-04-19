@@ -248,7 +248,7 @@ save_dataset(m, "jacobi_input_10_6")' | python3
 		buffer
 	fi
 	
-	rm jacobi_input.csv &> /dev/null
+	rm jacobi_input_10_6.csv &> /dev/null
 	rm 1000_blobs_10_feat.csv &> /dev/null
 }
 
@@ -387,6 +387,7 @@ function instructions() {
 (3) Detailed memory leak tests' results are saved into \`\033[4;37mmemory_transcript_c.txt\e[0m\`.
 (4) Detailed Efficiency tests' results are saved into \`\033[4;37mefficiency_transcript_<interface>.txt\e[0m\`.
 (5) Only failed tests' results are saved into their transcript.
+(6) Efficiency tests become invalid when running from tau-related servers (wack servers).
 
 \e[4;37m\e[1;37mInstructions\e[0m:
 (1) Avoid any build/dist/egg directories/files from the working directory. Could potentially lead to undefined behaviors of the test script.

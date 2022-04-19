@@ -203,7 +203,7 @@ function verdict_memory_loss() {
 # =================
 function efficiency_test() {
 	# test message
-	echo -e "\e[4;37mTesting the \e[4;33m\e[1;33mefficiency of the algorithms\e[0m.\n\e[1;31mNOTICE: This test is going to take quite a while.\nMoreoever, this test is subjective.\nAlbeit, don't be a bozo and do optimize your code - you might get a penalty for inefficient code.\e[0m"
+	echo -e "\e[4;37mTesting the \e[4;33m\e[1;33mefficiency of the algorithms\e[0m.\n\e[1;31mNOTICE: This test is going to take quite a while.\nMoreover, this test is subjective.\nAlbeit, don't be a bozo and do optimize your code - you might get a penalty for inefficient code.\e[0m"
 	
 	# creating a maximized file
 	echo -e 'from sklearn import datasets
@@ -393,7 +393,7 @@ function instructions() {
 (1) Avoid any build/dist/egg directories/files from the working directory. Could potentially lead to undefined behaviors of the test script.
 (2) You shall run this shell script from within the directory that contains all of the files that you need to assign.
 (3) You shall have the package \`\e[4;37mvalgrind\e[0m\` installed if you wish to run memory leak tests.
-(3) You shall have the python packages \`\e[4;37mnumpy\e[0m\` and \`\e[4;37mscikit-learn\e[0m\` installed if you wish to run efficiency tests."
+(4) You shall have the python packages \`\e[4;37mnumpy\e[0m\` and \`\e[4;37mscikit-learn\e[0m\` installed if you wish to run efficiency tests."
 	exit
 }
 

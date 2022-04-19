@@ -344,7 +344,7 @@ function comprehensive_test() {
 	fi
 	
 	if [[ $interface == @(py|both) ]]; then
-		build_output=$(sudo python3 setup.py build_ext --inplace 2>&1 1>/dev/null)
+		build_output=$(python3 setup.py build_ext --inplace 2>&1 1>/dev/null)
 		if [[ ${#build_output} -ne 0 ]]; then
 			echo -e "\e[1;31mFailed to build the CPython extension with \`\033[4;31msetup.py\e[0m\e[1;31m\`!\n"
 			youre_a_bozo
@@ -390,10 +390,8 @@ function instructions() {
 
 \e[4;37m\e[1;37mInstructions\e[0m:
 (1) Avoid any build/dist/egg directories/files from the working directory. Could potentially lead to undefined behaviors of the test script.
-(2) You shall run this script under \`sudo\` privileges (Required for \`setup.py\`).
-(3) You shall place this shell script within the directory that contains all of the files that you need to assign.
-(4) You shall install or have installed the package \`\e[4;37mvalgrind\e[0m\` if you wish to have memory leak tests.
-(5) When running from any tau-related servers, note that the efficiency tests become invalid, and that you need to remove the \`sudo\` at line 341 in the script"
+(2) You shall place this shell script within the directory that contains all of the files that you need to assign.
+(3) You shall install or have installed the package \`\e[4;37mvalgrind\e[0m\` if you wish to have memory leak tests."
 	exit
 }
 

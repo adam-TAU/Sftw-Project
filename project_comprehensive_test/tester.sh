@@ -387,7 +387,7 @@ function instructions() {
 (3) Detailed memory leak tests' results are saved into \`\033[4;37mmemory_transcript_c.txt\e[0m\`.
 (4) Detailed Efficiency tests' results are saved into \`\033[4;37mefficiency_transcript_<interface>.txt\e[0m\`.
 (5) Only failed tests' results are saved into their transcript.
-(6) Efficiency tests may become invalid when running on low-performant machines (currently the tests match nova's running times).
+(6) Efficiency tests become invalid when running on tau-related server (e.g., nova).
 
 \e[4;37m\e[1;37mInstructions\e[0m:
 (1) Avoid any build/dist/egg directories/files from the working directory. Could potentially lead to undefined behaviors of the test script.

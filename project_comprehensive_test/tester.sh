@@ -392,7 +392,8 @@ function instructions() {
 \e[4;37m\e[1;37mInstructions\e[0m:
 (1) Avoid any build/dist/egg directories/files from the working directory. Could potentially lead to undefined behaviors of the test script.
 (2) You shall run this shell script from within the directory that contains all of the files that you need to assign.
-(3) You shall install or have installed the package \`\e[4;37mvalgrind\e[0m\` if you wish to have memory leak tests."
+(3) You shall have the package \`\e[4;37mvalgrind\e[0m\` installed if you wish to run memory leak tests.
+(3) You shall have the python packages \`\e[4;37mnumpy\e[0m\` and \`\e[4;37mscikit-learn\e[0m\` installed if you wish to run efficiency tests."
 	exit
 }
 

@@ -391,7 +391,7 @@ function instructions() {
 
 \e[4;37m\e[1;37mInstructions\e[0m:
 (1) Avoid any build/dist/egg directories/files from the working directory. Could potentially lead to undefined behaviors of the test script.
-(2) You shall place this shell script within the directory that contains all of the files that you need to assign.
+(2) You shall run this shell script from within the directory that contains all of the files that you need to assign.
 (3) You shall install or have installed the package \`\e[4;37mvalgrind\e[0m\` if you wish to have memory leak tests."
 	exit
 }

@@ -66,7 +66,8 @@ int print_jacobi_output() {
 	/* Converting the input into a matrix and sending it into the jacobi algorithm */
 	if (matrix_build_from_dpoints(datapoints, num_data, dim, &jacobi_input)) goto error;
 	
-	if (eigen_jacobi(jacobi_input, num_data + 1, &output)) goto error;
+	/* Extracting all of the eigen values (num_data eigen values) */
+	if (eigen_jacobi(jacobi_input, num_data, &output)) goto error;
 
 	/* Printing and free-ing */
 	eigen_print_jacobi(output);
@@ -88,12 +89,16 @@ int get_T_of_spectral_kmeans(size_t K, matrix_t* output) {
 	size_t i, j;
 
 
+	/* Finding the graph normalized laplacian matrix */
 	if (graph_normalized_laplacian(datapoints, num_data, dim, &L_norm)) goto error;
 	
+	/* Extracting the first k eigen values and their corresponding eigen vectors, sortedly */
 	if (eigen_jacobi(L_norm, K, &jacobi_res)) goto error;
 
+	/* Creating the T matrix */
 	if (matrix_new(jacobi_res.K_eigen_vectors.rows, jacobi_res.K_eigen_vectors.cols, output)) goto error;
 
+	/* Building the T matrix */
 	for (i = 0; i < output->rows; i++) {
 		double sum_squared_of_rows = 0;
 		double norm_of_row;

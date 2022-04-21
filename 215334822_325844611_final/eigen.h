@@ -45,8 +45,8 @@ void eigen_print_jacobi(jacobi_output out);
  *		<K> must be lower or equal to <mat.rows>
  *
  * If K == 0: using the heuristic gap, determine a new positive K, and return the first (while sorted) K eigen values along with their eigen vectors
- * If 0 < K <= mat.rows: return the first (while sorted) K eigen values along with thier eigen vectors
- * If K > mat.rows: return all of the K eigen values along with their eigen vectors. This part doesn't necessarily return the eigen values sorted */
+ * If 0 < K < mat.rows: return the first (while sorted) K eigen values along with thier eigen vectors
+ * If K = mat.rows: return all of the K eigen values along with their eigen vectors. This part doesn't necessarily return the eigen values sorted */
 int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output);
 
 /* Define a "compare" function between two "eigen"-s. */

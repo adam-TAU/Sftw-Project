@@ -17,7 +17,7 @@ def main(K: int, goal: str, infile: str) -> None:
 			num_data = len(tmpFile.readlines()) 
     
         # We want K to be less or equal to num_data, and not equal to 1
-		assert_valid_input(K <= num_data)
+		assert_valid_input(K < num_data)
 		assert_valid_input(K != 1)
 
         # Fetch the matrix of points produced from the eigen vectors of the normalized graph laplacian matrix of the given vectors

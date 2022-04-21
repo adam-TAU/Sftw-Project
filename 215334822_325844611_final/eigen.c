@@ -104,11 +104,13 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
 	/* Extract the eigen values and eigen vectors and insert them into an output format */
 	if (jacobi_format_output(V, A_tag, K, output)) goto error;
 
-	/* In this case we had to create another matrix to hold the wanted eigen vectors */
-	if (K <= V.cols) { 
+	/* If  K < num_data, then goal = spk, and we have to sort the eigen values, 
+	 * therefore creating another matrix for the eigen vectors - hence, we don't need V anymore */
+	if (K < V.cols) { 
 		matrix_free(V);
 	} 
 
+	/* Free-ing */
 	matrix_free(A);
 	matrix_free(A_tag);
 	return 0;
@@ -151,8 +153,8 @@ static int jacobi_format_output(matrix_t mat_vectors, matrix_t mat_of_eigens, si
 	matrix_t K_eigen_vectors;
 
 
-	if (K <= mat_vectors.cols) {	
-		/* find K */
+	if (K < mat_vectors.cols) {	/* The goal was spk, since K == mat_vectors.cols is prohibited by the Python CMD interface */
+		/* sort the eigen values */
 		if (jacobi_extract_eigen_values(mat_of_eigens, true, &sorted_eigen_values)) goto error;
 
 		/* If K == 0, it means the CMD asked us to use the heuristic gap to determine K */
@@ -176,13 +178,17 @@ static int jacobi_format_output(matrix_t mat_vectors, matrix_t mat_of_eigens, si
 		output->K_eigen_vectors = K_eigen_vectors;
 		output->eigen_values = sorted_eigen_values;
 
-	} else {
-		/* If K > mat_vectors.cols, it means that the jacobi algorithm was powered alone.
-		 * That is, since K > mat_vectors.cols is prohibited by the python CMD interface.
+	} else if (K == mat_vectors.cols) {
+		/* If K = mat_vectors.cols, it means that the jacobi algorithm was powered alone.
+		 * That is, since K = mat_vectors.cols is prohibited by the python CMD interface.
 		 * Moreover, it's since we use this case as an indicator to when jacobi was powered without any future spectral clustering use. 
 		 * In such case, a jacobi algorithm alone isn't due to any specification of K, and we will return all of the eigen values/vectors (unsorted) */
-		output->K_eigen_vectors = mat_vectors;
+		 
+		/* Extracting all of the eigen values, without sorting */
 		if (jacobi_extract_eigen_values(mat_of_eigens, false, &output->eigen_values)) goto error;
+
+		/* Extracting all of the eigen vectors */
+		output->K_eigen_vectors = mat_vectors;
 	}
 
 	return 0;

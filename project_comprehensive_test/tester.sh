@@ -190,7 +190,7 @@ function verdict_memory_loss() {
 	if [[ ${bytes_lost//,} -eq 0 ]]; then
 		echo -ne '\033[1;32mNO MEMORY LEAK\e[0m' # print out a 'success' message
 	else
-		echo -e "\e[1;31mMEMORY LEAK\e[0m" # print out a 'failed' message
+		echo -ne "\e[1;31mMEMORY LEAK\e[0m" # print out a 'failed' message
 	fi
 }
 

@@ -26,15 +26,15 @@ int matrix_clone(matrix_t mat, matrix_t *output) {
 }
 
 void matrix_swap(matrix_t *mat1, matrix_t *mat2) {
-    matrix_t temp = *mat1;
-    *mat1 = *mat2;
-    *mat2 = temp;
+	matrix_t temp = *mat1;
+	*mat1 = *mat2;
+	*mat2 = temp;
 }
 
 int matrix_copy(matrix_t dest, matrix_t src) {
-    if(!(dest.rows == src.rows && dest.cols == src.cols)) return DIM_MISMATCH;
-    memcpy(dest.data, src.data, sizeof(double) * src.len);
-    return 0;
+	if(!(dest.rows == src.rows && dest.cols == src.cols)) return DIM_MISMATCH;
+	memcpy(dest.data, src.data, sizeof(double) * src.len);
+	return 0;
 }
 
 
@@ -188,11 +188,11 @@ int matrix_mul(matrix_t mat1, matrix_t mat2, matrix_t *output) {
 
 
 int matrix_mul_buffer(matrix_t mat1, matrix_t mat2, matrix_t output) {
-    size_t idx, i, j, k;
+	size_t idx, i, j, k;
 
-    if(!(mat1.cols == mat2.rows && mat1.rows == output.rows && mat2.cols == output.rows)) return DIM_MISMATCH;
-    
-    idx = 0;
+	if(!(mat1.cols == mat2.rows && mat1.rows == output.rows && mat2.cols == output.rows)) return DIM_MISMATCH;
+
+	idx = 0;
 	for(i = 0; i < output.rows; i++) {
 		for(j = 0; j < output.cols; j++) {
 			double sum = 0;
@@ -206,7 +206,7 @@ int matrix_mul_buffer(matrix_t mat1, matrix_t mat2, matrix_t output) {
 		}
 	}
 
-    return 0;
+	return 0;
 }
 
 
@@ -223,18 +223,18 @@ int matrix_identity(size_t dim, matrix_t* output) {
 }
 
 int matrix_set_identity(matrix_t mat) {
-    size_t i, j, idx;
-    if(mat.rows != mat.cols) return DIM_MISMATCH;
+	size_t i, j, idx;
+	if(mat.rows != mat.cols) return DIM_MISMATCH;
 
-    idx = 0;
-    for(i = 0; i < mat.rows; i++) {
-        for(j = 0; j < mat.cols; j++) {
-            mat.data[idx] = (i == j) ? 1 : 0;
-            idx++;
-        }
-    }
+	idx = 0;
+	for(i = 0; i < mat.rows; i++) {
+		for(j = 0; j < mat.cols; j++) {
+			mat.data[idx] = (i == j) ? 1 : 0;
+			idx++;
+		}
+	}
 
-    return 0;
+	return 0;
 }
 
 
@@ -291,7 +291,7 @@ matrix_ind matrix_ind_of_largest_offdiagonal(matrix_t sym_mat) {
 
 bool matrix_is_diagonal(matrix_t mat) {
 	size_t i, j;
-	
+
 	for (i = 0; i < mat.rows; i++) {
 		for (j = 0; j < mat.cols; j++) {
 			if (i != j) {
@@ -299,7 +299,7 @@ bool matrix_is_diagonal(matrix_t mat) {
 			}
 		}
 	}
-	
+
 	return true;
 }
 

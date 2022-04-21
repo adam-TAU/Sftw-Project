@@ -36,7 +36,7 @@ static PyObject* run_goal(PyObject *self, PyObject *args) {
 	matrix_t output;
 	PyObject* py_output = NULL;
 
-    output.data = NULL; 
+	output.data = NULL; 
 
 	/* Fetch the string of the infile */
 	if(!PyArg_ParseTuple(args, "lss", &K, &goal, &infile)) goto error;
@@ -46,7 +46,7 @@ static PyObject* run_goal(PyObject *self, PyObject *args) {
 
 	/* Build the matrix that was created by the goal */
 	if (matrixToList(output, &py_output)) goto error;
-	
+
 	/* Free and return */
 	matrix_free(output);
 	return py_output;
@@ -64,40 +64,40 @@ static PyObject* kmeans_fit(PyObject *self, PyObject *args) {
 	PyObject *py_output;
 	matrix_t centroids_mat;
 	size_t i, j;
-	
+
 	centroids_mat.data = NULL; // in case of an error, `centroids_mat`'s data field is freed if it's not null
-	
+
 	/* parsing the given lists as arrays (If an error has been captured
 	 * a PyExc has been set, and we return NULL */
-    assert_other(0 == py_kmeans_parse_args(args));
+	assert_other(0 == py_kmeans_parse_args(args));
 
 	/* building the returned centroids' list */
 	spkmeans_pass_kmeans_info_and_run(initial_centroids_indices);
-	
+
 	/* Creating the matrix that will hold the centroids */
 	if (matrix_new(K, dim, &centroids_mat)) goto error;
-	
+
 	/* Building the matrix that will hold the centroids */
 	for (i = 0; i < K; i++) {
 		for (j = 0; j < dim; j++) {
 			matrix_set(centroids_mat, i, j, sets[i].current_centroid.data[j]);
 		}
 	}
-	
+
 	/* Build the matrix that was created by the centroids */
 	if (matrixToList(centroids_mat, &py_output)) goto error;
-	
+
 	/* Free and return */
 	matrix_free(centroids_mat);
 	free_program();
 	return py_output;
-	
+
 error:
 	matrix_free_safe(centroids_mat);
 	free_program();
 	assert_other(false);
 	return NULL;
-	
+
 }
 /**************************************************************************/
 
@@ -115,7 +115,7 @@ static int py_kmeans_parse_args(PyObject *args) {
 	PyObject *datapoints_py = NULL;
 	PyObject *initial_centroids_indices_py = NULL;
 	int signal;
-	
+
 	/* Fetching Arguments from Python */
 	if(!PyArg_ParseTuple(args, "OllOl", &datapoints_py, &num_data, &dim, &initial_centroids_indices_py, &K)) {
 		signal = PY_ERROR;
@@ -158,7 +158,7 @@ error:
 		}
 		free(datapoints_arg);
 	}
-	
+
 	Py_XDECREF(datapoints_py);
 	Py_XDECREF(initial_centroids_indices_py);
 	return signal;
@@ -190,7 +190,7 @@ static int matrixToList(const matrix_t mat, PyObject **output) {
 
 		/* Inserting inner list */
 		if(PyList_SetItem(*output, (Py_ssize_t)i, tmpList)) goto error;
-		
+
 	}
 
 	return 0;
@@ -207,13 +207,13 @@ static int listToArray_D(PyObject *list, size_t length, double** output) {
 	size_t i;
 	PyObject *pypoint = NULL;
 	int signal;
-	
+
 	/* first check if the given PyObject is indeed a list */
 	if (!PyList_Check(list)) {
 		signal = PY_ERROR;
 		goto error;
 	}
-	
+
 	/* Initialize the array */
 	(*output) = calloc(length, sizeof(**output));
 	if (NULL == (*output)) {
@@ -232,7 +232,7 @@ static int listToArray_D(PyObject *list, size_t length, double** output) {
 		}
 		(*output)[i] = (double) PyFloat_AsDouble(pypoint);
 	}
-	
+
 	return 0;
 
 error:
@@ -249,7 +249,7 @@ static int listToArray_L(PyObject *list, size_t length, size_t** output) {
 	size_t i;
 	PyObject *pypoint = NULL;
 	int signal;
-	
+
 	/* first check if the given PyObject is indeed a list */
 	if (!PyList_Check(list)) {
 		signal = PY_ERROR;
@@ -273,7 +273,7 @@ static int listToArray_L(PyObject *list, size_t length, size_t** output) {
 		}
 		(*output)[i] = (size_t) PyLong_AsLong(pypoint);
 	}
-	
+
 	return 0;
 
 

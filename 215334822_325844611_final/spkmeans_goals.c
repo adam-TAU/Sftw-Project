@@ -14,7 +14,7 @@ extern void assert_input(int condition);
 /************************* INTERFACE FOR GOALS *******************************/
 
 int build_weighted_adjacency_matrix(matrix_t *output) {
-	
+
 	/* Find the WAM matrix */
 	if (graph_adjacent_matrix(datapoints, num_data, dim, output)) {
 		return BAD_ALLOC;
@@ -24,7 +24,7 @@ int build_weighted_adjacency_matrix(matrix_t *output) {
 }
 
 int build_diagonal_degree_matrix(matrix_t *output) {
-	
+
 	/* Find the DDG matrix */
 	if (graph_diagonal_degree_matrix(datapoints, num_data, dim, false, output)) {
 		return BAD_ALLOC;
@@ -34,7 +34,7 @@ int build_diagonal_degree_matrix(matrix_t *output) {
 }
 
 int build_normalized_laplacian(matrix_t *output) {
-	
+
 	/* Find the LNORM matrix */
 	if (graph_normalized_laplacian(datapoints, num_data, dim, output)) {
 		return BAD_ALLOC;
@@ -49,10 +49,10 @@ int build_jacobi_output(matrix_t *output) {
 
 	/* making sure that the given vectors' dataset represents a symmetric matrix (else jacobi isn't feasible) */
 	assert_input(num_data == dim);
-	
+
 	/* Converting the input into a matrix and sending it into the jacobi algorithm */
 	if (matrix_build_from_dpoints(datapoints, num_data, dim, &jacobi_input)) goto error;
-	
+
 	/* Extracting all of the eigen values (num_data eigen values) */
 	if (eigen_jacobi(jacobi_input, num_data, &jacobi_res)) goto error;
 
@@ -79,7 +79,7 @@ int build_T_of_spectral_kmeans(size_t K, matrix_t* output) {
 
 	/* Finding the graph normalized laplacian matrix */
 	if (graph_normalized_laplacian(datapoints, num_data, dim, &L_norm)) goto error;
-	
+
 	/* Applying the jacbobi algorithm upon the graph normalized laplacian matrix.
 	 * This extracts the first k eigen values and their corresponding eigen vectors, sortedly */
 	if (eigen_jacobi(L_norm, K, &jacobi_res)) goto error;
@@ -91,12 +91,12 @@ int build_T_of_spectral_kmeans(size_t K, matrix_t* output) {
 	for (i = 0; i < output->rows; i++) {
 		double sum_squared_of_rows = 0;
 		double norm_of_row;
-		
+
 		/* Calculating the sum of squared of the row */
 		for (j = 0; j < output->cols; j++) {
 			sum_squared_of_rows += pow( matrix_get(jacobi_res.eigen_vectors, i, j), 2 );
 		}
-		
+
 		/* Calculating the norm of the row with the sum of squared of the row */
 		if ( 0 == (norm_of_row = pow( sum_squared_of_rows, 0.5 )) ) { /* if the sum of the row equals 0, keep the row as is */
 			norm_of_row = 1;
@@ -112,7 +112,7 @@ int build_T_of_spectral_kmeans(size_t K, matrix_t* output) {
 	matrix_free(L_norm);
 	free(jacobi_res.eigen_values);
 	matrix_free(jacobi_res.eigen_vectors);
-	
+
 	return 0;
 
 error:

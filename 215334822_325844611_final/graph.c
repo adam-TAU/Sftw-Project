@@ -18,7 +18,7 @@ double euclidean_norm(dpoint_t v1, dpoint_t v2, size_t dim) {
 
 int graph_adjacent_matrix(dpoint_t input[], size_t num_data, size_t dim, matrix_t* output) {
 	size_t i, j;
-	
+
 	/* Creating the output matrix */
 	if (matrix_new(num_data, num_data, output) != 0) goto error;
 
@@ -32,7 +32,7 @@ int graph_adjacent_matrix(dpoint_t input[], size_t num_data, size_t dim, matrix_
 		}
 	}
 	return 0;
-	
+
 error:
 	/* Free-ing */
 	matrix_free_safe(*output);
@@ -63,7 +63,7 @@ int graph_diagonal_degree_matrix(dpoint_t input[], size_t num_data, size_t dim, 
 		for (j = 0; j < W.cols; j++) {
 			sum += matrix_get(W, i, j);
 		}
-		
+
 		/* Insert the value into the diagonal degree matrix. Apply a square root in case we want D^(-1/2) */
 		matrix_set(*output, i, i, (is_sqrt ? (1 / sqrt(sum)) : sum));
 	}
@@ -72,7 +72,7 @@ int graph_diagonal_degree_matrix(dpoint_t input[], size_t num_data, size_t dim, 
 	matrix_free_safe(W);
 
 	return 0;
-	
+
 error:
 	/* Free-ing */
 	matrix_free_safe(*output);
@@ -91,10 +91,10 @@ int graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, ma
 	W.data = NULL;
 	D_sqrt = NULL;
 	output->data = NULL;
-	
+
 	/* Build the WAM matrix */
 	if (graph_adjacent_matrix(input, num_data, dim, &W)) goto error;
-	
+
 	/* Build D_sqrt manually. There's no need to create a matrix of size n^2 just to know it's diagonal (which is n values) */
 	D_sqrt = (double*) calloc(W.rows, sizeof(double));
 	for (i = 0; i < W.rows; i++) {
@@ -102,19 +102,19 @@ int graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, ma
 		for (j = 0; j < W.rows; j++) {
 			sum += matrix_get(W, i, j);
 		}
-		
+
 		D_sqrt[i] = 1 / sqrt(sum);
 	}
 
 	/* Creating the output matrix */
 	if (matrix_new(W.rows, W.rows, output)) goto error;
-	
+
 	/* Building the output matrix */
 	for (i = 0; i < output->rows; i++) {
 		for (j = 0; j < output->cols; j++) {
 			/* L_norm = I - D_sqrt * WAM * D_sqrt */
 			double mult_val;
-			
+
 			/* Matrix multiplication avoided by in-place editing of the output matrix.
 			 * This is avoided since D_sqrt is always a diagonal matrix, and thus we represent D_sqrt's diagonal as an array */
 			mult_val = D_sqrt[i] * matrix_get(W, i, j) * D_sqrt[j];
@@ -125,7 +125,7 @@ int graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, ma
 	/* Free-ing */
 	if (D_sqrt != NULL) free(D_sqrt);
 	matrix_free(W);
-	
+
 	return 0;
 
 error:

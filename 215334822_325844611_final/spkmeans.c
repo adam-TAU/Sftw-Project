@@ -69,7 +69,7 @@ int spkmeans_pass_goal_info_and_run(char *infile, matrix_t *output) {
 
 void spkmeans_pass_kmeans_info_and_run(size_t *initial_centroids_indices) {
 	kmeans(initial_centroids_indices);
-	
+
 	if (initial_centroids_indices != NULL) {
 		free(initial_centroids_indices);
 	}
@@ -90,7 +90,7 @@ static int handle_goal(matrix_t *output) {
 	/* Build the output corresponding to the wanted goal */
 	if ( strcmp(goal, "wam") == 0 ) {
 		if ( (signal = build_weighted_adjacency_matrix(output)) ) goto error;
-		
+
 	}
 	if ( strcmp(goal, "ddg") == 0 ) {
 		if ( (signal = build_diagonal_degree_matrix(output)) ) goto error;
@@ -121,7 +121,7 @@ error:
 		}
 		free(datapoints);
 	}
-		
+
 	return signal;
 }
 
@@ -157,16 +157,16 @@ int main(int argc, char **argv) {
 	char *infile;
 	int signal;
 	matrix_t output;
-	
+
 	/* Parse args and collect data from file */
 	parse_args(argc, argv, &infile);
 	collect_data(infile);
-	
+
 	/* Power the wanted goal */
 	if ( (signal = handle_goal(&output)) ) {
 		assert_other(false);
 	}
-	
+
 	/* Print and free */
 	matrix_print_rows(output);
 	matrix_free_safe(output);
@@ -195,7 +195,7 @@ static void assign_to_closest(dpoint_t *dpoint) {
 	}
 
 	add_to_set(&sets[min_idx], *dpoint);
-    dpoint->current_set = min_idx;
+	dpoint->current_set = min_idx;
 }
 
 /* Updates the centroid of the given set using its stored `sum` and `count`
@@ -269,9 +269,9 @@ static void initialize_sets(size_t *initial_centroids_indices) {
 
 /* Given a file name, it returns the file extension of the file */
 const char *get_filename_ext(const char *filename) {
-    const char *dot = strrchr(filename, '.');
-    if(!dot || dot == filename) return "";
-    return dot + 1;
+	const char *dot = strrchr(filename, '.');
+	if(!dot || dot == filename) return "";
+	return dot + 1;
 }
 
 /* Given an input filename, gathers all of the datapoints stored in that file,
@@ -357,7 +357,7 @@ void init_datapoint(dpoint_t *dpoint) {
 	dpoint->data = calloc(dim, sizeof(*dpoint->data));
 	assert_other(NULL != dpoint->data);
 
-    dpoint->current_set = (size_t)-1;
+	dpoint->current_set = (size_t)-1;
 }
 
 /* Frees the given datapoint. If it's already been freed or not yet allocated,

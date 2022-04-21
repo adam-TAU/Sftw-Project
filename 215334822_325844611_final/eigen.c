@@ -30,8 +30,8 @@ static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, doub
  * apply the changes *in-place*, that would have occurred due to a right-hand multiplication in the rotation matrix.
  * This changes will be applied to the matrix <V>.
  * Pre-condition: 
- 	- matrix_ind <loc> must be an index of the the largest off diagonal value, in the upper half of the current jacobi matrix.
- 	  This means, that <loc> must point to an index that satisfies i < j. */
+ - matrix_ind <loc> must be an index of the the largest off diagonal value, in the upper half of the current jacobi matrix.
+ This means, that <loc> must point to an index that satisfies i < j. */
 static void jacobi_apply_rotation(matrix_t V, matrix_ind loc, double c, double s);
 
 /* Calculate the rotation matrix using the given data, and store the result in the pre-allocated `output`. */
@@ -55,14 +55,14 @@ void eigen_print_jacobi(jacobi_t out) {
 	size_t i;
 
 	for (i = 0; i < out.eigen_vectors.cols; i++) {
-	
+
 		/* If an eigen value will be printed as -0.0000, we'll replace the printage with 0.0000 */
 		if ( (out.eigen_values[i].value > -0.0001) && (out.eigen_values[i].value < 0) ) {
 			printf("%.4f", (double)0);
 		} else {
 			printf("%.4f", out.eigen_values[i].value);
 		}
-		
+
 		/* Segregation of eigen values */
 		if (i < out.eigen_vectors.cols - 1) printf(",");
 	}
@@ -79,26 +79,26 @@ int eigen_jacobi(matrix_t mat, size_t K, jacobi_t* output) {
 	matrix_ind loc;
 	double s, c;
 
-    A.data = NULL;
-    A_tag.data = NULL;
-    V.data = NULL;
+	A.data = NULL;
+	A_tag.data = NULL;
+	V.data = NULL;
 
 	if (matrix_identity(mat.rows, &V)) goto error;
 	if (matrix_clone(mat, &A_tag)) goto error;
 	if (matrix_clone(mat, &A)) goto error;
 
-    for(iterations = 0; iterations < max_jacobi_iterations; iterations++) {
+	for(iterations = 0; iterations < max_jacobi_iterations; iterations++) {
 		matrix_copy(A, A_tag); /* matrices are created with equal dims - no error check */
-		
+
 		loc = matrix_ind_of_largest_offdiagonal(A); 
 		if (0 == matrix_get(A, loc.i, loc.j)) break;/* stop the algorithm if the matrix of the last iteration is diagonal (the next step will result in nan-s) */
-		
+
 		jacobi_calc_c_s(&c, &s, A, loc);
 		jacobi_apply_rotation(V, loc, c, s); /* in-place multiplication of the rotation matrix of the current iteration and V (the output eigen vector matrix) */
 		jacobi_update_A_tag(A_tag, A, loc, c, s); /* updating the current matrix of the jacobi algorith into the new matrix of the next iteration */
 
 		if (jacobi_distance_of_squared_offdiagonals(A, A_tag) <= epsilon) break;
-        
+
 	}
 
 	/* Extract the eigen values and eigen vectors and insert them into an output format */
@@ -127,40 +127,40 @@ error:
 
 int eigen_jacobi_to_mat(jacobi_t origin, matrix_t *output) {
 	size_t i, j;
-	
+
 	/* Creating the output matrix */
 	if (matrix_new(origin.eigen_vectors.rows + 1, origin.eigen_vectors.cols, output)) {
 		return BAD_ALLOC;
 	}
-	
-	
+
+
 	/* Building the first row of the matrix (the eigen values) */
 	for (j = 0; j < output->cols; j++) {
 		double value;
-		
+
 		/* Building the eigen value that will be inserted into the output matrix */
 		if ( (origin.eigen_values[j].value > -0.0001) && (origin.eigen_values[j].value < 0) ) { /* If we need to round up an eigen value */
 			value = 0.0;
 		} else {
 			value = origin.eigen_values[j].value;
 		}
-		
+
 		/* Inserting the eigen value into the output matrix */
 		matrix_set(*output, 0, j, value);
 	}
-	
-	
+
+
 	/* Building the rest of the rows of the matrix (the eigen vectors) */
 	for (i = 1; i < output->rows; i++) {
 		for (j = 0; j < output->cols; j++) {
 			matrix_set(*output, i, j, matrix_get(origin.eigen_vectors, i - 1, j));
 		}
 	}
-	
+
 	/* Free the original output format */
 	free(origin.eigen_values);
 	matrix_free(origin.eigen_vectors);
-	
+
 	return 0;
 }
 
@@ -233,7 +233,7 @@ static int jacobi_format_output(matrix_t mat_vectors, matrix_t mat_of_eigens, si
 		 * That is, since K = mat_vectors.cols is prohibited by the python CMD interface.
 		 * Moreover, it's since we use this case as an indicator to when jacobi was powered without any future spectral clustering use. 
 		 * In such case, a jacobi algorithm alone isn't due to any specification of K, and we will return all of the eigen values/vectors (unsorted) */
-		 
+
 		/* Extracting all of the eigen values, without sorting */
 		if (jacobi_extract_eigen_values(mat_of_eigens, false, &output->eigen_values)) goto error;
 
@@ -298,10 +298,10 @@ static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, doub
 	for (r = 0; r < A.rows; r++) {	
 		if (r != i && r != j) {
 			double a_ri, a_rj;
-			
+
 			a_ri = matrix_get(A, r, i);
 			a_rj = matrix_get(A, r, j);
-			
+
 			matrix_set(A_tag, r, i, c * a_ri - s * a_rj);
 			matrix_set(A_tag, i, r, c * a_ri - s * a_rj);
 			matrix_set(A_tag, r, j, c * a_rj + s * a_ri);
@@ -324,7 +324,7 @@ static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, doub
 
 static void jacobi_apply_rotation(matrix_t V, matrix_ind loc, double c, double s) {
 	size_t row;
-	
+
 	/* P is essentially an identity matrix with 4 values changed. No need for a robust matrix multiplication algorithm.
 	 * We'll change just the values in V that are supposed to be changed due to such multiplication, accordingly */
 	for (row = 0; row < V.rows; row++) {

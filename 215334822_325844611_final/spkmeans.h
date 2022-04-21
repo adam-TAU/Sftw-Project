@@ -25,6 +25,7 @@ extern size_t K;
 extern size_t dim;
 extern size_t num_data;
 extern dpoint_t *datapoints;
+extern set_t* sets;
 /*************************************************************************/
 
 
@@ -34,11 +35,10 @@ extern dpoint_t *datapoints;
 /**************************** MECHANISM'S INTERFACES ************************************/
 /* A function to pass data about the vectors into the main mechanism of this file, produced by the spkmeansmodule.c interface.
  * That includes:
- * 		1. vectors (the vectors we want to process - corresponding to the wanted goal)
- *		2. vectors_dim (the dimension of each given vector)
- * 		3. vectors_amount (the amount of vectors given)
- *		4. goal (what we wish to do with the matrix formed from the given vectors)
- * 		5. (Optional) output (a pointer to a variable of type matrix_t that the caller wishes to store the T matrix at (relevant to goal == "spk" only) */
+ * 		1. the filename of the datapoints (C has a parsing function that handles parsing of datapoints from a file)
+ * 		2. output (a pointer to a variable of type matrix_t that the caller wishes to store the T matrix at)
+ *			a. in case output == NULL, print the matrix outputted by the wanted goal
+ *			b. in case output != NULL, store the matrix outputted by the wanted goal into the output variable */
 int spkmeans_pass_goal_info_and_run(char *infile, matrix_t *output);
 
 
@@ -60,7 +60,8 @@ void init_datapoint(dpoint_t *dpoint);
 /* A function used to free a datapoint */
 void free_datapoint(dpoint_t);
 
-void free_datapoints(void);
+/* A function used to free the program of the kmeans algorithm */
+void free_program(void);
 /*************************************************************************/
 
 

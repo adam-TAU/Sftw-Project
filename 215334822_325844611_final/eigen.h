@@ -23,10 +23,10 @@ typedef struct eigen_value {
 } eigen;
 
 /* Define a structure that will hold the output of the Jacobi algorithm. That includes the eigen values as well as the eigen_vectors matrix
- * If K is desired in the output, you can just check that throught the amount of cols of K_eigen_vectors.
- * K == K_eigen_vectors.cols */
+ * If K is desired in the output, you can just check that throught the amount of cols of eigen_vectors.
+ * K == eigen_vectors.cols */
 typedef struct jacobi_output {
-	matrix_t K_eigen_vectors;
+	matrix_t eigen_vectors;
 	eigen* eigen_values;
 	int signal;
 } jacobi_output;
@@ -48,6 +48,12 @@ void eigen_print_jacobi(jacobi_output out);
  * If 0 < K < mat.rows: return the first (while sorted) K eigen values along with thier eigen vectors
  * If K = mat.rows: return all of the K eigen values along with their eigen vectors. This part doesn't necessarily return the eigen values sorted */
 int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output);
+
+/* Cast a variable of type <jacobi_output> into <matrix_t>, for printing purposes only!
+ * If we print that matrix, we will get the desired printage of a jacobi output.
+ * The outputted matrix is stored into the <output> argument.
+ * This conversion frees the contents of <origin>. */
+int eigen_jacobi_to_mat(jacobi_output origin, matrix_t *output);
 
 /* Define a "compare" function between two "eigen"-s. */
 int eigen_compare(const void* eigen1, const void* eigen2);

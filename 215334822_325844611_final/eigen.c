@@ -54,7 +54,7 @@ static void jacobi_calc_c_s(double* c, double *s, matrix_t current_jacobi_mat, m
 void eigen_print_jacobi(jacobi_output out) {
 	size_t i;
 
-	for (i = 0; i < out.K_eigen_vectors.cols; i++) {
+	for (i = 0; i < out.eigen_vectors.cols; i++) {
 	
 		/* If an eigen value will be printed as -0.0000, we'll replace the printage with 0.0000 */
 		if ( (out.eigen_values[i].value > -0.0001) && (out.eigen_values[i].value < 0) ) {
@@ -64,11 +64,11 @@ void eigen_print_jacobi(jacobi_output out) {
 		}
 		
 		/* Segregation of eigen values */
-		if (i < out.K_eigen_vectors.cols - 1) printf(",");
+		if (i < out.eigen_vectors.cols - 1) printf(",");
 	}
 
 	puts("");
-	matrix_print_rows(out.K_eigen_vectors);
+	matrix_print_rows(out.eigen_vectors);
 }
 
 
@@ -124,6 +124,48 @@ error:
 }
 
 
+
+int eigen_jacobi_to_mat(jacobi_output origin, matrix_t *output) {
+	size_t i, j;
+	
+	/* Creating the output matrix */
+	if (matrix_new(origin.eigen_vectors.rows + 1, origin.eigen_vectors.cols, output)) {
+		return BAD_ALLOC;
+	}
+	
+	
+	/* Building the first row of the matrix (the eigen values) */
+	for (j = 0; j < output->cols; j++) {
+		double value;
+		
+		/* Building the eigen value that will be inserted into the output matrix */
+		if ( (origin.eigen_values[j].value > -0.0001) && (origin.eigen_values[j].value < 0) ) { /* If we need to round up an eigen value */
+			value = 0.0;
+		} else {
+			value = origin.eigen_values[j].value;
+		}
+		
+		/* Inserting the eigen value into the output matrix */
+		matrix_set(*output, 0, j, value);
+	}
+	
+	
+	/* Building the rest of the rows of the matrix (the eigen vectors) */
+	for (i = 1; i < output->rows; i++) {
+		for (j = 0; j < output->cols; j++) {
+			matrix_set(*output, i, j, matrix_get(origin.eigen_vectors, i - 1, j));
+		}
+	}
+	
+	/* Free the original output format */
+	free(origin.eigen_values);
+	matrix_free(origin.eigen_vectors);
+	
+	return 0;
+}
+
+
+
 int eigen_compare(const void* eigen1, const void* eigen2) {
 	double eigen1_val = ((eigen*)eigen1)->value;
 	double eigen2_val = ((eigen*)eigen2)->value;
@@ -145,12 +187,18 @@ int sign(double val) {
 
 
 
+
+
+
+
+
+
 /********************************************* STATIC FUNCTION DEFINITIONS (RELATED TO JACOBI's ALGORITHM) **************************************************************/
 
 static int jacobi_format_output(matrix_t mat_vectors, matrix_t mat_of_eigens, size_t K, jacobi_output* output) {
 	size_t i, j;
 	eigen* sorted_eigen_values = NULL;
-	matrix_t K_eigen_vectors;
+	matrix_t eigen_vectors;
 
 
 	if (K < mat_vectors.cols) {	/* The goal was spk, since K == mat_vectors.cols is prohibited by the Python CMD interface */
@@ -163,19 +211,19 @@ static int jacobi_format_output(matrix_t mat_vectors, matrix_t mat_of_eigens, si
 		}
 
 		/* Form a matrix with the K-first eigen values */
-		if (matrix_new(mat_vectors.rows, K, &K_eigen_vectors)) goto error;
+		if (matrix_new(mat_vectors.rows, K, &eigen_vectors)) goto error;
 
-		/* For each eigen value out of the first K, find its corresponding column in V, and copy it into <K_eigen_vectors> */
+		/* For each eigen value out of the first K, find its corresponding column in V, and copy it into <eigen_vectors> */
 		for (j = 0; j < K; j++) {
 			size_t eigen_col = sorted_eigen_values[j].col;
 
-			for (i = 0; i < K_eigen_vectors.rows; i++) {
-				matrix_set(K_eigen_vectors, i, j, matrix_get(mat_vectors, i, eigen_col) ); 
+			for (i = 0; i < eigen_vectors.rows; i++) {
+				matrix_set(eigen_vectors, i, j, matrix_get(mat_vectors, i, eigen_col) ); 
 			}
 		}
 
 		/* Format the output */
-		output->K_eigen_vectors = K_eigen_vectors;
+		output->eigen_vectors = eigen_vectors;
 		output->eigen_values = sorted_eigen_values;
 
 	} else if (K == mat_vectors.cols) {
@@ -188,7 +236,7 @@ static int jacobi_format_output(matrix_t mat_vectors, matrix_t mat_of_eigens, si
 		if (jacobi_extract_eigen_values(mat_of_eigens, false, &output->eigen_values)) goto error;
 
 		/* Extracting all of the eigen vectors */
-		output->K_eigen_vectors = mat_vectors;
+		output->eigen_vectors = mat_vectors;
 	}
 
 	return 0;

@@ -16,7 +16,6 @@ static PyObject* run_goal(PyObject *self, PyObject *args);
 static PyObject* kmeans_fit(PyObject *self, PyObject *args);
 
 static int matrixToList(const matrix_t mat, PyObject **output);
-static int extract_datapoint_indices(PyObject **output);
 static int listToArray_D(PyObject *list, size_t length, double** output);
 static int listToArray_L(PyObject *list, size_t length, size_t** output);
 static int py_kmeans_parse_args(PyObject*);
@@ -35,52 +34,70 @@ static size_t* initial_centroids_indices = NULL;
 static PyObject* run_goal(PyObject *self, PyObject *args) {
 	char* infile;
 	matrix_t output;
-	PyObject* T_points = NULL;
-	int signal;
+	PyObject* py_output = NULL;
 
-    output.data = NULL; // in case of an error, `output`'s data field is freed if it's not null
+    output.data = NULL; 
 
 	/* Fetch the string of the infile */
 	if(!PyArg_ParseTuple(args, "lss", &K, &goal, &infile)) goto error;
 
 	/* Perform the wanted goal's operation and return the result (if there's any) */
-	if ( (signal = spkmeans_pass_goal_info_and_run(infile, &output)) ) { /* run failed */
-		goto error;
+	if (spkmeans_pass_goal_info_and_run(infile, &output)) goto error;
 
-	} else if (strcmp(goal, "spk") == 0) { /* run succeeded. goal was "spk", therefore we have to return to python the output of the goal's mechanism */
-		
-		/* Initializing T_points as a list */
-		if ( NULL == (T_points = PyList_New(K)) ) goto error;
+	/* Build the matrix that was created by the goal */
+	if (matrixToList(output, &py_output)) goto error;
+	
+	/* Free and return */
+	matrix_free(output);
+	return py_output;
 
-		/* Buildin the T_points matrix into a python list of lists */
-		if (matrixToList(output, &T_points)) goto error;
-		matrix_free_safe(output);
-		return T_points;
-	}
-
-	Py_RETURN_NONE;
 
 error:
 	matrix_free_safe(output);
-	Py_XDECREF(T_points);
+	Py_XDECREF(py_output);
 	assert_other(false);
-	Py_RETURN_NONE;
+	return NULL;
 }
 
 
 static PyObject* kmeans_fit(PyObject *self, PyObject *args) {
-    PyObject *dpoint_assignments;
-
+	PyObject *py_output;
+	matrix_t centroids_mat;
+	size_t i, j;
+	
+	centroids_mat.data = NULL; // in case of an error, `centroids_mat`'s data field is freed if it's not null
+	
 	/* parsing the given lists as arrays (If an error has been captured
 	 * a PyExc has been set, and we return NULL */
     assert_other(0 == py_kmeans_parse_args(args));
 
 	/* building the returned centroids' list */
 	spkmeans_pass_kmeans_info_and_run(initial_centroids_indices);
-    assert_other(0 == extract_datapoint_indices(&dpoint_assignments));
-
-    free_datapoints(); // they weren't freed before because we needed to access their data
-	return dpoint_assignments;
+	
+	/* Creating the matrix that will hold the centroids */
+	if (matrix_new(K, dim, &centroids_mat)) goto error;
+	
+	/* Building the matrix that will hold the centroids */
+	for (i = 0; i < K; i++) {
+		for (j = 0; j < dim; j++) {
+			matrix_set(centroids_mat, i, j, sets[i].current_centroid.data[j]);
+		}
+	}
+	
+	/* Build the matrix that was created by the centroids */
+	if (matrixToList(centroids_mat, &py_output)) goto error;
+	
+	/* Free and return */
+	matrix_free(centroids_mat);
+	free_program();
+	return py_output;
+	
+error:
+	matrix_free_safe(centroids_mat);
+	free_program();
+	assert_other(false);
+	return NULL;
+	
 }
 /**************************************************************************/
 
@@ -182,30 +199,6 @@ error:
 	Py_XDECREF(*output);
 	return PY_ERROR;
 }
-
-
-
-/* Creates a PyList out of the indices of centroids of the datapoints. */
-static int extract_datapoint_indices(PyObject **output) {
-	PyObject *pylong = NULL;
-	size_t i;
-
-	/* Creating outer list */
-	if ( NULL == (*output = PyList_New((Py_ssize_t)num_data)) ) goto error;
-
-	for (i = 0; i < num_data; ++i) {
-		if(NULL == (pylong = PyLong_FromSize_t( datapoints[i].current_set ) ) ) goto error;
-		if(PyList_SetItem(*output, (Py_ssize_t)i, pylong)) goto error;	
-	}
-
-	return 0;
-
-error:
-	Py_XDECREF(*output);
-	return PY_ERROR;
-}
-
-
 
 
 /* This parses a python Floats' List into a C Double's array

@@ -18,11 +18,11 @@ double euclidean_norm(dpoint_t v1, dpoint_t v2, size_t dim) {
 
 int graph_adjacent_matrix(dpoint_t input[], size_t num_data, size_t dim, matrix_t* output) {
 	size_t i, j;
-	if (matrix_new(num_data, num_data, output) != 0) {
-		return BAD_ALLOC;
-	}
+	
+	/* Creating the output matrix */
+	if (matrix_new(num_data, num_data, output) != 0) goto error;
 
-
+	/* Building the output matrix */
 	for (i = 0; i < num_data; i++) {
 		/* starting with j = i + 1 ensures none of the diagonal values are nonzero */
 		for (j = i + 1; j < num_data; j++) {
@@ -32,30 +32,51 @@ int graph_adjacent_matrix(dpoint_t input[], size_t num_data, size_t dim, matrix_
 		}
 	}
 	return 0;
+	
+error:
+	/* Free-ing */
+	matrix_free_safe(*output);
+	return BAD_ALLOC;
 }
 
 
 
-int graph_diagonal_degree_matrix(matrix_t mat, bool is_sqrt, matrix_t* output) {
+int graph_diagonal_degree_matrix(dpoint_t input[], size_t num_data, size_t dim, bool is_sqrt, matrix_t* output) {
 	size_t i, j;
-	size_t dimension = mat.rows;
+	matrix_t W;
 
-	if(matrix_new(mat.rows, mat.cols, output) != 0) {
-		return BAD_ALLOC;
-	}
+	/* in case of an error */
+	W.data = NULL;
+	output->data = NULL;
 
-	for (i = 0; i < dimension; i++) {
-		double sum = 0.0, result;
+	/* Build the WAM matrix */
+	if (graph_adjacent_matrix(input, num_data, dim, &W)) goto error;
 
-		for (j = 0; j < dimension; j++) {
-			sum += matrix_get(mat, i, j);
+	/* Create the output matrix */
+	if (matrix_new(W.rows, W.cols, output)) goto error;
+
+	/* Build the output matrix */
+	for (i = 0; i < W.rows; i++) {
+		double sum = 0.0;
+
+		/* Calculate row-specific sum */
+		for (j = 0; j < W.cols; j++) {
+			sum += matrix_get(W, i, j);
 		}
-
-		result = is_sqrt ? (1 / sqrt(sum)) : sum;
-		matrix_set(*output, i, i, result);
+		
+		/* Insert the value into the diagonal degree matrix. Apply a square root in case we want D^(-1/2) */
+		matrix_set(*output, i, i, (is_sqrt ? (1 / sqrt(sum)) : sum));
 	}
+
+	/* Free-ing */
+	matrix_free_safe(W);
 
 	return 0;
+	
+error:
+	/* Free-ing */
+	matrix_free_safe(*output);
+	return BAD_ALLOC;
 }
 
 
@@ -74,7 +95,7 @@ int graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, ma
 	/* Build the WAM matrix */
 	if (graph_adjacent_matrix(input, num_data, dim, &W)) goto error;
 	
-	/* Create an array that contains at index <i> the sum of row <i> in matrix WAM <W> */
+	/* Build D_sqrt manually. There's no need to create a matrix of size n^2 just to know it's diagonal (which is n values) */
 	D_sqrt = (double*) calloc(W.rows, sizeof(double));
 	for (i = 0; i < W.rows; i++) {
 		double sum = 0.0;
@@ -85,12 +106,17 @@ int graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, ma
 		D_sqrt[i] = 1 / sqrt(sum);
 	}
 
-	/* Build the output */
-	matrix_new(W.rows, W.rows, output);
+	/* Creating the output matrix */
+	if (matrix_new(W.rows, W.rows, output)) goto error;
+	
+	/* Building the output matrix */
 	for (i = 0; i < output->rows; i++) {
 		for (j = 0; j < output->cols; j++) {
-			/* Lnorm = I - D_sqrt * WAM * D_sqrt */
+			/* L_norm = I - D_sqrt * WAM * D_sqrt */
 			double mult_val;
+			
+			/* Matrix multiplication avoided by in-place editing of the output matrix.
+			 * This is avoided since D_sqrt is always a diagonal matrix, and thus we represent D_sqrt's diagonal as an array */
 			mult_val = D_sqrt[i] * matrix_get(W, i, j) * D_sqrt[j];
 			matrix_set(*output, i, j, (i == j) * 1 - mult_val); 
 		}
@@ -99,12 +125,14 @@ int graph_normalized_laplacian(dpoint_t input[], size_t num_data, size_t dim, ma
 	/* Free-ing */
 	if (D_sqrt != NULL) free(D_sqrt);
 	matrix_free(W);
+	
 	return 0;
 
 error:
 	/* Free-ing */
 	if (D_sqrt != NULL) free(D_sqrt);
 	matrix_free_safe(W);
+	matrix_free_safe(*output);
 	return BAD_ALLOC;
 }
 

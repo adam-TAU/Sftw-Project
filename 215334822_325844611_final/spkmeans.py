@@ -10,6 +10,7 @@ import time
 
 
 def main(K: int, goal: str, infile: str) -> None:
+	output: List[List[float]]
     
     # In case that we desire a normalized spectral clustering:
 	if goal == "spk":
@@ -30,18 +31,25 @@ def main(K: int, goal: str, infile: str) -> None:
 		initial_centroids_indices = initialize_centroids(len(T_points[0]), T_points)
 
         # Perform the kmeans clustering algorith on the
-		asg = spkmeans.kmeans_fit(T_points, len(T_points), len(T_points[0]), initial_centroids_indices, len(initial_centroids_indices))
+		output = spkmeans.kmeans_fit(T_points, len(T_points), len(T_points[0]), initial_centroids_indices, len(initial_centroids_indices))
 		
+		# print the initial centroids indices
+		print(",".join([str(ele) for ele in initial_centroids_indices]))
+		
+		# view the output of the spectral clustering in a plot
 		# data = pd.read_csv(infile, header=None).to_numpy()
 		# for cluster in range(K):
-		#	points = np.array([data[i,:] for i in range(len(asg)) if asg[i] == cluster])
+		#	points = np.array([data[i,:] for i in range(len(output)) if output[i] == cluster])
 		#	plt.scatter(points[:,0], points[:,1])
 			
 		# plt.savefig("output.png")
 
 
 	else: # In any other case that isn't a normalized spectral clustering - just perform the desired operation corresponding to the "goal" parameter
-		spkmeans.goal(K, goal, infile)
+		output = spkmeans.goal(K, goal, infile)
+		
+	# print the output of the goal
+	print("\n".join([",".join(["{:.4f}".format(num) for num in line]) for line in output]))
 
 
 

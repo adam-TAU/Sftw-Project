@@ -7,9 +7,8 @@
 
 /******************************************************************************/
 
-static int handle_goal(matrix_t* output);
+static int handle_goal(matrix_t *output);
 static void kmeans(size_t *initial_centroids_indices);
-static void print_kmeans(size_t* initial_centroids_indices);
 
 static const char *get_filename_ext(const char *filename);
 static void collect_data(const char *filename);
@@ -21,8 +20,6 @@ static double sqdist(dpoint_t p1, dpoint_t p2);
 static void add_to_set(set_t *set, dpoint_t dpoint);
 static int update_centroid(set_t *set);
 static void parse_args(int argc, char **argv, char **infile);
-static void free_program_without_datapoints(void);
-static void free_program(void);
 
 
 /**************************** AUXILIARY FUNCTIONS *********************************/
@@ -56,7 +53,7 @@ size_t dim = 0;
 size_t num_data = 0;
 dpoint_t *datapoints = NULL;
 
-static set_t *sets = NULL;
+set_t *sets = NULL;
 /*****************************************************************************/
 
 
@@ -90,24 +87,25 @@ void spkmeans_pass_kmeans_info_and_run(size_t *initial_centroids_indices) {
 static int handle_goal(matrix_t *output) {
 	int signal;
 
+	/* Build the output corresponding to the wanted goal */
 	if ( strcmp(goal, "wam") == 0 ) {
-		if ( (signal = print_weighted_adjacency_matrix()) ) goto error;
-
+		if ( (signal = build_weighted_adjacency_matrix(output)) ) goto error;
+		
 	}
 	if ( strcmp(goal, "ddg") == 0 ) {
-		if ( (signal = print_diagonal_degree_matrix()) ) goto error;
+		if ( (signal = build_diagonal_degree_matrix(output)) ) goto error;
 
 	}
 	if ( strcmp(goal, "lnorm") == 0 ) {
-		if ( (signal = print_normalized_laplacian()) ) goto error;
+		if ( (signal = build_normalized_laplacian(output)) ) goto error;
 
 	}
 	if ( strcmp(goal, "jacobi") == 0 ) {
-		if ( (signal = print_jacobi_output()) ) goto error;
+		if ( (signal = build_jacobi_output(output)) ) goto error;
 
 	}
-	if ( strcmp(goal, "spk") == 0 ) {
-		if ( (signal = get_T_of_spectral_kmeans(K, output)) ) goto error;
+	if ( strcmp(goal, "spk") == 0 ) { /* available only for the CPython interface */
+		if ( (signal = build_T_of_spectral_kmeans(K, output)) ) goto error;
 
 	}
 
@@ -115,7 +113,7 @@ static int handle_goal(matrix_t *output) {
 
 error:
 
-	/* This mechanism uses only the datapoints, hence we can free the resources more responsively */
+	/* This mechanism is the last endpoint which uses the datapoints, hence we can free the resources responsively */
 	if(NULL != datapoints) {
 		size_t i;
 		for(i = 0; i < num_data; i++) {
@@ -123,6 +121,7 @@ error:
 		}
 		free(datapoints);
 	}
+		
 	return signal;
 }
 
@@ -147,8 +146,6 @@ static void kmeans(size_t *initial_centroids_indices) {
 		}
 	}
 
-	print_kmeans(initial_centroids_indices);
-    free_program_without_datapoints();
 }
 /*****************************************************************************/
 
@@ -159,12 +156,20 @@ static void kmeans(size_t *initial_centroids_indices) {
 int main(int argc, char **argv) {
 	char *infile;
 	int signal;
+	matrix_t output;
 	
+	/* Parse args and collect data from file */
 	parse_args(argc, argv, &infile);
 	collect_data(infile);
-	if ( (signal = handle_goal(NULL)) ) {
+	
+	/* Power the wanted goal */
+	if ( (signal = handle_goal(&output)) ) {
 		assert_other(false);
 	}
+	
+	/* Print and free */
+	matrix_print_rows(output);
+	matrix_free_safe(output);
 
 	return 0;
 }
@@ -364,28 +369,11 @@ void free_datapoint(dpoint_t dpoint) {
 }
 
 
-static void print_kmeans(size_t* initial_centroids_indices) {
-	size_t i, j;
 
-	for (i = 0; i < K; i++) {
-		printf("%li", initial_centroids_indices[i]);
-		if (i < K - 1) printf(",");
-	}
-	
-	puts("");
-
-	for (i = 0; i < K; i++) {	
-		for (j = 0; j < dim; j++) {
-			printf("%.4f", sets[i].current_centroid.data[j]);
-			if (j < dim - 1) printf(",");
-		}
-		
-		puts("");
-	}
-}
-
-static void free_program_without_datapoints() {
-    size_t i;
+/* Frees all of the memory allocated by the program. If a certain variable
+ * hasn't been allocated yet, this function does not attempt to free it. */
+void free_program() {
+	size_t i = 0;
 
 	if(NULL != sets) {
 		for(i = 0; i < K; i++) {
@@ -394,10 +382,6 @@ static void free_program_without_datapoints() {
 		}
 		free(sets);
 	}
-}
-
-void free_datapoints() {
-    size_t i = 0;
 
 	if(NULL != datapoints) {
 		for(i = 0; i < num_data; i++) {
@@ -405,13 +389,5 @@ void free_datapoints() {
 		}
 		free(datapoints);
 	}
-}
-
-
-/* Frees all of the memory allocated by the program. If a certain variable
- * hasn't been allocated yet, this function does not attempt to free it. */
-static void free_program() {
-    free_datapoints();
-    free_program_without_datapoints();
 }
 /*****************************************************************************/

@@ -22,7 +22,7 @@ int graph_adjacent_matrix(dpoint_t input[], size_t num_data, size_t dim, matrix_
    In such case that the boolean is_sqrt equals <true>, the returned matrix is D ^ (-1/2).
 
    In case of allocation failure, the return value has a `data` field of `NULL`. */
-int graph_diagonal_degree_matrix(matrix_t mat, bool is_sqrt, matrix_t* output);
+int graph_diagonal_degree_matrix(dpoint_t input[], size_t num_data, size_t dim, bool is_sqrt, matrix_t* output);
 
 
 /* Calculate the normalized graph Laplacian matrix of the given list of datapoints,

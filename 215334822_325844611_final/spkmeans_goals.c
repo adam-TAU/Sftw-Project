@@ -45,7 +45,7 @@ int build_normalized_laplacian(matrix_t *output) {
 
 int build_jacobi_output(matrix_t *output) {
 	matrix_t jacobi_input;
-	jacobi_output jacobi_output;
+	jacobi_t jacobi_res;
 
 	/* making sure that the given vectors' dataset represents a symmetric matrix (else jacobi isn't feasible) */
 	assert_input(num_data == dim);
@@ -54,10 +54,10 @@ int build_jacobi_output(matrix_t *output) {
 	if (matrix_build_from_dpoints(datapoints, num_data, dim, &jacobi_input)) goto error;
 	
 	/* Extracting all of the eigen values (num_data eigen values) */
-	if (eigen_jacobi(jacobi_input, num_data, &jacobi_output)) goto error;
+	if (eigen_jacobi(jacobi_input, num_data, &jacobi_res)) goto error;
 
-	/* Converting the output format from a <jacobi_output> into a <matrix_t> */
-	if (eigen_jacobi_to_mat(jacobi_output, output)) goto error;
+	/* Converting the output format from a <jacobi_res> into a <matrix_t> */
+	if (eigen_jacobi_to_mat(jacobi_res, output)) goto error;
 
 	/* Free-ing the matrix that was created as the jacobi's algorithm's input */
 	matrix_free(jacobi_input);
@@ -66,14 +66,14 @@ int build_jacobi_output(matrix_t *output) {
 
 error:
 	matrix_free_safe(jacobi_input);
-	if (NULL != jacobi_output.eigen_values) free(jacobi_output.eigen_values);
-	matrix_free_safe(jacobi_output.eigen_vectors);
+	if (NULL != jacobi_res.eigen_values) free(jacobi_res.eigen_values);
+	matrix_free_safe(jacobi_res.eigen_vectors);
 	return BAD_ALLOC;
 }
 
 int build_T_of_spectral_kmeans(size_t K, matrix_t* output) {
 	matrix_t L_norm;
-	jacobi_output jacobi_res;
+	jacobi_t jacobi_res;
 	size_t i, j;
 
 

@@ -4,24 +4,24 @@
 
 
 
-/********************************************* STATIC FUNCTION DECLARATIONS (RELATED TO JACOBI's ALGORITHM) **************************************************************/
+/********************************************* STATIC FUNCTION DECLARATIONS (JACOBI's ALGORITHM) **************************************************************/
 /* Given the diagonal matrix <mat_of_eigens>, pull the eigen values out of its diagonal,
- * sort them if needed, and determine how many of them we need to store in the <jacobi_output> argument.
+ * sort them if needed, and determine how many of them we need to store in the <output> argument.
  * The determination of the amount of eigen values, is done by the value of <K>. If K==0, then we use the heuristic gap to determine a new K.
- * Once K is determined, we store the <K>-first eigen vectors into the <jacobi_output> argument.
+ * Once K is determined, we store the <K>-first eigen vectors into the <output> argument.
  * Most of this function's work is to simply format the output of the jacobi algorithm - And when needed, apply the heuristic gap. */
-static int jacobi_format_output(matrix_t mat_vectors, matrix_t mat_of_eigens, size_t K, jacobi_output* output);
+static int jacobi_format_output(matrix_t mat_vectors, matrix_t mat_of_eigens, size_t K, jacobi_t* output);
 
 /* In case K==0 was given as input, we try to determine a new valid K using the eigen heuristic gap.
  * <eigen_values_amount> is the amount of eigen values. We need that for the heuristic's algorithm.
  * Pre-Conditions:
  *		the given array of eigen values must be sorted by value (remember: eigen is a struct) */
-static size_t jacobi_eigen_heuristic(eigen* sorted_eigen_values, size_t eigen_values_amount);
+static size_t jacobi_eigen_heuristic(eigen_t* sorted_eigen_values, size_t eigen_values_amount);
 
 /* Given an the last stage of A_tag in the jacobi algorithm, extract its eigen values.
    If sort equals <true>, sort the eigen values.
    An array of eigen values would be assigned to the output argument. */
-static int jacobi_extract_eigen_values(matrix_t mat, bool sort, eigen** output);
+static int jacobi_extract_eigen_values(matrix_t mat, bool sort, eigen_t** output);
 
 /* In the jacobi algorithm, this is the function that transforms A_tag (the next matrix in the recursive algorithm), through the current A matrix */
 static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, double c, double s);
@@ -50,8 +50,8 @@ static void jacobi_calc_c_s(double* c, double *s, matrix_t current_jacobi_mat, m
 
 
 
-/********************************************* GLOBAL FUNCTIONS **************************************************************/
-void eigen_print_jacobi(jacobi_output out) {
+/********************************************* GLOBAL FUNCTIONS OF THE EIGEN MODULE **************************************************************/
+void eigen_print_jacobi(jacobi_t out) {
 	size_t i;
 
 	for (i = 0; i < out.eigen_vectors.cols; i++) {
@@ -73,7 +73,7 @@ void eigen_print_jacobi(jacobi_output out) {
 
 
 
-int eigen_jacobi(matrix_t mat, size_t K, jacobi_output* output) {
+int eigen_jacobi(matrix_t mat, size_t K, jacobi_t* output) {
 	size_t iterations;
 	matrix_t A, A_tag, V;
 	matrix_ind loc;
@@ -125,7 +125,7 @@ error:
 
 
 
-int eigen_jacobi_to_mat(jacobi_output origin, matrix_t *output) {
+int eigen_jacobi_to_mat(jacobi_t origin, matrix_t *output) {
 	size_t i, j;
 	
 	/* Creating the output matrix */
@@ -167,8 +167,8 @@ int eigen_jacobi_to_mat(jacobi_output origin, matrix_t *output) {
 
 
 int eigen_compare(const void* eigen1, const void* eigen2) {
-	double eigen1_val = ((eigen*)eigen1)->value;
-	double eigen2_val = ((eigen*)eigen2)->value;
+	double eigen1_val = ((eigen_t*)eigen1)->value;
+	double eigen2_val = ((eigen_t*)eigen2)->value;
 
 	return (eigen1_val > eigen2_val) ? 1 : ( (eigen1_val < eigen2_val) ? -1 : 0 );
 }
@@ -193,11 +193,13 @@ int sign(double val) {
 
 
 
-/********************************************* STATIC FUNCTION DEFINITIONS (RELATED TO JACOBI's ALGORITHM) **************************************************************/
 
-static int jacobi_format_output(matrix_t mat_vectors, matrix_t mat_of_eigens, size_t K, jacobi_output* output) {
+
+
+/********************************************* STATIC FUNCTION DEFINITIONS (RELATED TO JACOBI's ALGORITHM) **************************************************************/
+static int jacobi_format_output(matrix_t mat_vectors, matrix_t mat_of_eigens, size_t K, jacobi_t* output) {
 	size_t i, j;
-	eigen* sorted_eigen_values = NULL;
+	eigen_t* sorted_eigen_values = NULL;
 	matrix_t eigen_vectors;
 
 
@@ -249,12 +251,12 @@ error:
 }
 
 
-static size_t jacobi_eigen_heuristic(eigen* sorted_eigen_values, size_t eigen_values_amount) {
-	size_t i, K = eigen_values_amount;
+static size_t jacobi_eigen_heuristic(eigen_t* sorted_eigen_values, size_t size) {
+	size_t i, K = size;
 	double tmp;
 	double max_gap = -1;
 
-	for (i = 0; i < eigen_values_amount/2; i++) {
+	for (i = 0; i < size/2; i++) {
 		tmp = fabs( sorted_eigen_values[i].value - sorted_eigen_values[i+1].value );
 
 		if (tmp > max_gap) {
@@ -267,10 +269,10 @@ static size_t jacobi_eigen_heuristic(eigen* sorted_eigen_values, size_t eigen_va
 }
 
 
-static int jacobi_extract_eigen_values(matrix_t mat, bool sort, eigen** output) {
+static int jacobi_extract_eigen_values(matrix_t mat, bool sort, eigen_t** output) {
 	size_t i;
 
-	*output = malloc(mat.rows * sizeof(eigen));
+	*output = malloc(mat.rows * sizeof(eigen_t));
 	if(NULL == *output) return BAD_ALLOC;
 
 	for (i = 0; i < mat.cols; i++) {
@@ -279,7 +281,7 @@ static int jacobi_extract_eigen_values(matrix_t mat, bool sort, eigen** output) 
 	}
 
 	if (sort) {
-		qsort(*output, mat.cols, sizeof(eigen), eigen_compare);
+		qsort(*output, mat.cols, sizeof(eigen_t), eigen_compare);
 	}
 
 	return 0;	

@@ -24,24 +24,24 @@ static size_t jacobi_eigen_heuristic(eigen_t* sorted_eigen_values, size_t eigen_
 static int jacobi_extract_eigen_values(matrix_t mat, bool sort, eigen_t** output);
 
 /* In the jacobi algorithm, this is the function that transforms A_tag (the next matrix in the recursive algorithm), through the current A matrix */
-static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, double c, double s);
+static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind_t loc, double c, double s);
 
 /* Given the <c> and <s> and <i,j> (in <loc>), which we are supposed to build a rotation matrix upon, simply
  * apply the changes *in-place*, that would have occurred due to a right-hand multiplication in the rotation matrix.
  * This changes will be applied to the matrix <V>.
  * Pre-condition: 
- - matrix_ind <loc> must be an index of the the largest off diagonal value, in the upper half of the current jacobi matrix.
+ - matrix_ind_t <loc> must be an index of the the largest off diagonal value, in the upper half of the current jacobi matrix.
  This means, that <loc> must point to an index that satisfies i < j. */
-static void jacobi_apply_rotation(matrix_t V, matrix_ind loc, double c, double s);
+static void jacobi_apply_rotation(matrix_t V, matrix_ind_t loc, double c, double s);
 
 /* Calculate the rotation matrix using the given data, and store the result in the pre-allocated `output`. */
-int eigen_build_rotation_matrix(matrix_ind loc, double c, double s, matrix_t output);
+int eigen_build_rotation_matrix(matrix_ind_t loc, double c, double s, matrix_t output);
 
 /* Given two matrices, determine the distance between their sum of squared off-diagonals */
 static double jacobi_distance_of_squared_offdiagonals(matrix_t mat1, matrix_t mat2);
 
 /* Calculae the values of 'c' and 's' of the desired rotation matrix */
-static void jacobi_calc_c_s(double* c, double *s, matrix_t current_jacobi_mat, matrix_ind loc);
+static void jacobi_calc_c_s(double* c, double *s, matrix_t current_jacobi_mat, matrix_ind_t loc);
 /*****************************************************************************************************************************************/
 
 
@@ -76,7 +76,7 @@ void eigen_print_jacobi(jacobi_t out) {
 int eigen_jacobi(matrix_t mat, size_t K, jacobi_t* output) {
 	size_t iterations;
 	matrix_t A, A_tag, V;
-	matrix_ind loc;
+	matrix_ind_t loc;
 	double s, c;
 
 	A.data = NULL;
@@ -288,7 +288,7 @@ static int jacobi_extract_eigen_values(matrix_t mat, bool sort, eigen_t** output
 }
 
 
-static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, double c, double s) {
+static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind_t loc, double c, double s) {
 	double c2, s2, Aii, Ajj, Aij;
 	size_t i, j, r;
 
@@ -322,7 +322,7 @@ static void jacobi_update_A_tag(matrix_t A_tag, matrix_t A, matrix_ind loc, doub
 }
 
 
-static void jacobi_apply_rotation(matrix_t V, matrix_ind loc, double c, double s) {
+static void jacobi_apply_rotation(matrix_t V, matrix_ind_t loc, double c, double s) {
 	size_t row;
 
 	/* P is essentially an identity matrix with 4 values changed. No need for a robust matrix multiplication algorithm.
@@ -344,7 +344,7 @@ static double jacobi_distance_of_squared_offdiagonals(matrix_t mat1, matrix_t ma
 
 
 
-static void jacobi_calc_c_s(double* c, double *s, matrix_t current_jacobi_mat, matrix_ind loc) {
+static void jacobi_calc_c_s(double* c, double *s, matrix_t current_jacobi_mat, matrix_ind_t loc) {
 	double theta, tmp;
 
 	theta = (matrix_get(current_jacobi_mat, loc.j, loc.j) - matrix_get(current_jacobi_mat, loc.i, loc.i)) / (2 * matrix_get(current_jacobi_mat, loc.i, loc.j));

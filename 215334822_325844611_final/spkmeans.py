@@ -96,7 +96,7 @@ def assert_valid_input(cond: bool):
     'Invalid Input!'
     """
     if not cond:
-        print("Invalid Input!")
+        print("Invalid Input!", end="")
         sys.exit(1)
 
 
@@ -106,7 +106,7 @@ def assert_generic(cond: bool):
     'An Error Has Occurred'
     """
     if not cond:
-        print("An Error Has Occurred")
+        print("An Error Has Occurred", end="")
         sys.exit(1)
 
 

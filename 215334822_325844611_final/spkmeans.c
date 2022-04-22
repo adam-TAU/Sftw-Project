@@ -20,7 +20,7 @@ static void parse_args(int argc, char **argv, char **infile);
  * *********************************/
 void assert_input(bool condition) {
     if(!condition) {
-        puts("Invalid Input!");
+        printf("Invalid Input!");
         free_program();
         exit(1);
     }
@@ -28,7 +28,7 @@ void assert_input(bool condition) {
 
 void assert_other(bool condition) {
     if(!condition) {
-        puts("An Error Has Occurred");
+        printf("An Error Has Occurred");
         free_program();
         exit(1);
     }

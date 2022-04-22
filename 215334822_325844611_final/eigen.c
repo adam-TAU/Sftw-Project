@@ -51,25 +51,6 @@ static void jacobi_calc_c_s(double* c, double *s, matrix_t current_jacobi_mat, m
 
 
 /********************************************* GLOBAL FUNCTIONS OF THE EIGEN MODULE **************************************************************/
-void eigen_print_jacobi(jacobi_t out) {
-	size_t i;
-
-	for (i = 0; i < out.eigen_vectors.cols; i++) {
-
-		/* If an eigen value will be printed as -0.0000, we'll replace the printage with 0.0000 */
-		if ( (out.eigen_values[i].value > -0.0001) && (out.eigen_values[i].value < 0) ) {
-			printf("%.4f", (double)0);
-		} else {
-			printf("%.4f", out.eigen_values[i].value);
-		}
-
-		/* Segregation of eigen values */
-		if (i < out.eigen_vectors.cols - 1) printf(",");
-	}
-
-	puts("");
-	matrix_print_rows(out.eigen_vectors);
-}
 
 
 

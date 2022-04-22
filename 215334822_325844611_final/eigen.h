@@ -10,11 +10,6 @@
 #define max_jacobi_iterations 100 /* must be 100 */
 #define epsilon 1e-5
 
-/* Defining exception types */
-#define ASYMMETRIC 3
-#define NOT_REAL 4
-#define HEURISTIC_PICKED_1 5
-
 
 /* Define a structure that will hold an eigen value's <value> and <ind at matrix> */
 typedef struct eigen_value_t {
@@ -31,12 +26,6 @@ typedef struct jacobi_t {
 	int signal;
 } jacobi_t;
 
-
-/* Free a jacobi output - safely! */
-void eigen_free_jacobi_safe(jacobi_t *out);
-
-/* Print the output of the jacobi algorithm */
-void eigen_print_jacobi(jacobi_t out);
 
 /* Return the output of the Jacobi algorithm when applied to the matrix <mat>.
  * Pre-Conditions:

@@ -2,8 +2,8 @@
 #include "matrix.h"
 
 
-
-double euclidean_norm(dpoint_t v1, dpoint_t v2, size_t dim) {
+/* Find the Euclidean norm of two vectors of the same dim x 1 */
+static double euclidean_norm(dpoint_t v1, dpoint_t v2, size_t dim) {
 	size_t i;
 	double sum = 0.0;
 

@@ -29,8 +29,4 @@ int build_jacobi_output(matrix_t *output);
 int build_T_of_spectral_kmeans(size_t K, matrix_t *output);
 
 
-
-
-
-
 #endif

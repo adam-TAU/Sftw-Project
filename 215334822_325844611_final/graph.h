@@ -8,10 +8,6 @@
 #include "matrix.h"
 
 
-/* Find the Euclidean norm of two vectors of the same dim x 1 */
-double euclidean_norm(dpoint_t v1, dpoint_t v2, size_t dim);
-
-
 /* Calculate and return the weighted adjacency matrix of the given list of datapoints.
 
    In case of allocation failure, the return value has a `data` field of `NULL`. */

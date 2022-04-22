@@ -15,10 +15,10 @@ typedef struct matrix {
 
 /* Define a structre the will hold the indices in the matrix of a value.
  * Inconvient in terms of cache locality, therefore why we chose to have this only for a specific use in this file */
-typedef struct matrix_ind {
+typedef struct matrix_ind_t {
 	size_t i;
 	size_t j;
-} matrix_ind;
+} matrix_ind_t;
 
 /* Define a structure that will hold a vector's coordinates. This will also be used in the spkmeans.c mechanism */
 typedef struct {
@@ -87,7 +87,7 @@ double matrix_sum_squared_off(matrix_t mat);
  * Pre-condition: <sym_mat> must be a symmetric matrix!
  * Notice: due to the pre-condition, only the higher half of the matrix will be scanned for the largest off diagonal value.
  * Therefore, the index returned will and must be out of the higher half of the matrix. */  
-matrix_ind matrix_ind_of_largest_offdiagonal(matrix_t sym_mat);
+matrix_ind_t matrix_ind_of_largest_offdiagonal(matrix_t sym_mat);
 
 
 #endif /* MATRIX_H */

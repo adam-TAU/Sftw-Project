@@ -135,8 +135,8 @@ double matrix_sum_squared_off(matrix_t mat) {
 
 
 
-matrix_ind matrix_ind_of_largest_offdiagonal(matrix_t sym_mat) {
-	matrix_ind output;
+matrix_ind_t matrix_ind_of_largest_offdiagonal(matrix_t sym_mat) {
+	matrix_ind_t output;
 	size_t i, j;
 	double current_max = -1;
 

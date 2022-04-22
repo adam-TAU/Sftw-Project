@@ -1,3 +1,0 @@
--Wall
--pedantic
--std=gnu90

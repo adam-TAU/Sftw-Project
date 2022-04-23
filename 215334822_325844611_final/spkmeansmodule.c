@@ -44,10 +44,13 @@ static PyObject *run_goal(PyObject *self, PyObject *args) {
 
     /* Free and return */
     matrix_free(output);
+    free_program();
+    
     return py_output;
 
 error:
     matrix_free_safe(output);
+    free_program();
     Py_XDECREF(py_output);
     assert_other(false);
     return NULL;
@@ -86,6 +89,7 @@ static PyObject *kmeans_fit(PyObject *self, PyObject *args) {
     /* Free and return */
     matrix_free(centroids_mat);
     free_program();
+    
     return py_output;
 
 error:

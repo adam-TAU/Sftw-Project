@@ -150,6 +150,7 @@ int main(int argc, char **argv) {
     /* Print and free */
     matrix_print_rows(output);
     matrix_free_safe(output);
+    free_program();
 
     return 0;
 }

@@ -141,16 +141,13 @@ int eigen_jacobi_to_mat(jacobi_t origin, matrix_t *output) {
 
     /* Building the first row of the matrix (the eigen values) */
     for(j = 0; j < output->cols; j++) {
-        double value;
+        double value = origin.eigen_values[j].value;
 
         /* Building the eigen value that will be inserted into the output matrix
          */
-        if((origin.eigen_values[j].value > -0.0001) &&
-           (origin.eigen_values[j].value < 0))
+        if((value > -0.00005) && (value <= 0))
         { /* If we need to round up an eigen value */
             value = 0.0;
-        } else {
-            value = origin.eigen_values[j].value;
         }
 
         /* Inserting the eigen value into the output matrix */
